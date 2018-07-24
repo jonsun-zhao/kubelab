@@ -1,0 +1,39 @@
+hash: 02236291d38970e866b5c1b98a8f415cbab628d2ce5ed84e60a9f194611e9c10
+updated: 2018-07-21T00:09:14.944381+10:00
+imports:
+- name: github.com/go-ole/go-ole
+  version: 7a0fa49edf48165190530c675167e2f319a05268
+  subpackages:
+  - oleutil
+- name: github.com/gorilla/context
+  version: 08b5f424b9271eedf6f9f0ce86cb9396ed337a42
+- name: github.com/gorilla/handlers
+  version: 90663712d74cb411cbef281bc1e08c19d1a76145
+- name: github.com/gorilla/mux
+  version: e3702bed27f0d39777b0b37b664b6280e8ef8fbf
+- name: github.com/shirou/gopsutil
+  version: 6ddbb8c5d870fb1d7f25cc0801000897cc0ac943
+  subpackages:
+  - cpu
+  - host
+  - internal/common
+  - mem
+  - net
+  - process
+- name: github.com/shirou/w32
+  version: bb4de0191aa41b5507caa14b0650cdbddcd9280b
+- name: github.com/StackExchange/wmi
+  version: cdffdb33acae0e14efff2628f9bae377b597840e
+- name: golang.org/x/sys
+  version: ac767d655b305d4e9612f5f6e33120b9176c4ad4
+  subpackages:
+  - unix
+  - windows
+- name: gopkg.in/mgo.v2
+  version: 9856a29383ce1c59f308dd1cf0363a79b5bef6b5
+  subpackages:
+  - bson
+  - internal/json
+  - internal/sasl
+  - internal/scram
+testImports: []

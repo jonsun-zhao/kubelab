@@ -1,0 +1,54 @@
+---
+kind: Service
+apiVersion: v1
+metadata:
+  name: svc
+spec:
+  selector:
+    app: php-apache
+  ports:
+    - name: http
+      protocol: TCP
+      port: 80
+      targetPort: 80
+      nodePort: 30080
+    - name: https
+      protocol: TCP
+      port: 443
+      targetPort: 443
+      nodePort: 30443
+  type: NodePort
+  externalTrafficPolicy: Cluster
+
+---
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  name: dep
+  labels:
+    deployment: php-apache
+spec:
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: php-apache
+    spec:
+      containers:
+        - name: php-apache
+          image: gcr.io/nmiu-play/php-apache
+          imagePullPolicy: Always
+          resources:
+            requests:
+              cpu: 100m
+              memory: 100Mi
+            limits:
+              cpu: 200m
+              memory: 200Mi
+          ports:
+            - name: http
+              containerPort: 80
+              protocol: TCP
+            - name: https
+              containerPort: 443
+              protocol: TCP

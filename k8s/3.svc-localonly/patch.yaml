@@ -1,3 +1,4 @@
+---
 kind: Service
 apiVersion: v1
 metadata:
@@ -5,14 +6,3 @@ metadata:
 spec:
   externalTrafficPolicy: Local
   # type: LoadBalancer
----
-apiVersion: extensions/v1beta1
-kind: Ingress
-metadata:
-  name: ing
-  annotations:
-    kubernetes.io/ingress.class: gce
-spec:
-  backend:
-    serviceName: local-svc
-    servicePort: 80

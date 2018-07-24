@@ -1,5 +1,7 @@
 bases:
-- ../../apps/nm-php-apache/k8s
+- ../../apps/php-apache/k8s
+resources:
+- ingress.yaml
 patches:
 - patch.yaml
 namePrefix: nic-

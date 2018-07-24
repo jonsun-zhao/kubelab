@@ -1,0 +1,106 @@
+---
+kind: Service
+apiVersion: v1
+metadata:
+  name: svc
+spec:
+  selector:
+    app: go-web
+  ports:
+    - name: http
+      protocol: TCP
+      port: 8000
+      targetPort: 8000
+    - name: https
+      protocol: TCP
+      port: 10443
+      targetPort: 10443
+  type: NodePort
+  externalTrafficPolicy: Local # Cluster
+
+---
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  name: dep
+  labels:
+    deployment: go-web
+spec:
+  replicas: 2
+  template:
+    metadata:
+      labels:
+        app: go-web
+    spec:
+      containers:
+        - name: go-web
+          image: gcr.io/nmiu-play/go-web
+          imagePullPolicy: Always
+          env:
+            - name: MONGODB_URL
+              value: mongodb
+          resources:
+            requests:
+              cpu: 100m
+              memory: 100Mi
+            limits:
+              cpu: 200m
+              memory: 200Mi
+          ports:
+            - name: http
+              containerPort: 8000
+              protocol: TCP
+            - name: https
+              containerPort: 10443
+              protocol: TCP
+          livenessProbe:
+            httpGet:
+              path: /liveness
+              port: 8000
+              scheme: HTTP
+            initialDelaySeconds: 30
+            timeoutSeconds: 5
+            successThreshold: 1
+            failureThreshold: 5
+          readinessProbe:
+            httpGet:
+              path: /readiness
+              port: 8000
+              scheme: HTTP
+            initialDelaySeconds: 30
+            timeoutSeconds: 5
+            successThreshold: 1
+            failureThreshold: 5
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: mongodb
+  labels:
+    app: mongodb
+spec:
+  ports:
+  - port: 27017
+    name: mongo
+  selector:
+    app: mongodb
+
+---
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  name: mongodb
+spec:
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: mongodb
+    spec:
+      containers:
+      - name: mongodb 
+        image: gcr.io/nmiu-play/mongodb:latest
+        imagePullPolicy: IfNotPresent
+        ports:
+        - containerPort: 27017

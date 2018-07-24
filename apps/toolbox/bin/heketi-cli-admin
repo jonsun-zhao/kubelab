@@ -1,0 +1,3 @@
+#!/bin/bash
+
+heketi-cli --server http://heketi:8080 --user admin --secret $HEKETI_ADMIN_SECRET $*
