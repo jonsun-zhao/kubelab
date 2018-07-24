@@ -1,0 +1,7 @@
+bases:
+- ../../apps/nm-php-apache/k8s
+patches:
+- patch.yaml
+namePrefix: nic-
+# commonLabels:
+#   variant: nic

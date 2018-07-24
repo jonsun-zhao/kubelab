@@ -1,12 +1,10 @@
 apiVersion: extensions/v1beta1
 kind: Ingress
 metadata:
-  name: nm-php-apache-ing
+  name: ing
   annotations:
     kubernetes.io/ingress.class: gce
 spec:
-  # tls:
-    # - secretName: php-tls
   backend:
-    serviceName: nm-php-apache-svc
+    serviceName: svc
     servicePort: 80
