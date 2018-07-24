@@ -42,7 +42,7 @@ docker rmi gcr.io/$PROJECT_ID/go-web
   * `GET /people`
   * `GET /people/{id}`
   * `POST /people/{id}`
-  * `UPDATE /people/{id}`
+  * `PUT /people/{id}`
   * `DELETE /people/{id}`
   > sample rest API
 
