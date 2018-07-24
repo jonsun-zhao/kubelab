@@ -1,0 +1,16 @@
+kind: Service
+apiVersion: v1
+metadata:
+  name: nm-php-apache-svc-ilb
+  annotations:
+    cloud.google.com/load-balancer-type: internal
+spec:
+  selector:
+    app: nm-php-apache
+  ports:
+    - name: http
+      protocol: TCP
+      port: 80
+      targetPort: 80
+  type: LoadBalancer
+  # externalTrafficPolicy: Local # Cluster
