@@ -1,0 +1,4 @@
+resources:
+- app.yaml
+patches:
+- patch.yaml

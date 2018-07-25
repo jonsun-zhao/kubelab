@@ -15,3 +15,5 @@ WORKDIR /root
 
 RUN curl https://sdk.cloud.google.com | bash && mv google-cloud-sdk /opt
 RUN gcloud components install kubectl
+
+CMD ["/usr/sbin/init"]

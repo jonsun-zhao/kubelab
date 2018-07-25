@@ -21,7 +21,6 @@ Service created with above annotation/field will end up having 2 nodeports:
   * healthcheck-nodeport can be specified (auto-allocated if not specified)
   * when the pod is not running on the node, curl to healthcheck-nodeport returns 503
 
-
 ```sh
 $ curl -Is http://10.128.0.2:31313
 HTTP/1.1 503 Service Unavailable

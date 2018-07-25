@@ -2,4 +2,7 @@ bases:
 - ../../apps/php-apache/k8s
 resources:
 - ingress.yaml
-namePrefix: nic-
+- storage.yaml
+patches:
+- patch.yaml
+namePrefix: rox-

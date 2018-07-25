@@ -33,6 +33,7 @@ spec:
         app: go-web
     spec:
       containers:
+        # [START app_container]
         - name: go-web
           image: gcr.io/nmiu-play/go-web
           imagePullPolicy: Always
@@ -71,6 +72,7 @@ spec:
             timeoutSeconds: 5
             successThreshold: 1
             failureThreshold: 5
+        # [START app_container]
 
 ---
 apiVersion: v1

@@ -4,7 +4,6 @@ kind: Deployment
 metadata:
   name: dep
 spec:
-  replicas: 1
   template:
     spec:
       containers:
@@ -12,10 +11,3 @@ spec:
           env:
             - name: MONGODB_URL
               value: go-web-mongodb
-          volumeMounts:
-          - name: data
-            mountPath: /data
-      volumes:
-        - name: data
-          persistentVolumeClaim:
-            claimName: go-web-pvc

@@ -5,47 +5,36 @@ metadata:
   name: svc
 spec:
   selector:
-    app: php-apache
+    app: nginx
   ports:
     - name: http
       protocol: TCP
       port: 80
       targetPort: 80
-      nodePort: 30080
     - name: https
       protocol: TCP
       port: 443
       targetPort: 443
-      nodePort: 30443
   type: NodePort
-  externalTrafficPolicy: Cluster
 
 ---
-apiVersion: extensions/v1beta1
 kind: Deployment
+apiVersion: extensions/v1beta1
 metadata:
   name: dep
   labels:
-    deployment: php-apache
+    deployment: nginx
 spec:
-  replicas: 1
+  replicas: 2
   template:
     metadata:
       labels:
-        app: php-apache
+        app: nginx
     spec:
       containers:
         # [START app_container]
-        - name: php-apache
-          image: gcr.io/nmiu-play/php-apache
-          imagePullPolicy: Always
-          resources:
-            requests:
-              cpu: 100m
-              memory: 100Mi
-            limits:
-              cpu: 200m
-              memory: 200Mi
+        - name: nginx
+          image: gcr.io/nmiu-play/nginx
           ports:
             - name: http
               containerPort: 80

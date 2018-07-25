@@ -1,7 +1,0 @@
----
-kind: Service
-apiVersion: v1
-metadata:
-  name: svc
-spec:
-  externalTrafficPolicy: Local

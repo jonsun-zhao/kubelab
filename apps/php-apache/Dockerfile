@@ -13,3 +13,5 @@ COPY --chown=www-data:www-data src /var/www/html/
 RUN a2enmod actions ssl rewrite headers \
     && a2dissite 000-default default-ssl \ 
     && a2ensite docker
+
+VOLUME /var/www/html/

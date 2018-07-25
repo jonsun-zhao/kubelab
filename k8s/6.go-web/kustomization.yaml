@@ -2,9 +2,6 @@ bases:
 - ../../apps/go-web/k8s
 resources:
 - ingress.yaml
-- pvc.yaml
 patches:
 - patch.yaml
 namePrefix: go-web-
-# commonLabels:
-#   variant: local
