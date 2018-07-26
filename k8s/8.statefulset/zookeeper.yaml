@@ -61,11 +61,11 @@ spec:
           requiredDuringSchedulingIgnoredDuringExecution:
             - labelSelector:
                 matchExpressions:
-                  - key: "app"
+                  - key: app
                     operator: In
                     values:
                     - zk
-              topologyKey: "kubernetes.io/hostname"
+              topologyKey: kubernetes.io/hostname
       containers:
       - name: kubernetes-zookeeper
         imagePullPolicy: Always

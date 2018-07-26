@@ -32,14 +32,14 @@ spec:
         app: nginx
     spec:
       containers:
-        # [START app_container]
-        - name: nginx
-          image: gcr.io/nmiu-play/nginx
-          ports:
-            - name: http
-              containerPort: 80
-              protocol: TCP
-            - name: https
-              containerPort: 443
-              protocol: TCP
-        # [END app_container]
+      # [START app_container]
+      - name: nginx
+        image: gcr.io/nmiu-play/nginx
+        ports:
+        - name: http
+          containerPort: 80
+          protocol: TCP
+        - name: https
+          containerPort: 443
+          protocol: TCP
+      # [END app_container]
