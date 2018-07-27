@@ -4,8 +4,13 @@ Each directory contains a k8s example, some of them are powered by [kustomize](h
 
 ## How to run the example
 
+* consult `README.md` in the examples
+
+## Deploy/Teardown example powered by kustmoize
+
 ```sh
 kustomize build <EXAMPLE> | kubectl apply -f -
+kustomize build <EXAMPLE> | kubectl delete -f -
 ```
 
 ## How to extend examples powered by `kustomize`
