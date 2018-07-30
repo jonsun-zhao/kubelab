@@ -1,0 +1,32 @@
+---
+kind: Deployment
+apiVersion: extensions/v1beta1
+metadata:
+  name: dep
+  labels:
+    deployment: php-apache
+spec:
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: php-apache
+    spec:
+      volumes:
+       - name: data
+         persistentVolumeClaim:
+           claimName: rwo-pvc
+      containers:
+      # [START app_container]
+      - name: php-apache
+        volumeMounts:
+          - name: data
+            mountPath: /var/www/html/
+      # [END app_container]
+      initContainers:
+      - name: init-index
+        image: busybox
+        command: ['sh', '-c', 'echo "Hello from PD!" > /data/index.html']
+        volumeMounts:
+          - name: data
+            mountPath: /data/

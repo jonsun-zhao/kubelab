@@ -1,0 +1,4 @@
+bases:
+- ../1.ingress/svc-cluster/
+resources:
+- hpa.yaml

@@ -1,0 +1,7 @@
+bases:
+- ../../../apps/php-apache/k8s
+resources:
+- ingress.yaml
+patches:
+- patch.yaml
+namePrefix: local-

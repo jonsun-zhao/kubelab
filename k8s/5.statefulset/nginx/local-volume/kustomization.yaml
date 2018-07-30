@@ -1,0 +1,4 @@
+resources:
+- ../nginx.yaml
+patches:
+- patch.yaml

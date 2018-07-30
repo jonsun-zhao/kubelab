@@ -1,4 +1,0 @@
-bases:
-- ../../apps/toolbox/k8s
-patches:
-- patch.yaml

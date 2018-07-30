@@ -1,0 +1,7 @@
+bases:
+- ../../../apps/go-web/k8s
+resources:
+- ingress.yaml
+patches:
+- patch.yaml
+namePrefix: cluster-

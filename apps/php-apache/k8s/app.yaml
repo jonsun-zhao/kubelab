@@ -28,7 +28,7 @@ metadata:
   labels:
     deployment: php-apache
 spec:
-  replicas: 1
+  replicas: 2
   template:
     metadata:
       labels:
