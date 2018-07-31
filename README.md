@@ -1,11 +1,14 @@
 # KubeLab
 
-## Structure
+A repository of Kubernetes examples and tutorials
+
+## Repo structure
 
 * `apps`
   > apps built to be used as workloads or clients
   
-* `examples`
-  > examples for various k8s features
-  * `_staging` - more complicated examples (WIP)
-  * _(the rest)_ - graduated examples
+* `k8s`
+  > examples to showcase k8s features and usecases
+  * `/\d+\.[\S-]+/` - GA examples
+  * `staging` - work-in-progress
+  

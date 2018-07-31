@@ -10,7 +10,7 @@ spec:
         spec:
           containers:
           - name: runner
-            image: gcr.io/nmiu-play/toolbox
+            image: byrnedo/alpine-curl
             env:
             - name: URL
               valueFrom:
