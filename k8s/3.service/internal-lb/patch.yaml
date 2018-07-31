@@ -2,7 +2,7 @@
 kind: Service
 apiVersion: v1
 metadata:
-  name: svc
+  name: php-apache-svc
   annotations:
     cloud.google.com/load-balancer-type: internal
 spec:

@@ -2,4 +2,5 @@ bases:
 - ../../../apps/toolbox/k8s
 patches:
 - patch.yaml
-namePrefix: gcepd-
+commonLabels:
+  example: storage-gcepd

@@ -2,45 +2,54 @@
 
 Each directory contains a k8s example, some of them are powered by [kustomize](https://github.com/kubernetes-sigs/kustomize), which is useful when we need to reuse K8s resources in multiple examples.
 
+## Prerequisites
+
+* [Install kustomize](https://github.com/kubernetes-sigs/kustomize/blob/master/INSTALL.md)
+* (optional) [Install golang](https://golang.org/doc/install)
+
 ## How to run the example
 
-* consult `README.md` in the examples
-
-## Deploy/Teardown example powered by kustmoize
+* complex examples have `README.md`, details can be found in there
+* simple doesn't need `README.md`, just use the following commands to deploy/teardown objects
 
 ```sh
+# deploy
 kustomize build <EXAMPLE> | kubectl apply -f -
+
+# teardown
 kustomize build <EXAMPLE> | kubectl delete -f -
 ```
 
-## How to extend examples powered by `kustomize`
+## How to customize the examples
 
-For example, I want to update the `6.go-web` example with the following requirements:
+I.E. I want to make the following changes to the `1.ingress/svc-cluster` example
 
 * shrink the deployment's replica to 1
-* attach a PVC to the go-web pod
+* attach a PVC to the pod
 
-### cd into `6.go-web`
+### create a new dir in `1.ingress/svc-cluster`
 
 ```sh
-cd 6.go-web
+mkdir 1.ingress/svc-cluster/pvc && cd 1.ingress/svc-cluster/pvc
 ```
 
-### Locate the base resources
-
-> `6.go-web` is using base resources from `apps/go-web/k8s`
+### Create YAMLs
 
 * `kustomization.yaml`
 
+> `kustomization.yaml` defines:
+> * the example is based upon `svc-cluster`
+> * a new `pvc.yaml` is added
+> * use `patch.yaml` to modify the existing `dep` deployment in `svc-cluster`
+
 ```yaml
 bases:
-- ../../apps/go-web/k8s
-...
+- ../../svc-cluster
+resources:
+- pvc.yaml
+patches:
+- patch.yaml
 ```
-
-### Create the PVC
-
-> Save the following YAML as `pvc.yaml` and reference it in `kustomization.yaml`
 
 * `pvc.yaml`
 
@@ -48,7 +57,7 @@ bases:
 apiVersion: v1
 kind: PersistentVolumeClaim
 metadata:
-    name: pvc
+    name: go-web-pvc
 spec:
   accessModes:
     - ReadWriteOnce
@@ -58,35 +67,19 @@ spec:
   storageClassName: standard
 ```
 
-* `kustomization.yaml`
-
-```yaml
-bases:
-- ../../apps/go-web/k8s
-resources:
-- ingress.yaml
-- pvc.yaml
-patches:
-- patch.yaml
-namePrefix: go-web-
-```
-
-### Customize the deployment in `patch.yaml`
+* `patch.yaml`
 
 ```yaml
 apiVersion: extensions/v1beta1
 kind: Deployment
 metadata:
-  name: dep
+  name: go-web-dep
 spec:
   replicas: 1
   template:
     spec:
       containers:
         - name: go-web
-          env:
-            - name: MONGODB_URL
-              value: go-web-mongodb
           volumeMounts:
           - name: data
             mountPath: /data
@@ -94,7 +87,6 @@ spec:
         - name: data
           persistentVolumeClaim:
             claimName: go-web-pvc
-
 ```
 
 ### Dry-run
@@ -103,16 +95,16 @@ spec:
 kustomize build .
 ```
 
-### Run
+### Deploy
 
 ```sh
 kustomize build . | kubectl apply -f -
 ```
 
-### More `kustomize` examples can be found [here](https://github.com/kubernetes-sigs/kustomize/blob/master/docs/kustomization.yaml)
-
-## Teardown
+### Teardown
 
 ```sh
 kustomize build . | kubectl delete -f -
 ```
+
+_More `kustomize` examples can be found [here](https://github.com/kubernetes-sigs/kustomize/blob/master/docs/kustomization.yaml)_

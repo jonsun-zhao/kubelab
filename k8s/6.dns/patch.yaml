@@ -6,4 +6,4 @@ metadata:
 spec:
   dnsPolicy: ClusterFirst
   containers:
-    - name: toolbox
+  - name: toolbox

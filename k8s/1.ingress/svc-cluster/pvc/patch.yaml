@@ -1,0 +1,17 @@
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  name: go-web-dep
+spec:
+  replicas: 1
+  template:
+    spec:
+      containers:
+        - name: go-web
+          volumeMounts:
+          - name: data
+            mountPath: /data
+      volumes:
+        - name: data
+          persistentVolumeClaim:
+            claimName: go-web-pvc

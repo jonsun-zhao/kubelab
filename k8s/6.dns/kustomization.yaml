@@ -4,3 +4,5 @@ resources:
 - dns.yaml
 patches:
 - patch.yaml
+commonLabels:
+  example: dns

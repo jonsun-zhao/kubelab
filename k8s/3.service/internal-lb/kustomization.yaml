@@ -2,4 +2,5 @@ bases:
 - ../../../apps/php-apache/k8s
 patches:
 - patch.yaml
-namePrefix: ilb-
+commonLabels:
+  example: service-ilb

@@ -4,8 +4,8 @@ kind: Ingress
 metadata:
   annotations:
     kubernetes.io/ingress.class: gce
-  name: ing
+  name: php-apache-ing
 spec:
   backend:
-    serviceName: svc
+    serviceName: php-apache-svc
     servicePort: 80

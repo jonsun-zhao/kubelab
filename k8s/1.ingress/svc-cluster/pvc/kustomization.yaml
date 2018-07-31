@@ -1,0 +1,8 @@
+bases:
+- ../../svc-cluster
+resources:
+- pvc.yaml
+patches:
+- patch.yaml
+commonLabels:
+  example: ingress-svc-cluster-pvc

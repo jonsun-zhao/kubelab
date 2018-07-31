@@ -2,7 +2,7 @@
 kind: Service
 apiVersion: v1
 metadata:
-  name: svc
+  name: php-apache-svc
 spec:
   type: ClusterIP
 

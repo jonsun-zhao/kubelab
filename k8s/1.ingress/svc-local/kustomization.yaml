@@ -4,4 +4,5 @@ resources:
 - ingress.yaml
 patches:
 - patch.yaml
-namePrefix: local-
+commonLabels:
+  example: ingress-svc-local

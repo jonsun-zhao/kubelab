@@ -1,11 +1,9 @@
----
 apiVersion: v1
 kind: PersistentVolumeClaim
 metadata:
-    name: rwo-pvc
+    name: go-web-pvc
 spec:
   accessModes:
-    - ReadOnlyMany
     - ReadWriteOnce
   resources:
     requests:

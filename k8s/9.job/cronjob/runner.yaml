@@ -10,7 +10,7 @@ spec:
         spec:
           containers:
           - name: runner
-            image: gcr.io/nmiu-play/nm-toolbox:latest
+            image: gcr.io/nmiu-play/toolbox
             env:
             - name: URL
               valueFrom:
@@ -23,11 +23,11 @@ spec:
                   key: user_agent
                   name: cronjob-secret
             command:
-              - '/bin/sh'
-              - '-c'
-              - >
-                for i in `seq 100`; do
-                  curl -s -H "${USER_AGENT}" $URL > /dev/null;
-                  sleep 1;
-                done;
+            - '/bin/sh'
+            - '-c'
+            - >
+              for i in `seq 100`; do
+                curl -s -H "${USER_AGENT}" $URL > /dev/null;
+                sleep 1;
+              done;
           restartPolicy: Never

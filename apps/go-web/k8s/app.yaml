@@ -2,19 +2,19 @@
 kind: Service
 apiVersion: v1
 metadata:
-  name: svc
+  name: go-web-svc
 spec:
   selector:
     app: go-web
   ports:
-    - name: http
-      protocol: TCP
-      port: 8000
-      targetPort: 8000
-    - name: https
-      protocol: TCP
-      port: 10443
-      targetPort: 10443
+  - name: http
+    protocol: TCP
+    port: 8000
+    targetPort: 8000
+  - name: https
+    protocol: TCP
+    port: 10443
+    targetPort: 10443
   type: NodePort
   externalTrafficPolicy: Local # Cluster
 
@@ -22,65 +22,66 @@ spec:
 apiVersion: extensions/v1beta1
 kind: Deployment
 metadata:
-  name: dep
+  name: go-web-dep
   labels:
     deployment: go-web
 spec:
   replicas: 2
+  selector:
+    matchLabels:
+      app: go-web
   template:
     metadata:
       labels:
         app: go-web
     spec:
       containers:
-        # [START app_container]
-        - name: go-web
-          image: gcr.io/nmiu-play/go-web
-          imagePullPolicy: Always
-          env:
-            - name: MONGODB_URL
-              value: mongodb
-          resources:
-            requests:
-              cpu: 100m
-              memory: 100Mi
-            limits:
-              cpu: 200m
-              memory: 200Mi
-          ports:
-            - name: http
-              containerPort: 8000
-              protocol: TCP
-            - name: https
-              containerPort: 10443
-              protocol: TCP
-          livenessProbe:
-            httpGet:
-              path: /liveness
-              port: 8000
-              scheme: HTTP
-            initialDelaySeconds: 10
-            timeoutSeconds: 5
-            successThreshold: 1
-            failureThreshold: 5
-          readinessProbe:
-            httpGet:
-              path: /readiness
-              port: 8000
-              scheme: HTTP
-            initialDelaySeconds: 10
-            timeoutSeconds: 5
-            successThreshold: 1
-            failureThreshold: 5
-        # [START app_container]
+      # [START app_container]
+      - name: go-web
+        image: gcr.io/nmiu-play/go-web
+        imagePullPolicy: Always
+        env:
+        - name: MONGODB_URL
+          value: mongodb
+        resources:
+          requests:
+            cpu: 100m
+            memory: 100Mi
+          limits:
+            cpu: 200m
+            memory: 200Mi
+        ports:
+        - name: http
+          containerPort: 8000
+          protocol: TCP
+        - name: https
+          containerPort: 10443
+          protocol: TCP
+        livenessProbe:
+          httpGet:
+            path: /liveness
+            port: 8000
+            scheme: HTTP
+          initialDelaySeconds: 10
+          timeoutSeconds: 5
+          successThreshold: 1
+          failureThreshold: 5
+        readinessProbe:
+          httpGet:
+            path: /readiness
+            port: 8000
+            scheme: HTTP
+          initialDelaySeconds: 10
+          timeoutSeconds: 5
+          successThreshold: 1
+          failureThreshold: 5
+      # [START app_container]
 
 ---
 apiVersion: v1
 kind: Service
 metadata:
-  name: mongodb
-  labels:
-    app: mongodb
+  name: mongodb-svc
 spec:
   ports:
   - port: 27017
@@ -92,9 +93,14 @@ spec:
 apiVersion: extensions/v1beta1
 kind: Deployment
 metadata:
-  name: mongodb
+  name: mongodb-dep
+  labels:
+    deployment: mongodb
 spec:
   replicas: 1
+  selector:
+    matchLabels:
+      app: mongodb
   template:
     metadata:
       labels:

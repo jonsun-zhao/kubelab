@@ -5,15 +5,15 @@ metadata:
   name: toolbox
 spec:
   containers:
-    # [START app_container]
-    - name: toolbox
-      image: gcr.io/nmiu-play/toolbox
-      imagePullPolicy: Always
-      resources:
-        requests:
-          cpu: 100m
-          memory: 128Mi
-        limits:
-          cpu: 500m
-          memory: 128Mi
-    # [END app_container]
+  # [START app_container]
+  - name: toolbox
+    image: gcr.io/nmiu-play/toolbox
+    imagePullPolicy: Always
+    resources:
+      requests:
+        cpu: 100m
+        memory: 128Mi
+      limits:
+        cpu: 500m
+        memory: 128Mi
+  # [END app_container]

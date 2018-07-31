@@ -18,20 +18,7 @@ gcloud container clusters create asuka \
 > Otherwise `kubectl apply -f nginx-ingress-controller.yaml` will complain about unable to create cluster roles and bindings
 
 ```sh
-cat << EOF | kubectl apply -f -
-kind: ClusterRoleBinding
-apiVersion: rbac.authorization.k8s.io/v1
-metadata:
-  name: cluster-admin-binding
-subjects:
-- kind: User
-  name: `gcloud config get-value account`
-  apiGroup: rbac.authorization.k8s.io
-roleRef:
-  kind: ClusterRole
-  name: cluster-admin
-  apiGroup: rbac.authorization.k8s.io
-EOF
+kubectl create clusterrolebinding cluster-admin-binding --clusterrole=cluster-admin --user=$(gcloud config get-value core/account)
 ```
 
 ## Setup

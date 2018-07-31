@@ -2,15 +2,10 @@
 kind: Deployment
 apiVersion: extensions/v1beta1
 metadata:
-  name: dep
-  labels:
-    deployment: php-apache
+  name: php-apache-dep
 spec:
   replicas: 1
   template:
-    metadata:
-      labels:
-        app: php-apache
     spec:
       volumes:
        - name: data

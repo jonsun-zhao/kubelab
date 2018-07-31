@@ -19,6 +19,9 @@ metadata:
 spec:
   serviceName: nginx-statefulset-svc
   replicas: 3
+  selector:
+    matchLabels:
+      app: web
   template:
     metadata:
       labels:

@@ -122,7 +122,6 @@ func main() {
 	router.HandleFunc("/kubedump/{kind}/{name}", kubedump.GetObj).Methods("GET")
 
 	// log.Fatal(http.ListenAndServe(":"+port, router))
-
 	errs := Run(router, ":"+port, ":"+sslPort, "server.crt", "server.key")
 
 	// This will run forever until channel receives error

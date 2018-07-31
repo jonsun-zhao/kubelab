@@ -2,7 +2,7 @@
 kind: Service
 apiVersion: v1
 metadata:
-  name: svc
+  name: go-web-svc
 spec:
   externalTrafficPolicy: Cluster
   # type: LoadBalancer
@@ -11,17 +11,17 @@ spec:
 apiVersion: extensions/v1beta1
 kind: Deployment
 metadata:
-  name: dep
+  name: go-web-dep
 spec:
   template:
     spec:
       containers:
-        - name: go-web
-          env:
-            - name: MONGODB_URL
-              value: cluster-mongodb
+      - name: go-web
+        env:
+        - name: MONGODB_URL
+          value: mongodb-svc
       initContainers:
-        - name: wait-for-mongodb
-          image: busybox
-          command: ['sh', '-c', 'until nc -z cluster-mongodb 27017; do sleep 2; done']
+      - name: wait-for-mongodb
+        image: busybox
+        command: ['sh', '-c', 'until nc -z mongodb-svc 27017; do sleep 2; done']
 

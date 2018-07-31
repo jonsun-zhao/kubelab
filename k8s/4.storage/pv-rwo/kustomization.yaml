@@ -5,4 +5,5 @@ resources:
 - storage.yaml
 patches:
 - patch.yaml
-namePrefix: rwo-
+commonLabels:
+  example: storage-pv-rwo
