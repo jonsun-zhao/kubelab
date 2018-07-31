@@ -27,7 +27,7 @@ I.E. I want to make the following changes to the `1.ingress/svc-cluster` example
 * shrink the deployment's replica to 1
 * attach a PVC to the pod
 
-### create a new dir in `1.ingress/svc-cluster`
+### Create a new dir in `1.ingress/svc-cluster`
 
 ```sh
 mkdir 1.ingress/svc-cluster/pvc && cd 1.ingress/svc-cluster/pvc
@@ -40,7 +40,7 @@ mkdir 1.ingress/svc-cluster/pvc && cd 1.ingress/svc-cluster/pvc
 > `kustomization.yaml` defines:
 > * the example is based upon `svc-cluster`
 > * a new `pvc.yaml` is added
-> * use `patch.yaml` to modify the existing `dep` deployment in `svc-cluster`
+> * use `patch.yaml` to modify the existing `go-web-dep` deployment in `svc-cluster`
 
 ```yaml
 bases:
@@ -69,6 +69,8 @@ spec:
 
 * `patch.yaml`
 
+_Only the changed bits are required in the `patch.yaml`_
+
 ```yaml
 apiVersion: extensions/v1beta1
 kind: Deployment
@@ -89,7 +91,7 @@ spec:
             claimName: go-web-pvc
 ```
 
-### Dry-run
+### Dryrun
 
 ```sh
 kustomize build .
