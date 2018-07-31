@@ -161,7 +161,7 @@ metadata:
 spec:
   externalTrafficPolicy: Local
   type: LoadBalancer
-  loadBalancerIP: _STATIC_IP_ # reserved static IP
+  loadBalancerIP: RESERVED_IP # reserved static IP
   ports:
   - port: 80
     name: http

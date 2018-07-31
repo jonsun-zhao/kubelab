@@ -20,25 +20,12 @@ gcloud compute addresses list | grep nginx-ingress-lb
 nginx-ingress-lb                  us-central1  35.224.151.150  RESERVED
 ```
 
-* Use the reserved IP as `loadBalancerIP` for the `nginx-ingress-lb` service in `nginx-ingress-controller.yaml`
-
-```sh
----
-apiVersion: v1
-kind: Service
-metadata:
-  name: nginx-ingress-lb
-  namespace: ingress-nginx
-spec:
-...
-  loadBalancerIP: 35.224.151.150
-...
-```
-
 ## Deploy
 
+_Use the reserved IP as `loadBalancerIP` for the `nginx-ingress-lb` service in `nginx-ingress-controller.yaml`_
+
 ```sh
-kubectl apply -f nginx-ingress-controller.yaml
+sed "s/RESERVED_IP/35.224.151.150/" nginx-ingress-controller.yaml | kubectl apply -f -
 ```
 
 ## Teardown

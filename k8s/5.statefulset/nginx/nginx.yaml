@@ -36,7 +36,7 @@ spec:
                 operator: In
                 values:
                 - web
-              topologyKey: kubernetes.io/hostname
+            topologyKey: kubernetes.io/hostname
       terminationGracePeriodSeconds: 10
       containers:
       - name: nginx
