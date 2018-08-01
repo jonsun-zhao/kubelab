@@ -1,4 +1,14 @@
 ---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: rails-secret
+type: Opaque
+data:
+  db_pass: S2VwNFlrTFVMNlZQanpGOA==
+  secret_key_base: NzgxYjBhZjA2YjAwNWQ0MDhiOTRlMWMwNjM4YzE1NGU0MjBhYjBhZjc4MzBkZDQ4
+
+---
 kind: Service
 apiVersion: v1
 metadata:
@@ -22,7 +32,7 @@ metadata:
   labels:
     deployment: rails
 spec:
-  replicas: 1
+  replicas: 2
   selector:
     matchLabels:
       app: rails
@@ -37,9 +47,67 @@ spec:
         image: gcr.io/nmiu-play/rails
         env:
         - name: SECRET_KEY_BASE
-          value: 9726ef6a9a99fa4c024745f236cb3aa6b055789b297a781b0af06b005d408b94e1c0638c154e420ab0af7830dd489227889781e3b2a663f5f50570b532fc5559
+          valueFrom:
+            secretKeyRef:
+              name: rails-secret
+              key: secret_key_base
+        - name: DB_PASS
+          valueFrom:
+            secretKeyRef:
+              name: rails-secret
+              key: db_pass
+        - name: DB_HOST
+          value: mysql-svc
+        - name: RAILS_ENV
+          value: development
         ports:
         - name: http
           containerPort: 3000
           protocol: TCP
       # [END app_container]
+      initContainers:
+      - name: wait-for-db
+        image: busybox
+        command: ['sh', '-c', 'until nc -z mysql-svc 3306; do sleep 2; done']
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: mysql-svc
+spec:
+  ports:
+  - port: 3306
+    name: mysql
+  selector:
+    app: mysql
+
+---
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  name: mysql-dep
+  labels:
+    deployment: mysql
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: mysql
+  template:
+    metadata:
+      labels:
+        app: mysql
+    spec:
+      containers:
+      - name: mysql 
+        image: mysql:5.7
+        imagePullPolicy: IfNotPresent
+        ports:
+        - containerPort: 3306
+        env:
+        - name: MYSQL_ROOT_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: rails-secret
+              key: db_pass

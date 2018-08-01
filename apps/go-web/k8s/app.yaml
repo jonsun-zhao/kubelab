@@ -76,6 +76,10 @@ spec:
           successThreshold: 1
           failureThreshold: 5
       # [START app_container]
+      initContainers:
+      - name: wait-for-db
+        image: busybox
+        command: ['sh', '-c', 'until nc -z mongodb-svc 27017; do sleep 2; done']
 
 ---
 apiVersion: v1
