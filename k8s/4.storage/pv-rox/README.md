@@ -22,13 +22,25 @@ mkfs.ext4 /dev/sdb
 echo "Hello from PD!\n";
 ```
 
-## Setup
+## Usage
+
+```sh
+cd /path/to/repo/k8s/4.storage/pv-rox
+```
+
+* dry-run
+
+```sh
+kustomize build .
+```
+
+* deploy
 
 ```sh
 kustomize build . | kubectl apply -f -
 ```
 
-## Teardown
+* teardown
 
 ```sh
 kustomize build . | kubectl delete -f -
