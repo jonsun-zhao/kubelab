@@ -11,7 +11,8 @@ spec:
       protocol: TCP
       port: 80
       targetPort: 3000
-  type: NodePort
+  type: LoadBalancer
+  # type: NodePort
 
 ---
 kind: Deployment
@@ -34,6 +35,9 @@ spec:
       # [START app_container]
       - name: rails
         image: gcr.io/nmiu-play/rails
+        env:
+        - name: SECRET_KEY_BASE
+          value: 9726ef6a9a99fa4c024745f236cb3aa6b055789b297a781b0af06b005d408b94e1c0638c154e420ab0af7830dd489227889781e3b2a663f5f50570b532fc5559
         ports:
         - name: http
           containerPort: 3000
