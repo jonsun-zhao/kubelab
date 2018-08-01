@@ -6,21 +6,32 @@ Each directory contains a k8s example, some of them are powered by [kustomize](h
 
 * [Install kustomize](https://github.com/kubernetes-sigs/kustomize/blob/master/INSTALL.md)
 * (optional) [Install golang](https://golang.org/doc/install)
+* Clone this repository onto your workstation
 
 ## How to run the example
 
-* complex examples have `README.md`, details can be found in there
-* simple doesn't need `README.md`, just use the following commands to deploy/teardown objects
+* complex examples have `README.md`, details can be found there
+* simple examples doesn't need `README.md`, just use the following commands to deploy/teardown objects
+
+### Sample Usage
 
 ```sh
+# cd into the k8s directory
+cd /path/to/repo/k8s
+
+# dry run
+kustomize build 1.ingress/svc-cluster
+
 # deploy
-kustomize build <EXAMPLE> | kubectl apply -f -
+kustomize build 1.ingress/svc-cluster | kubectl apply -f -
 
 # teardown
-kustomize build <EXAMPLE> | kubectl delete -f -
+kustomize build 1.ingress/svc-cluster | kubectl delete -f -
 ```
 
-## How to customize the examples
+---
+
+## How to extend the examples
 
 I.E. I want to make the following changes to the `1.ingress/svc-cluster` example
 

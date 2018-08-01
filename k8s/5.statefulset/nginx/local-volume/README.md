@@ -1,8 +1,8 @@
-# Local Volume
+# Nginx StatefulSet with Local-Volume
 
 ## Prerequisites
 
-### Create a GKE cluster with local-SSD
+### Create a GKE cluster with local-SSD attached
 
 ```sh
 gcloud beta container clusters create asuka \
@@ -25,8 +25,7 @@ gcloud beta container clusters create asuka \
 kubectl create clusterrolebinding cluster-admin-binding --clusterrole=cluster-admin --user=$(gcloud config get-value core/account)
 ```
 
-
-## Deploy `local-volume-provisioner`
+## Deploy the `local-volume-provisioner`
 
 ```sh
 kubectl apply -f local-volume-provisioner.yaml

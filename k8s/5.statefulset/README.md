@@ -1,6 +1,9 @@
 # StatefulSet
 
-> StatefulSet examples
+## [nginx](nginx)
 
-* [nginx](nginx)
-* [zookeeper](zookeeper)
+Demonstrate how to spin up a nginx statefulset
+
+## [zookeeper](zookeeper)
+
+Demonstrate how to spin up a zookeeper statefulset

@@ -1,0 +1,41 @@
+---
+kind: Service
+apiVersion: v1
+metadata:
+  name: rails-svc
+spec:
+  selector:
+    app: rails
+  ports:
+    - name: http
+      protocol: TCP
+      port: 80
+      targetPort: 3000
+  type: NodePort
+
+---
+kind: Deployment
+apiVersion: extensions/v1beta1
+metadata:
+  name: rails-dep
+  labels:
+    deployment: rails
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: rails
+  template:
+    metadata:
+      labels:
+        app: rails
+    spec:
+      containers:
+      # [START app_container]
+      - name: rails
+        image: gcr.io/nmiu-play/rails
+        ports:
+        - name: http
+          containerPort: 3000
+          protocol: TCP
+      # [END app_container]

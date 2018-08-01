@@ -1,16 +1,24 @@
 # Nginx Ingress Controller
 
-## Prerequisites
+This example demonstrate how nginx-ingress-controller works.
 
-### Bind the current user to `cluster-admin` role
+## Usage
 
-> Otherwise `kubectl apply -f nginx-ingress-controller.yaml` will complain about unable to create cluster roles and bindings
+```sh
+cd /path/to/repo/k8s/2.nginx-ingress
+```
+
+### Create the nginx-ingress-controller
+
+* Bind the current user to `cluster-admin` role
+
+_Otherwise `kubectl apply -f nginx-ingress-controller.yaml` will complain about unable to create cluster roles and bindings_
 
 ```sh
 kubectl create clusterrolebinding cluster-admin-binding --clusterrole=cluster-admin --user=$(gcloud config get-value core/account)
 ```
 
-### Create a static IP
+* Reserve a static IP
 
 ```sh
 gcloud compute addresses create nginx-ingress-lb --region us-central1
@@ -20,7 +28,7 @@ gcloud compute addresses list | grep nginx-ingress-lb
 nginx-ingress-lb                  us-central1  35.224.151.150  RESERVED
 ```
 
-## Deploy
+* Deploy the YAML
 
 _Use the reserved IP as `loadBalancerIP` for the `nginx-ingress-lb` service in `nginx-ingress-controller.yaml`_
 
@@ -28,21 +36,13 @@ _Use the reserved IP as `loadBalancerIP` for the `nginx-ingress-lb` service in `
 sed "s/RESERVED_IP/35.224.151.150/" nginx-ingress-controller.yaml | kubectl apply -f -
 ```
 
-## Teardown
+### Create a ingress uses the nginx-ingress-controller
 
-```sh
-kubectl delete -f nginx-ingress-controller.yaml
-```
-
-# Using Nginx Ingress Controller
-
-## Setup
+* Deploy a `php-apache` app with ingress
 
 ```sh
 kustomize build . | kubectl apply -f -
 ```
-
-## Test
 
 * Observe the logs from the NIC pods
 
@@ -75,7 +75,7 @@ I0725 13:37:08.267706       5 event.go:221] Event(v1.ObjectReference{Kind:"Ingre
 I0725 13:37:08.407333       5 controller.go:185] Backend successfully reloaded.
 ```
 
-* Test the rule via curl
+* curl test
 
 ```sh
 curl -v http://35.224.151.150/test -H "Host: example.com"
@@ -99,7 +99,7 @@ curl -v http://35.224.151.150/test -H "Host: example.com"
 host => nic-dep-58bc5f5b77-4shnj%
 ```
 
-* Observe the access log
+* Observe the access log from the `nginx-ingress-controller-xxx-xxx` pods
 
 ```sh
 124.149.190.141 - [124.149.190.141] - - [25/Jul/2018:13:37:34 +0000] "GET /test HTTP/1.1" 200 32 "-" "curl/7.60.0" 79 0.030 [default-nic-svc-80] 10.44.17.37:80 32 0.030 200 56b3bf5ecdca5b786377fd1e2df86950
@@ -107,6 +107,14 @@ host => nic-dep-58bc5f5b77-4shnj%
 
 ## Teardown
 
+* teardown the app
+
 ```sh
 kustomize build . | kubectl delete -f -
+```
+
+* teardown the nginx-ingress-controller
+
+```sh
+kubectl delete -f nginx-ingress-controller.yaml
 ```

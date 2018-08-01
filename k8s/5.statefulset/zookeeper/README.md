@@ -1,8 +1,6 @@
-# Statefulset
+# Zookeeper StatefulSet
 
-## Zookeeper
-
-### Setup
+## Setup
 
 ```sh
 kubectl apply -f zookeeper.yaml
@@ -17,7 +15,7 @@ poddisruptionbudget "zk-pdb" created
 statefulset "zk" created
 ```
 
-### Inspection
+## Inspection
 
 * View the pods created
 
@@ -77,7 +75,7 @@ server.2=zk-1.zk-hs.default.svc.cluster.local:2888:3888
 server.3=zk-2.zk-hs.default.svc.cluster.local:2888:3888
 ```
 
-### Test the Ensemble
+## Test the Ensemble
 
 * Write data to `zk-0`
 
@@ -116,7 +114,7 @@ world
 ...
 ```
 
-### Test the Durable Storage
+## Test the Durable Storage
 
 * Delete the statefulset
 
@@ -154,7 +152,7 @@ WatchedEvent state:SyncConnected type:None path:null
 world
 ```
 
-### Teardown
+## Teardown
 
 ```sh
 kubectl delete -f zookeeper.yaml

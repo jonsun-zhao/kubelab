@@ -1,4 +1,4 @@
-# StatefulSet
+# Nginx StatefulSet
 
 ## Deploy
 
@@ -53,8 +53,6 @@ web-0
 ```
 
 ## Teardown
-
-### Delete the stateful app
 
 ```sh
 kubectl delete -f nginx.yaml

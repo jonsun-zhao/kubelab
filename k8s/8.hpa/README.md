@@ -2,13 +2,25 @@
 
 Reusing the `go-web` example created in [1.ingress/svc-cluster](../1.ingress/svc-cluster)
 
-## Deploy
+## Usage
+
+```sh
+cd /path/to/repo/k8s/8.hpa
+```
+
+* dry-run
+
+```sh
+kustomize build .
+```
+
+* deploy
 
 ```sh
 kustomize build . | kubectl apply -f -
 ```
 
-## Teardown
+* teardown
 
 ```sh
 kustomize build . | kubectl delete -f -

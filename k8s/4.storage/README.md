@@ -1,8 +1,17 @@
 # Storage
 
-> Examples related to k8s storages
+## [pvc/pv - ReadOnlyMany](pv-rox)
 
-* [pvc/pv - ReadOnlyMany](pv-rox)
-* [pvc/pv - ReadWriteOnce](pv-rwo)
-* [gce-pd](gce-pd)
-* [local-volume](../5.statefulset/nginx/local-volume)
+Demonstrate multiple pods can mount the same PV in ReadOnlyMany mode
+
+## [pvc/pv - ReadWriteOnce](pv-rwo)
+
+Demonstrate only one pod can mount PV in ReadWriteOnce mode
+
+## [gce-pd](gce-pd)
+
+Demonstrate how pod can mount GCE-PD directly
+
+## [local-volume](../5.statefulset/nginx/local-volume)
+
+Demonstrate how local-volume is created and used
