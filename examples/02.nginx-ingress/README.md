@@ -114,3 +114,9 @@ kustomize build . | kubectl delete -f -
 ```sh
 kubectl delete -f nginx-ingress-controller.yaml
 ```
+
+* delete the reserved IP
+
+```sh
+gcloud compute addresses delete nginx-ingress-lb --region us-central1
+```
