@@ -32,7 +32,7 @@ _Use the reserved IP as `loadBalancerIP` for the `nginx-ingress-lb` service in `
 sed "s/RESERVED_IP/35.224.151.150/" nginx-ingress-controller.yaml | kubectl apply -f -
 ```
 
-### Create a ingress uses the nginx-ingress-controller
+### Using the nginx-ingress-controller
 
 * Deploy a `php-apache` app with ingress
 
