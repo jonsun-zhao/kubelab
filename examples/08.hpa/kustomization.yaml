@@ -1,5 +1,5 @@
 bases:
-- ../1.ingress/svc-cluster/
+- ../01.ingress/svc-cluster/
 resources:
 - hpa.yaml
 commonLabels:

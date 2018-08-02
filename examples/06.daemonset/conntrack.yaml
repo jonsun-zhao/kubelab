@@ -1,0 +1,25 @@
+apiVersion: extensions/v1beta1
+kind: DaemonSet
+metadata:
+  name: conntrack
+spec:
+  template:
+    metadata:
+      labels:
+        daemon: conntrack
+    spec:
+      containers:
+      - image: alpine:3.4
+        name: alpine
+        command:
+        - '/bin/sh'
+        - '-c'
+        - >
+          while true; do
+            echo 2097152 > /proc/sys/net/netfilter/nf_conntrack_max
+            echo 524288 > /sys/module/nf_conntrack/parameters/hashsize
+            sleep 30
+          done;
+        imagePullPolicy: IfNotPresent
+        securityContext:
+          privileged: true

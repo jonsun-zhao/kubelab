@@ -6,6 +6,8 @@ spec:
   template:
     metadata:
       name: pi
+      labels:
+        job: pi
     spec:
       containers:
       - name: pi

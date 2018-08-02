@@ -1,11 +1,11 @@
 # HPA
 
-Reusing the `go-web` example created in [1.ingress/svc-cluster](../1.ingress/svc-cluster)
+Reusing the `go-web` example created in [01.ingress/svc-cluster](../01.ingress/svc-cluster)
 
 ## Usage
 
 ```sh
-cd /path/to/repo/k8s/8.hpa
+cd 8.hpa
 ```
 
 * dry-run

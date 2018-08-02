@@ -1,12 +1,11 @@
 # Service
 
-## [clusterip](clusterip)
+## Examples
 
-* Service with type `ClusterIP`
-
-## [internal-lb](internal-lb)
-
-* Service with GCP Internal Loadbalancer
+* [clusterip](clusterip)
+  * Service with type `ClusterIP`
+* [internal-lb](internal-lb)
+  * Service with GCP Internal Loadbalancer
 
 ## Usage
 

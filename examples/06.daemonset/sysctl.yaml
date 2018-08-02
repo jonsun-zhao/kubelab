@@ -1,0 +1,34 @@
+apiVersion: extensions/v1beta1
+kind: DaemonSet
+metadata:
+  name: sysctl
+spec:
+  updateStrategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxUnavailable: 1
+  template:
+    metadata:
+      labels:
+        daemon: sysctl
+    spec:
+      # https://kubernetes.io/docs/concepts/policy/pod-security-policy/#host-namespaces
+      hostNetwork: true # needed for setting net.xxx stuff
+      hostIPC: true # need for setting kernel.shmni which is namespaced
+      containers:
+      - image: alpine:3.4
+        name: alpine
+        command:
+        - '/bin/sh'
+        - '-c'
+        - >
+          while true; do
+            echo never > /sys/kernel/mm/transparent_hugepage/enabled;
+            sysctl -w net.core.somaxconn=600;
+            sysctl -w kernel.shmmni=8192;
+            sleep 10;
+          done;
+        imagePullPolicy: IfNotPresent
+        securityContext:
+          privileged: true
+          capabilities: {}
