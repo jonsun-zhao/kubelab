@@ -10,7 +10,7 @@
 ## Usage
 
 ```sh
-cd /path/to/repo/k8s/3.service/clusterip # or internal-lb
+cd clusterip # or internal-lb
 ```
 
 * dry-run

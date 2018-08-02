@@ -4,10 +4,6 @@ This example demonstrate how nginx-ingress-controller works.
 
 ## Usage
 
-```sh
-cd /path/to/repo/k8s/2.nginx-ingress
-```
-
 ### Create the nginx-ingress-controller
 
 * Bind the current user to `cluster-admin` role

@@ -24,13 +24,21 @@ mkfs.ext4 /dev/sdb
 echo "Hello from PD!\n";
 ```
 
-## Setup
+## Usage
+
+* dry-run
+
+```sh
+kustomize build .
+```
+
+* deploy
 
 ```sh
 kustomize build . | kubectl apply -f -
 ```
 
-## Teardown
+* teardown
 
 ```sh
 kustomize build . | kubectl delete -f -

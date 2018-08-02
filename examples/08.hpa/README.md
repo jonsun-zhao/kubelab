@@ -4,10 +4,6 @@ Reusing the `go-web` example created in [01.ingress/svc-cluster](../01.ingress/s
 
 ## Usage
 
-```sh
-cd 8.hpa
-```
-
 * dry-run
 
 ```sh

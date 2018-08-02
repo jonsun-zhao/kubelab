@@ -9,17 +9,13 @@
 
 ## Usage
 
-```sh
-cd 10.daemonset
-```
-
-* Deploy
+* deploy
 
 ```sh
 kubectl apply -f xxx.yaml
 ```
 
-* Teardown
+* teardown
 
 ```sh
 kubectl delete -f xxx.yaml

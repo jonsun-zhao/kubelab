@@ -24,10 +24,6 @@ echo "Hello from PD!\n";
 
 ## Usage
 
-```sh
-cd /path/to/repo/k8s/4.storage/pv-rox
-```
-
 * dry-run
 
 ```sh

@@ -12,7 +12,7 @@
 ## Usage
 
 ```sh
-cd 01.ingress/svc-cluster # or svc-local
+cd svc-cluster # or svc-local
 ```
 
 * dry-run
