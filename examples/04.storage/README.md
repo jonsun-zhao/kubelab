@@ -11,5 +11,5 @@
 * [gce-pd](gce-pd)
   * demonstrate how pod can mount GCE-PD directly
 
-* [local-volume](../5.statefulset/nginx/local-volume)
+* [local-volume](../05.statefulset/nginx/local-volume)
   * demonstrate how local-volume is created and used
