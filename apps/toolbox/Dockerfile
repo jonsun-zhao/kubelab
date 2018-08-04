@@ -5,7 +5,7 @@ ENV PATH /opt/google-cloud-sdk/bin:$PATH
 
 USER root
 
-RUN yum -y install which wget ruby git vim bind-utils
+RUN yum -y install which wget ruby git vim bind-utils net-tools
 
 COPY bin /usr/local/bin/
 COPY src /usr/src

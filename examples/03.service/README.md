@@ -13,7 +13,7 @@
 cd clusterip # or internal-lb
 ```
 
-* dry-run
+* preview
 
 ```sh
 kustomize build .

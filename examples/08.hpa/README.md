@@ -4,7 +4,7 @@ Reusing the `go-web` example created in [01.ingress/svc-cluster](../01.ingress/s
 
 ## Usage
 
-* dry-run
+* preview
 
 ```sh
 kustomize build .

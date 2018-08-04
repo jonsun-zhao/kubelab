@@ -42,7 +42,7 @@ spec:
         imagePullPolicy: Always
         env:
         - name: MONGODB_URL
-          value: mongodb
+          value: mongodb-svc
         resources:
           requests:
             cpu: 100m

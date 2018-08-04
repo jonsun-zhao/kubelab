@@ -26,7 +26,7 @@ echo "Hello from PD!\n";
 
 ## Usage
 
-* dry-run
+* preview
 
 ```sh
 kustomize build .

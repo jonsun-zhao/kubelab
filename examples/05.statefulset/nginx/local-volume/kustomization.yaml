@@ -2,5 +2,3 @@ resources:
 - ../nginx.yaml
 patches:
 - patch.yaml
-commonLabels:
-  example: statefulset-nginx-local-volume

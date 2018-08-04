@@ -15,7 +15,7 @@
 cd svc-cluster # or svc-local
 ```
 
-* dry-run
+* preview
 
 ```sh
 kustomize build .

@@ -2,5 +2,3 @@ bases:
 - ../01.ingress/svc-cluster/
 resources:
 - hpa.yaml
-commonLabels:
-  example: hpa

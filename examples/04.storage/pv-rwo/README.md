@@ -2,7 +2,7 @@
 
 ## Usage
 
-* dry-run
+* preview
 
 ```sh
 kustomize build .

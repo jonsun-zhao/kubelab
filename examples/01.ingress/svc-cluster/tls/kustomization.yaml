@@ -1,6 +1,4 @@
 bases:
 - ../../svc-cluster
-resources:
-- pvc.yaml
 patches:
 - patch.yaml

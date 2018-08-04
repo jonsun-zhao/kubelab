@@ -93,8 +93,8 @@ Options:
 * Update the k8s objects directly via `kubectl`
 
   ```sh
-  kubectl create configmap hey-config --from-literal=requests=200 --from-literal=concurrent_requests=20 -o yaml --dry-run | kubectl replace -f -
-  kubectl create secret generic hey-secret --from-literal=url=http://www.redhat.com -o yaml --dry-run | kubectl replace -f -
+  kubectl create configmap hey-config --from-literal=requests=200 --from-literal=concurrent_requests=20 -o yaml --preview | kubectl replace -f -
+  kubectl create secret generic hey-secret --from-literal=url=http://www.redhat.com -o yaml --preview | kubectl replace -f -
   ```
 
 ## Teardown

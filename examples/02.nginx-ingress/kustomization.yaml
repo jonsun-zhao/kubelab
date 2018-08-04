@@ -2,5 +2,3 @@ bases:
 - ../../apps/php-apache/k8s
 resources:
 - ingress.yaml
-commonLabels:
-  example: nginx-ingress

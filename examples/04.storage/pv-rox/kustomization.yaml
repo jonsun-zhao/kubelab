@@ -5,5 +5,3 @@ resources:
 - storage.yaml
 patches:
 - patch.yaml
-commonLabels:
-  example: storage-pv-rox
