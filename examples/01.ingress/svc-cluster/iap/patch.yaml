@@ -1,0 +1,43 @@
+---
+kind: Service
+apiVersion: v1
+metadata:
+  name: go-web-svc
+  annotations:
+    beta.cloud.google.com/backend-config:
+      '{"ports": {"http":"backend-config-http"}}'
+      # '{"ports": {"http":"config-http", "http2" :"config-http2"}, "default": "config-default"}'
+spec:
+  ports:
+  - name: http
+    protocol: TCP
+    port: 8000
+    targetPort: 8000
+  - name: https
+    protocol: TCP
+    port: 10443
+    targetPort: 10443
+
+---
+apiVersion: extensions/v1beta1
+kind: Ingress
+metadata:
+  name: go-web-ing
+  annotations:
+    kubernetes.io/ingress.global-static-ip-name: "asuka"
+    kubernetes.io/ingress.class: gce
+spec:
+  backend:
+  tls:
+  - hosts:
+    - asuka.premium-cloud-support.com
+    secretName: go-web-tls
+  rules:
+  - host: asuka.premium-cloud-support.com
+    http:
+      paths:
+      - backend:
+          serviceName: go-web-svc
+          servicePort: 8000
+        path: /*
+

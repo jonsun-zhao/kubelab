@@ -1,0 +1,6 @@
+bases:
+- ../../svc-cluster
+resources:
+- backend-config.yaml
+patches:
+- patch.yaml
