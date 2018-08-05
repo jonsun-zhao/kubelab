@@ -4,7 +4,9 @@ Assigning a TLS to the ingress which subsequently creates a HTTPS LoadBalaner on
 
 ## Prerequisites
 
-* Create the SSL key and cert
+* A static IP reserved in GCP (i.e. `asuka`)
+* A FQDN points to the static IP  (i.e. `asuka.premium-cloud-support.com`)
+* A SSL key/cert pair for the FQDN
 
 ```sh
 openssl req -x509 -newkey rsa:2048 \

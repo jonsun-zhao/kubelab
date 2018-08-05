@@ -7,5 +7,16 @@ metadata:
     kubernetes.io/ingress.global-static-ip-name: "asuka"
     kubernetes.io/ingress.class: gce
 spec:
+  backend:
   tls:
-  - secretName: go-web-tls
+  - hosts:
+    - asuka.premium-cloud-support.com
+    secretName: go-web-tls
+  rules:
+  - host: asuka.premium-cloud-support.com
+    http:
+      paths:
+      - backend:
+          serviceName: go-web-svc
+          servicePort: 8000
+        path: /*
