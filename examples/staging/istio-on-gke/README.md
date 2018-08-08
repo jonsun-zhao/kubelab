@@ -95,7 +95,7 @@ curl -L https://git.io/getLatestIstio | sh -
 * Next, change into the directory that just got created 
 
 ```sh
-cd istio-0.8.0
+cd istio-1.0.0
 ```
 
 * Add the istioctl client to your PATH
@@ -105,6 +105,8 @@ export PATH=$PATH:$PWD/bin
 ```
 
 * Deploy the Bookinfo sample application to your cluster.
+  * The examples can be found in the uncompressed `istio-1.0.0` directory
+  * Or you can get it from [GitHub](https://github.com/istio/istio)
 
 ```sh
 kubectl apply -f samples/bookinfo/platform/kube/bookinfo.yaml
@@ -121,6 +123,35 @@ istioctl create -f samples/bookinfo/networking/bookinfo-gateway.yaml
 ```sh
 kubectl get pods
 ```
+
+* Inspected the auto-injected sidecars from a pod
+
+```sh
+kubectl get pods productpage-v1-f8c8fb8-fjb6f -o yaml | grep image
+    sidecar.istio.io/status: '{"version":"51906d82df1d11efdee0076b5f1ae634793093e5075eb5ab2479a638dbb202ff","initContainers":["istio-init"],"containers":["istio-proxy"],"volumes":["istio-envoy","istio-certs"],"imagePullSecrets":null}'
+  - image: istio/examples-bookinfo-productpage-v1:1.8.0
+    imagePullPolicy: IfNotPresent
+    image: gcr.io/gke-release/istio/proxyv2:0.8.0-gke.1
+    imagePullPolicy: IfNotPresent
+    image: gcr.io/gke-release/istio/proxy_init:0.8.0-gke.1
+    imagePullPolicy: IfNotPresent
+    image: gcr.io/gke-release/istio/proxyv2:0.8.0-gke.1
+    imageID: docker-pullable://gcr.io/gke-release/istio/proxyv2@sha256:93bf83eef6ce267fd091f61183d4432dfb93c2981d2fa1a856d8f616df0f6378
+    image: istio/examples-bookinfo-productpage-v1:1.8.0
+    imageID: docker-pullable://istio/examples-bookinfo-productpage-v1@sha256:ed65a39f8b3ec5a7c7973c8e0861b89465998a0617bc0d0c76ce0a97080694a9
+    image: gcr.io/gke-release/istio/proxy_init:0.8.0-gke.1
+    imageID: docker-pullable://gcr.io/gke-release/istio/proxy_init@sha256:ed2b18249fc7cc3fb10f73a29b4b6121bd193b8213460da3658e6d1f51b877ef
+```
+
+* (optional) Disable auto-injection for a namespace
+
+i.e. You want to spin up some util pods that doesn't want to use istio
+
+```sh
+Kustomize build . | kubectl apply -f -
+```
+
+* More complex [examples](https://istio.io/docs/examples/)
 
 ## Clean up
 

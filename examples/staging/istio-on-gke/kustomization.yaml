@@ -1,0 +1,6 @@
+bases:
+- ../../../apps/toolbox/k8s
+resources:
+- namespace.yaml
+patches:
+- patch.yaml

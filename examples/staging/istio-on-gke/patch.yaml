@@ -1,0 +1,11 @@
+---
+apiVersion: v1
+kind: Pod
+metadata:
+  name: toolbox
+  namespace: utils
+spec:
+  containers:
+    # [START app_container]
+    - name: toolbox
+    # [END app_container]
