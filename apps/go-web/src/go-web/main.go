@@ -1,6 +1,7 @@
 package main
 
 import (
+	"flag"
 	"fmt"
 	"go-web/dns"
 	"go-web/kubedump"
@@ -20,8 +21,13 @@ import (
 func Index(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusOK)
 	host, _ := os.Hostname()
+	version := "1.0.0"
+	if fromEnv := os.Getenv("VERSION"); fromEnv != "" {
+		version = fromEnv
+	}
+
 	fmt.Fprintf(w, "Hello, world!\n")
-	fmt.Fprintf(w, "Version: 1.0.0\n")
+	fmt.Fprintf(w, "Version: %s\n", version)
 	fmt.Fprintf(w, "Hostname: %s\n", host)
 }
 
@@ -69,6 +75,11 @@ func Run(router *mux.Router, addr string, sslAddr string, sslCert string, sslKey
 
 // main function to boot up everything
 func main() {
+	// set backend if the flag is set
+	backend := flag.String("backend", "", "Specify a backend url to ping")
+	flag.Parse()
+
+	// set port and sslPort they are specified via env
 	port := "8000"
 	if fromEnv := os.Getenv("PORT"); fromEnv != "" {
 		port = fromEnv
@@ -79,6 +90,7 @@ func main() {
 		sslPort = fromEnv
 	}
 
+	// set mongodb connection string if specified via env
 	mongoDbURL := os.Getenv("MONGODB_URL")
 
 	router := mux.NewRouter()
@@ -115,6 +127,9 @@ func main() {
 	router.HandleFunc("/health", probes.Health).Methods("GET")
 	router.HandleFunc("/liveness", probes.Liveness).Methods("GET")
 	router.HandleFunc("/readiness", probes.Readiness).Methods("GET")
+	router.HandleFunc("/ping", func(w http.ResponseWriter, r *http.Request) {
+		probes.Ping(w, r, backend)
+	}).Methods("GET")
 
 	// kubedump
 	router.HandleFunc("/kubedump/", kubedump.GetAll).Methods("GET")

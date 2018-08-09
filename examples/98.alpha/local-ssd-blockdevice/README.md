@@ -1,9 +1,8 @@
-# Local SSD Alpha
+# Local SSD (Alpha)
 
 ## Prerequisites
 
 > this alpha feature can only be used via service account
-
 
 ```sh
 PROJECT_ID=nmiu-play
