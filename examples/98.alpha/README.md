@@ -2,5 +2,5 @@
 
 Alpha features in the directory will be moved once they are graduated to beta
 
-* [istio-on-gke](isotio-on-gke)
+* [istio-on-gke](istio-on-gke)
 * [local-ssd as block device](local-ssd-blockdevice)

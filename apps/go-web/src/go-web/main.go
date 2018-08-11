@@ -10,6 +10,7 @@ import (
 	"go-web/stress"
 	"log"
 	"net/http"
+	"net/http/httputil"
 	"os"
 
 	"github.com/gorilla/handlers"
@@ -29,6 +30,14 @@ func Index(w http.ResponseWriter, r *http.Request) {
 	fmt.Fprintf(w, "Hello, world!\n")
 	fmt.Fprintf(w, "Version: %s\n", version)
 	fmt.Fprintf(w, "Hostname: %s\n", host)
+
+	requestDump, err := httputil.DumpRequest(r, true)
+	if err != nil {
+		fmt.Fprint(w, err.Error())
+	} else {
+		fmt.Fprintf(w, "\n== Header ==\n")
+		fmt.Fprint(w, string(requestDump))
+	}
 }
 
 // NotFound 404 handler

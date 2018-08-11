@@ -32,7 +32,7 @@ spec:
       containers:
       # [START app_container]
       - name: frontend
-        image: gcr.io/nmiu-play/go-web
+        image: gcr.io/nmiu-play/go-web:latest
         imagePullPolicy: Always
         args: ["-backend", "backend:8000"]
         ports:
@@ -42,6 +42,13 @@ spec:
         - name: https
           containerPort: 10443
           protocol: TCP
+        resources:
+          limits:
+            cpu: 500m
+            memory: 500Mi
+          requests:
+            cpu: 100m
+            memory: 100Mi
         livenessProbe:
           # httpGet:
           #   path: /liveness
@@ -106,7 +113,7 @@ spec:
       containers:
       # [START app_container]
       - name: backend
-        image: gcr.io/nmiu-play/go-web
+        image: gcr.io/nmiu-play/go-web:latest
         imagePullPolicy: Always
         env:
         - name: VERSION
@@ -156,7 +163,7 @@ spec:
       containers:
       # [START app_container]
       - name: backend
-        image: gcr.io/nmiu-play/go-web
+        image: gcr.io/nmiu-play/go-web:latest
         imagePullPolicy: Always
         env:
         - name: MONGODB_URL
@@ -212,14 +219,13 @@ spec:
 apiVersion: extensions/v1beta1
 kind: Deployment
 metadata:
-  name: mongodb-v2
+  name: mongodb
 spec:
   replicas: 1
   template:
     metadata:
       labels:
         app: mongodb
-        version: v2
     spec:
       containers:
       - name: mongodb 
@@ -227,3 +233,25 @@ spec:
         imagePullPolicy: IfNotPresent
         ports:
         - containerPort: 27017
+
+---
+apiVersion: autoscaling/v2beta1
+kind: HorizontalPodAutoscaler
+metadata:
+  name: frontend-hpa
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: frontend
+  minReplicas: 1
+  maxReplicas: 3
+  metrics:
+  - type: Resource
+    resource:
+      name: memory
+      targetAverageUtilization: 50
+  - type: Resource
+    resource:
+      name: cpu
+      targetAverageUtilization: 50

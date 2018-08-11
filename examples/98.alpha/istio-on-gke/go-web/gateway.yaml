@@ -29,9 +29,9 @@ spec:
     - uri:
         exact: /ping
     - uri:
-        exact: /people
+        prefix: /people
     - uri:
-        prefix: /people/2
+        prefix: /stress
     route:
     - destination:
         host: frontend

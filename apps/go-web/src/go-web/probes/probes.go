@@ -29,16 +29,25 @@ func Ping(w http.ResponseWriter, r *http.Request, beUrl *string) {
 		return
 	}
 
-	response, err := http.Get("http://" + *beUrl)
+	url := "http://" + *beUrl
+	fmt.Fprintf(w, "Reaching backend: %s\n\n", url)
+
+	c := &http.Client{}
+	req, err := http.NewRequest("GET", url, nil)
+	foo := r.Header.Get("foo")
+	if foo != "" {
+		req.Header.Add("foo", foo)
+	}
+
+	resp, err := c.Do(req)
 	if err != nil {
 		log.Printf("The HTTP request failed with error %s\n", err)
+		fmt.Fprintf(w, "== Error ==\n%s\n", err.Error())
+		return
 	}
-	defer response.Body.Close()
+	defer resp.Body.Close()
 
-	if response.StatusCode >= 500 {
-		http.Error(w, err.Error(), http.StatusBadRequest)
-	}
-
-	data, _ := ioutil.ReadAll(response.Body)
-	fmt.Fprintf(w, string(data))
+	data, _ := ioutil.ReadAll(resp.Body)
+	fmt.Fprintf(w, "== Result ==\n")
+	fmt.Fprintf(w, "%s\n", string(data))
 }

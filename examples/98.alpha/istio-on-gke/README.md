@@ -197,7 +197,7 @@ gcloud alpha container clusters create asuka \
   * [TLS Origination for Egress Traffic](https://istio.io/docs/examples/advanced-egress/egress-tls-origination/)
   * [Configure an Egress Gateway](https://istio.io/docs/examples/advanced-egress/egress-gateway/)
 
-## Clean up
+## Teardown
 
 * Delete the sample application ([how to](https://istio.io/docs/examples/bookinfo/#uninstall-from-kubernetes-environment))
 * Delete the `istio-ingressgateway` ingress service
