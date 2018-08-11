@@ -2,22 +2,29 @@
 
 ## Build the image
 
-```sh
-make build
-```
+* build with Cloud Builder
 
-## Run the app
+  ```sh
+  make build
+  ```
+
+* build locally
+
+  ```sh
+  make build-local
+  ```
+
+## Run the app locally
 
 ```sh
-PROJECT_ID=`gcloud config get-value project`
-gcloud docker -- run -d -p 8000:8000 --name my-go-web gcr.io/$PROJECT_ID/go-web
+docker run -d -p 8000:8000 -p 10443:10443 --name my-go-web go-web:local
 ```
 
 ## Clean up
 
 ```sh
 docker stop my-go-web && docker rm my-go-web
-docker rmi gcr.io/$PROJECT_ID/go-web
+docker rmi go-web:local
 ```
 
 ## Rest APIs
@@ -27,6 +34,7 @@ docker rmi gcr.io/$PROJECT_ID/go-web
 * `GET /health`
 * `GET /liveness`
 * `GET /readiness`
+* `GET /ping`
 
 * `/stress`
   * `GET /stress/cpu`
