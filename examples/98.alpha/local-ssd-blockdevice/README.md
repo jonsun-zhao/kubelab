@@ -32,14 +32,14 @@ gcloud auth activate-service-account ${SA}@${PROJECT_ID}.iam.gserviceaccount.com
 ### Force gcloud to use the alpha api for container
 
 ```sh
-export CLOUDSDK_CONTAINER_USE_V1_API_CLIENT=false
+gcloud config set container/use_v1_api false
 ```
 
-or
-
-```sh
-gcloud config set container/use_v1_api_client false
-```
+> Note: If you have the updated version, the previous command results in an error:
+> ```sh
+> ERROR: (gcloud.config.set) Section [container] has no property [use_v1_api].
+> ```
+> You can safely ignore it.
 
 ### Check if alpha api is woriing
 
@@ -48,7 +48,6 @@ gcloud alpha container clusters list --log-http
 ```
 
 * [reference](https://cloud.google.com/kubernetes-engine/docs/reference/api-organization#beta)
-
 
 ## Setup
 
@@ -63,11 +62,6 @@ gcloud alpha container clusters create asuka \
 --local-ssd-volumes count=1,type=scsi,format=block \
 --preemptible \
 --scopes default,cloud-platform,cloud-source-repos,service-control
-```
-
-_unset use_v1_api_client_ 
-```sh
-gcloud config unset container/use_v1_api_client
 ```
 
 ## Clean up

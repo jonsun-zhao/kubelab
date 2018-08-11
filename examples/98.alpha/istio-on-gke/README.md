@@ -91,7 +91,7 @@ gcloud alpha container clusters create asuka \
   curl -L https://git.io/getLatestIstio | sh -
   ```
 
-* Next, change into the directory that just got created 
+* Next, change into the directory that just got created
 
   ```sh
   cd istio-1.0.0
