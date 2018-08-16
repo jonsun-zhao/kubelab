@@ -14,7 +14,7 @@ gcloud beta container clusters create asuka \
 --machine-type=n1-standard-2 \
 --num-nodes=3 \
 --image-type=COS \
---cluster-version=1.10.5-gke.3 \
+--cluster-version=1.10.5-gke.4 \
 --tags=ssh \
 --preemptible \
 --enable-stackdriver-kubernetes \

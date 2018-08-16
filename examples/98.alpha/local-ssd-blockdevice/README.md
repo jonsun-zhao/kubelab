@@ -56,7 +56,7 @@ gcloud alpha container clusters create asuka \
 --machine-type=n1-standard-1 \
 --num-nodes=2 \
 --image-type=COS \
---cluster-version=1.10.5-gke.2 \
+--cluster-version=1.10.5-gke.4 \
 --tags=ssh \
 --enable-kubernetes-alpha \
 --local-ssd-volumes count=1,type=scsi,format=block \

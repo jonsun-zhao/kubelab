@@ -54,7 +54,7 @@ NGINX Ingress controller
 nginx version: nginx/1.13.12
 W0725 13:15:30.528484       5 client_config.go:552] Neither --kubeconfig nor --master was specified.  Using the inClusterConfig.  This might not work.
 I0725 13:15:30.528824       5 main.go:191] Creating API client for https://10.47.240.1:443
-I0725 13:15:30.543131       5 main.go:235] Running in Kubernetes cluster version v1.10+ (v1.10.5-gke.2) - git (clean) commit f199298d18103a59db32d97a92072fbb17b1175a - platform linux/amd64
+I0725 13:15:30.543131       5 main.go:235] Running in Kubernetes cluster version v1.10+ (v1.10.5-gke.4) - git (clean) commit f199298d18103a59db32d97a92072fbb17b1175a - platform linux/amd64
 I0725 13:15:30.545950       5 main.go:100] Validated kube-system/default-http-backend as the default backend.
 I0725 13:15:31.024509       5 nginx.go:255] Starting NGINX Ingress controller
 I0725 13:15:31.048442       5 event.go:221] Event(v1.ObjectReference{Kind:"ConfigMap", Namespace:"kube-system", Name:"udp-services", UID:"c0eaec96-900c-11e8-bb21-42010a80015f", APIVersion:"v1", ResourceVersion:"956039", FieldPath:""}): type: 'Normal' reason: 'CREATE' ConfigMap kube-system/udp-services
