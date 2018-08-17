@@ -41,3 +41,22 @@ $ curl http://10.128.0.2:31313
 ## Notice
 
 For a **Ingress** targeting such service, the `UHC` probes the backend `k8s-be-xxx` on the application serving `nodePort`, **NOT** the `healthCheckNodePort`.
+
+## Execise
+
+* Extend the example by adding the following `readinessProbe` to the container `php-apache`
+
+  ```sh
+  readinessProbe:
+    httpGet:
+      path: /
+      port: 80
+      scheme: HTTP
+    initialDelaySeconds: 90
+    timeoutSeconds: 5
+    periodSeconds: 5
+    successThreshold: 1
+    failureThreshold: 3
+  ```
+
+* Expose the `php-apache` deployment via Network Load Balancer instead of HTTP Load Balancer
