@@ -1,0 +1,18 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: go-log
+spec:
+  template:
+    metadata:
+      name: go-log
+      labels:
+        job: go-log
+    spec:
+      containers:
+      - name: go-log
+        image: gcr.io/nmiu-play/go-log
+        env:
+        - name: COUNT
+          value: "1000"
+      restartPolicy: Never
