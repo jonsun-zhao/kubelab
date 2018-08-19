@@ -1,6 +1,6 @@
 # TLS
 
-Assigning a TLS to the ingress which subsequently creates a HTTPS LoadBalaner on GCP
+Assigning TLS cert/key pair to the ingress
 
 ## Prerequisites
 
