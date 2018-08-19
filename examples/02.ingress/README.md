@@ -6,7 +6,7 @@ _(from the OSS doc)_
 
 An Ingress is a collection of rules that allow inbound connections to reach the services.
 
-![Ingress Dataplane](doc/ingress.png)
+![Ingress Dataplane](images/ingress.png)
 
 It can be configured to give services externally-reachable URLs, load balance traffic, terminate SSL, offer name based virtual hosting, and more.
 
