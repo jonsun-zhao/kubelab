@@ -1,0 +1,4 @@
+bases:
+- ../../network-lb
+patches:
+- patch.yaml

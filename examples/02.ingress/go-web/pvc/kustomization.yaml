@@ -1,5 +1,5 @@
 bases:
-- ../../svc-cluster
+- ../../go-web
 resources:
 - pvc.yaml
 patches:

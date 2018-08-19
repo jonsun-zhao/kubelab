@@ -1,6 +1,6 @@
 # HPA
 
-Reusing the `go-web` example created in [01.ingress/svc-cluster](../01.ingress/svc-cluster)
+Reusing the `go-web` example created in [01.ingress/go-web](../01.ingress/go-web)
 
 ## Usage
 

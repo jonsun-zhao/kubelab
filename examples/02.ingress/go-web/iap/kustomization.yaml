@@ -1,5 +1,5 @@
 bases:
-- ../../svc-cluster
+- ../../go-web
 resources:
 - backend-config.yaml
 patches:

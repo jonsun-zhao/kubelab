@@ -1,4 +1,4 @@
 bases:
-- ../01.ingress/svc-cluster/
+- ../01.ingress/go-web/
 resources:
 - hpa.yaml

@@ -6,7 +6,6 @@ metadata:
   annotations:
     cloud.google.com/load-balancer-type: internal
 spec:
-  externalTrafficPolicy: Local # todo: need test
   type: LoadBalancer
 
 

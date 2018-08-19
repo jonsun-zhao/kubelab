@@ -1,14 +1,14 @@
 # How to extend examples
 
-i.e. I want to make the following changes to the `01.ingress/svc-cluster` example
+i.e. I want to make the following changes to the `01.ingress/go-web` example
 
 * shrink the deployment's replica to 1
 * attach a PVC to the pod
 
-## Create a new dir in `01.ingress/svc-cluster`
+## Create a new dir in `01.ingress/go-web`
 
 ```sh
-mkdir 01.ingress/svc-cluster/pvc && cd 01.ingress/svc-cluster/pvc
+mkdir 01.ingress/go-web/pvc && cd 01.ingress/go-web/pvc
 ```
 
 ## Create YAMLs
@@ -16,13 +16,13 @@ mkdir 01.ingress/svc-cluster/pvc && cd 01.ingress/svc-cluster/pvc
 * `kustomization.yaml`
 
 > `kustomization.yaml` defines:
-> * the example is based upon `svc-cluster`
+> * the example is based upon `go-web`
 > * a new `pvc.yaml` is added
-> * use `patch.yaml` to modify the existing `go-web-dep` deployment in `svc-cluster`
+> * use `patch.yaml` to modify the existing `go-web-dep` deployment in `go-web`
 
 ```yaml
 bases:
-- ../../svc-cluster
+- ../../go-web
 resources:
 - pvc.yaml
 patches:

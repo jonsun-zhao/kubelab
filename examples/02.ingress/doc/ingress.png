@@ -1,0 +1,12 @@
+--2018-08-19 16:35:09--  https://storage.googleapis.com/gcp-community/tutorials/nginx-ingress-gke/Nginx%20Ingress%20on%20GCP%20-%20Fig%2001.png
+Resolving storage.googleapis.com (storage.googleapis.com)... 172.217.25.16
+Connecting to storage.googleapis.com (storage.googleapis.com)|172.217.25.16|:443... connected.
+HTTP request sent, awaiting response... 200 OK
+Length: 80236 (78K) [image/png]
+Saving to: ‘Nginx Ingress on GCP - Fig 01.png’
+
+     0K .......... .......... .......... .......... .......... 63%  351K 0s
+    50K .......... .......... ........                        100%  649K=0.2s
+
+2018-08-19 16:35:10 (421 KB/s) - ‘Nginx Ingress on GCP - Fig 01.png’ saved [80236/80236]
+
