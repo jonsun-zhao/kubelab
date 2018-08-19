@@ -18,9 +18,9 @@ In GCP, a `Ingress` creates a `HTTP Load Balancer (L7)`, which directs the traff
   * Ingress backed by a `nodePort` service with `externalTrafficPolicy` set to `Cluster`
   * Service is provided by a `go-web` deployment backed by mongodb
     * Variances
-      * [IAP](go-web/iap): enable IAP via Ingress
-      * [PVC](go-web/pvc): use a PVC for stroage
-      * [TLS](go-web/tls): attach TLS to the Ingress
+      * [iap](go-web/iap) - enable IAP via Ingress
+      * [pvc](go-web/pvc) - use a PVC for stroage
+      * [tls](go-web/tls) - attach TLS to the Ingress
 * [php-apache](php-apache)
   * Ingress backed by a `nodePort` service with `externalTrafficPolicy` set to `Local`
   * Service is provide by a `php-apache` deployement
