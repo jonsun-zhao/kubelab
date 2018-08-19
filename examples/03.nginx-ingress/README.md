@@ -4,6 +4,8 @@ Nginx Ingress Controller (NIC) is an alternative to the GCE ingress (which is im
 
 NIC is deployed as a number of Kubernetes `Pods`, which is exposed via a `LoadBalancer` type service. The NIC pods watches the k8s master apiserver's `/ingresses` endpoint for updates to the Ingress resource. In essence, the NIC pods (plus their associated NLB) provides the same functionality as a GCP HTTP Load Balancer.
 
+![NIC Dataplane](images/nic.png)
+
 This example demonstrate how NIC works.
 
 ## Usage
