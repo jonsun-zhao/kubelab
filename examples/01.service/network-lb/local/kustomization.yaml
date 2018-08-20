@@ -2,4 +2,4 @@ bases:
 - ../../network-lb
 patches:
 - patch.yaml
-namePrefix: local-
+# namePrefix: local-
