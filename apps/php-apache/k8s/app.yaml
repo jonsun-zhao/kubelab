@@ -16,7 +16,6 @@ spec:
     port: 443
     targetPort: 443
   type: NodePort
-  externalTrafficPolicy: Cluster
 
 ---
 apiVersion: extensions/v1beta1
