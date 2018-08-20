@@ -16,7 +16,7 @@ spec:
     port: 10443
     targetPort: 10443
   type: NodePort
-  externalTrafficPolicy: Local # Cluster
+  externalTrafficPolicy: Local # or Cluster
 
 ---
 apiVersion: extensions/v1beta1
@@ -48,8 +48,8 @@ spec:
             cpu: 100m
             memory: 100Mi
           limits:
-            cpu: 200m
-            memory: 200Mi
+            cpu: 300m
+            memory: 300Mi
         ports:
         - name: http
           containerPort: 8000
