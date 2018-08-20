@@ -18,6 +18,9 @@ gcloud beta container clusters create asuka \
 --tags=ssh \
 --preemptible \
 --enable-stackdriver-kubernetes \
+--enable-autoscaling \
+--min-nodes=2 \
+--max-nodes=4 \
 --scopes default,cloud-platform,cloud-source-repos,service-control
 ```
 
