@@ -9,7 +9,7 @@ spec:
   ports:
   - port: 80
     name: http
-  type: LoadBalancer
+  clusterIP: None
 
 ---
 apiVersion: apps/v1beta1
