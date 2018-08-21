@@ -5,4 +5,5 @@ metadata:
   name: php-apache-svc
 spec:
   externalTrafficPolicy: Local
+  sessionAffinity: ClientIP
   type: NodePort

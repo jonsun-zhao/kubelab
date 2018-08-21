@@ -4,7 +4,11 @@
 
 * [clusterip](clusterip)
   * Service with type `ClusterIP`
-  * It creates a in-cluster virtual load balancer which directs traffics to the selected `Pods`
+  * It creates a in-cluster virtual load balancer (a.k.a VIP) which directs traffics to the selected `Pods`
+* [headless](headless)
+  * Service with type `ClusterIP` and the `clustlerIP` is set to `None`
+  * It does not create any in-cluster VIP
+  * It creates a DNS `A` record of IPs of **all** the selected Pods
 * [nodeport](nodeport)
   * Service with type `NodePort`
   * It creates a in-cluster virtual load balancer (same as `ClusterIP`)
