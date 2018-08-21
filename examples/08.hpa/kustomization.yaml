@@ -1,4 +1,4 @@
 bases:
-- ../01.ingress/go-web/
+- ../02.ingress/go-web/
 resources:
 - hpa.yaml
