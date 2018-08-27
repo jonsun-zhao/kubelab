@@ -32,11 +32,11 @@ kubectl create secret tls go-web-tls --cert tls.crt --key tls.key
   * set them as env variables
 
 ```sh
-$client_id_key=xxx
-$client_secret_key=yyy
+client_id=xxx
+client_secret=yyy
 
-kubectl create secret generic go-web-iap-secret --from-literal=client_id=$client_id_key \
-    --from-literal=client_secret=$client_secret_key
+kubectl create secret generic go-web-iap-secret --from-literal=client_id=$client_id \
+    --from-literal=client_secret=$client_secret
 ```
 
 * Preview the YAML

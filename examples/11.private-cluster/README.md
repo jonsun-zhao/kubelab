@@ -31,7 +31,7 @@
     --services-secondary-range-name asuka-services \
     --cluster-secondary-range-name asuka-pods \
     --machine-type=n1-standard-2 \
-    --cluster-version=1.10.5-gke.4 \
+    --cluster-version=1.10 \
     --tags=ssh,no-ip \
     --num-nodes=3 \
     --min-nodes=1 \
@@ -63,7 +63,7 @@ gcloud beta container clusters create asuka \
   --master-ipv4-cidr 172.16.0.16/28 \
   --create-subnetwork "" \
   --machine-type=n1-standard-2 \
-  --cluster-version=1.10.5-gke.4 \
+  --cluster-version=1.10 \
   --tags=ssh,no-ip \
   --num-nodes=3 \
   --min-nodes=1 \

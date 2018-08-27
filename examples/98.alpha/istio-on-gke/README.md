@@ -60,7 +60,7 @@ gcloud alpha container clusters create asuka \
 --machine-type=n1-standard-2 \
 --num-nodes=3 \
 --image-type=COS \
---cluster-version=1.10.5-gke.4 \
+--cluster-version=1.10 \
 --tags=ssh \
 --addons=Istio --istio-config=auth=MUTUAL_TLS \
 --preemptible \
@@ -76,7 +76,7 @@ gcloud alpha container clusters create asuka \
 --machine-type=n1-standard-2 \
 --num-nodes=3 \
 --image-type=COS \
---cluster-version=1.10.5-gke.4 \
+--cluster-version=1.10 \
 --tags=ssh \
 --addons=Istio --istio-config=auth=None \
 --preemptible \

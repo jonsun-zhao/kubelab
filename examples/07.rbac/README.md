@@ -9,7 +9,7 @@ gcloud container clusters create asuka \
 --machine-type=n1-standard-1 \
 --num-nodes=2 \
 --image-type=COS \
---cluster-version=1.10.5-gke.4 \
+--cluster-version=1.10 \
 --tags=ssh \
 --preemptible \
 --scopes default,cloud-platform,cloud-source-repos,service-control
