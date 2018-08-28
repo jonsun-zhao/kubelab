@@ -17,7 +17,7 @@ openssl req -x509 -newkey rsa:2048 \
 * Create the sercet
 
 ```sh
-kubectl create secret tls go-web-tls --cert tls.crt --key tls.key
+kubectl create secret tls premium-cloud-support-com-tls --cert tls.crt --key tls.key
 ```
 
 * Deploy
@@ -30,5 +30,5 @@ kustomize build . | kubectl apply -f -
 
 ```sh
 kustomize build . | kubectl delete -f -
-kubectl delete secret go-web-tls
+kubectl delete secret premium-cloud-support-com-tls
 ```

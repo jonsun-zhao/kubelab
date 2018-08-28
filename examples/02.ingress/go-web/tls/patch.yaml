@@ -11,7 +11,7 @@ spec:
   tls:
   - hosts:
     - asuka.premium-cloud-support.com
-    secretName: go-web-tls
+    secretName: premium-cloud-support-com-tls
   rules:
   - host: asuka.premium-cloud-support.com
     http:
