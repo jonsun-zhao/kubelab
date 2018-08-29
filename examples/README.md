@@ -4,7 +4,7 @@ Each directory contains a k8s example, some of them are powered by [kustomize](h
 
 ## Prerequisites
 
-* [Install kustomize](https://github.com/kubernetes-sigs/kustomize/blob/master/INSTALL.md)
+* [Install kustomize](https://github.com/kubernetes-sigs/kustomize/blob/master/docs/INSTALL.md)
 * (optional) [Install golang](https://golang.org/doc/install)
 * Clone this repository onto your workstation
 * A working GKE cluster (with minimal 3 nodes) or create one as follow
@@ -14,14 +14,14 @@ gcloud beta container clusters create asuka \
 --machine-type=n1-standard-2 \
 --num-nodes=3 \
 --image-type=COS \
---cluster-version=1.10 \
+--cluster-version=1.10.5-gke.4 \
 --tags=ssh \
 --preemptible \
---enable-stackdriver-kubernetes \
 --enable-autoscaling \
 --min-nodes=2 \
 --max-nodes=4 \
 --scopes default,cloud-platform,cloud-source-repos,service-control
+# --enable-stackdriver-kubernetes
 ```
 
 ## Usage
