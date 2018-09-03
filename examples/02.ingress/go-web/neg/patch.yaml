@@ -1,0 +1,21 @@
+apiVersion: v1
+kind: Service
+metadata:
+  annotations:
+    cloud.google.com/neg: '{"ingress": true}'
+  name: go-web-svc
+spec:
+  type: ClusterIP
+  externalTrafficPolicy: 
+---
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  labels:
+    deployment: go-web
+  name: go-web-dep
+spec:
+  minReadySeconds: 60
+  template:
+    spec:
+      terminationGracePeriodSeconds: 90

@@ -10,10 +10,7 @@ Go through the steps described in the following sections of the [istio-on-gke](.
 ## Deploy
 
 ```sh
-kubectl apply -f app.yaml
-istioctl create -f gateway.yaml
-kubectl apply -f destination-rule.yaml
-kubectl apply -f vs.yaml
+make apply
 ```
 
 * Get the IngressGateway IP

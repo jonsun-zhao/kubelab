@@ -7,6 +7,7 @@ kind: Service
 apiVersion: v1
 metadata:
   name: frontend
+  namespace: istio-workload
 spec:
   selector:
     app: frontend
@@ -21,10 +22,12 @@ apiVersion: extensions/v1beta1
 kind: Deployment
 metadata:
   name: frontend
+  namespace: istio-workload
 spec:
   replicas: 1
   template:
     metadata:
+      namespace: istio-workload
       labels:
         app: frontend
         version: v1
@@ -88,6 +91,7 @@ kind: Service
 apiVersion: v1
 metadata:
   name: backend
+  namespace: istio-workload
 spec:
   selector:
     app: backend
@@ -102,6 +106,7 @@ apiVersion: extensions/v1beta1
 kind: Deployment
 metadata:
   name: backend-v1
+  namespace: istio-workload
 spec:
   replicas: 1
   template:
@@ -152,6 +157,7 @@ apiVersion: extensions/v1beta1
 kind: Deployment
 metadata:
   name: backend-v2
+  namespace: istio-workload
 spec:
   replicas: 1
   template:
@@ -208,6 +214,7 @@ apiVersion: v1
 kind: Service
 metadata:
   name: mongodb
+  namespace: istio-workload
 spec:
   ports:
   - port: 27017
@@ -220,6 +227,7 @@ apiVersion: extensions/v1beta1
 kind: Deployment
 metadata:
   name: mongodb
+  namespace: istio-workload
 spec:
   replicas: 1
   template:
@@ -239,6 +247,7 @@ apiVersion: autoscaling/v2beta1
 kind: HorizontalPodAutoscaler
 metadata:
   name: frontend-hpa
+  namespace: istio-workload
 spec:
   scaleTargetRef:
     apiVersion: apps/v1

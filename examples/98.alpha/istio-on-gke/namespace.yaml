@@ -4,4 +4,4 @@ metadata:
   labels:
     addonmanager.kubernetes.io/mode: Reconcile
     istio-injection: disabled
-  name: utils
+  name: default

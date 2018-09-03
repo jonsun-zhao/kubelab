@@ -3,6 +3,7 @@ apiVersion: networking.istio.io/v1alpha3
 kind: DestinationRule
 metadata:
   name: frontend
+  namespace: istio-workload
 spec:
   host: frontend
   trafficPolicy:
@@ -18,6 +19,7 @@ apiVersion: networking.istio.io/v1alpha3
 kind: DestinationRule
 metadata:
   name: backend
+  namespace: istio-workload
 spec:
   host: backend
   trafficPolicy:
