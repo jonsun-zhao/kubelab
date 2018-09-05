@@ -9,7 +9,7 @@ This is a living repo that _supposely_ grows with the K8s releases.
 * `apps`
   > apps built to be used as workloads or clients
 
-* `examples`
+* [examples](examples.md)
   > examples to showcase k8s features and usecases
   * `/\d+\.[\S-]+/` - GA examples
   * `staging` - work-in-progress

@@ -3,9 +3,13 @@ ifeq ("$(wildcard $(SA))","")
   $(error $(SA) not found)
 endif
 
-apply:
+create:
 	$(eval key := service-account.json)
 	kubectl create secret generic clouddns-service-account --from-file=$(key)=$(SA)
+	kubectl apply -f issuer.yaml
+	kubectl apply -f cert.yaml
+
+update:
 	kubectl apply -f issuer.yaml
 	kubectl apply -f cert.yaml
 
