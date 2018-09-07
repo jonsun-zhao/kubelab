@@ -2,8 +2,8 @@
 
 ## Install helm/tiller
 
-* [helm](https://docs.helm.sh/using_helm/)
-* tiller
+* How to install [helm](https://docs.helm.sh/using_helm/)
+* How to install `tiller`
 
   ```sh
   kubectl apply -f tiller.yaml

@@ -1,4 +1,0 @@
-bases:
-- ../../nodeport
-patches:
-- patch.yaml

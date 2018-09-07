@@ -2,14 +2,14 @@
 apiVersion: v1
 kind: Pod
 metadata:
-  name: toolbox
+  name: pause
   labels:
-    app: toolbox
+    pause: xxx
 spec:
   containers:
   # [START app_container]
-  - name: toolbox
-    image: gcr.io/nmiu-play/toolbox
+  - name: pause
+    image: k8s.gcr.io/pause:2.0
     imagePullPolicy: Always
     resources:
       requests:

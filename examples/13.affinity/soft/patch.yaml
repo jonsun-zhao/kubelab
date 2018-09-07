@@ -4,8 +4,8 @@ apiVersion: v1
 metadata:
   name: php-apache-svc
 spec:
-  externalTrafficPolicy: Local
-  type: NodePort
+  externalTrafficPolicy: Cluster
+  type: LoadBalancer
 
 ---
 apiVersion: extensions/v1beta1
@@ -15,7 +15,7 @@ metadata:
   labels:
     deployment: php-apache
 spec:
-  replicas: 2
+  replicas: 3
   selector:
     matchLabels:
       app: php-apache
@@ -26,14 +26,23 @@ spec:
     spec:
       affinity:
         podAntiAffinity:
-          requiredDuringSchedulingIgnoredDuringExecution:
-          - labelSelector:
-              matchExpressions:
-              - key: app
-                operator: In
-                values:
-                - php-apache
-            topologyKey: "kubernetes.io/hostname"
+          preferredDuringSchedulingIgnoredDuringExecution:
+          - weight: 1
+            podAffinityTerm:
+              labelSelector:
+                matchExpressions:
+                - key: app
+                  operator: In
+                  values:
+                  - php-apache
+              topologyKey: "kubernetes.io/hostname"
+          - weight: 10
+            podAffinityTerm:
+              labelSelector:
+                matchExpressions:
+                - key: pause
+                  operator: Exists
+              topologyKey: "kubernetes.io/hostname"
       containers:
       # [START app_container]
       - name: php-apache
