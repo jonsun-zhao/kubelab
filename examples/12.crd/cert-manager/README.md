@@ -23,7 +23,7 @@ helm install \
   stable/cert-manager
 ```
 
-## What the CRDs created looks like
+## What the created CRDs looks like
 
 * `certificates.certmanager.k8s.io`
 * `clusterissuers.certmanager.k8s.io`
