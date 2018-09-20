@@ -62,7 +62,7 @@ gcloud alpha container clusters create asuka \
 --image-type=COS \
 --cluster-version=1.10 \
 --tags=ssh \
---addons=Istio --istio-config=auth=MUTUAL_TLS \
+--addons=Istio,HttpLoadBalancing --istio-config=auth=MUTUAL_TLS \
 --preemptible \
 --scopes default,cloud-platform,cloud-source-repos,service-control
 ```
@@ -78,7 +78,7 @@ gcloud alpha container clusters create asuka \
 --image-type=COS \
 --cluster-version=1.10 \
 --tags=ssh \
---addons=Istio --istio-config=auth=None \
+--addons=Istio,HttpLoadBalancing --istio-config=auth=None \
 --preemptible \
 --scopes default,cloud-platform,cloud-source-repos,service-control
 ```
