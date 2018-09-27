@@ -64,6 +64,8 @@ gcloud alpha container clusters create asuka \
 --tags=ssh \
 --addons=Istio,HttpLoadBalancing --istio-config=auth=MUTUAL_TLS \
 --preemptible \
+--enable-ip-alias \
+--create-subnetwork "" \
 --scopes default,cloud-platform,cloud-source-repos,service-control
 ```
 
@@ -80,6 +82,8 @@ gcloud alpha container clusters create asuka \
 --tags=ssh \
 --addons=Istio,HttpLoadBalancing --istio-config=auth=None \
 --preemptible \
+--enable-ip-alias \
+--create-subnetwork "" \
 --scopes default,cloud-platform,cloud-source-repos,service-control
 ```
 

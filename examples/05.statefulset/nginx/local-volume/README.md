@@ -13,7 +13,6 @@ gcloud beta container clusters create asuka \
 --tags=ssh \
 --local-ssd-count=1 \
 --preemptible \
---enable-stackdriver-kubernetes \
 --scopes default,cloud-platform,cloud-source-repos,service-control
 ```
 

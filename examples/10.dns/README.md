@@ -2,21 +2,9 @@
 
 ## Prerequisites
 
-### Create a GKE cluster with one node
+### Scale down the GKE cluster to one node
 
 _so that it is easier to sniff packets from pod and node_
-
-```sh
-gcloud beta container clusters create asuka \
---machine-type=n1-standard-1 \
---num-nodes=1 \
---image-type=COS \
---cluster-version=1.10 \
---tags=ssh \
---local-ssd-count=1 \
---preemptible \
---scopes default,cloud-platform,cloud-source-repos,service-control
-```
 
 ## Explaination
 

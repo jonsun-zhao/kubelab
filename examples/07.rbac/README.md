@@ -2,19 +2,6 @@
 
 ## Prerequisites
 
-### Create a GKE cluster
-
-```sh
-gcloud container clusters create asuka \
---machine-type=n1-standard-1 \
---num-nodes=2 \
---image-type=COS \
---cluster-version=1.10 \
---tags=ssh \
---preemptible \
---scopes default,cloud-platform,cloud-source-repos,service-control
-```
-
 ### Create a Google Group
 
 [Test Group](https://groups.google.com/a/google.com/forum/#!members/nm-k8s-rbac)

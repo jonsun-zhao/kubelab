@@ -61,6 +61,8 @@ gcloud alpha container clusters create asuka \
 --enable-kubernetes-alpha \
 --local-ssd-volumes count=1,type=scsi,format=block \
 --preemptible \
+--enable-ip-alias \
+--create-subnetwork "" \
 --scopes default,cloud-platform,cloud-source-repos,service-control
 ```
 
