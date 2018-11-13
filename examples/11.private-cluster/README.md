@@ -4,11 +4,9 @@
 
 * Create a subnet in the `default` VPC
 
-  > enable _private ip google access_ in this subnet
-
   ```sh
   gcloud compute networks subnets create gke-subnet \
-    --enable-private-ip-google-access \
+    --enable-private-ip-google-access \ # not required
     --network default \
     --range 10.50.0.0/16
   ```
@@ -52,7 +50,7 @@ gcloud container clusters delete asuka
 gcloud compute networks subnets delete gke-subnet
 ```
 
-## Create the cluster with auto-created subnet/seconary-ranges
+## Create the cluster with an auto-created subnet/seconary-ranges
 
 * Create
 
@@ -111,7 +109,7 @@ terraform apply
 * Teardown
 
 ```sh
-terraform destory
+terraform destroy
 ```
 
 ## Enable master authorized networks

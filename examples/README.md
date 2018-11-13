@@ -10,39 +10,23 @@ Each directory contains a k8s example, some of them are powered by [kustomize](h
 * A working GKE cluster (with minimal 3 nodes) or create one as follow
 
 ```sh
-gcloud beta container clusters create asuka \
+gcloud container clusters create asuka \
 --machine-type=n1-standard-2 \
 --num-nodes=3 \
 --image-type=COS \
---cluster-version=1.10.5-gke.4 \
+--cluster-version=1.10 \
 --tags=ssh \
 --preemptible \
+--enable-ip-alias \
+--create-subnetwork "" \
 --enable-autoscaling \
 --min-nodes=2 \
 --max-nodes=4 \
 --scopes default,cloud-platform,cloud-source-repos,service-control
 # --enable-stackdriver-kubernetes
-```
-
-(enable-ip-alias)
-
-```sh
-gcloud beta container clusters create asuka \
---machine-type=n1-standard-2 \
---num-nodes=3 \
---image-type=COS \
---cluster-version=1.10.5-gke.4 \
---tags=ssh \
---preemptible \
---enable-ip-alias \
---subnetwork gke-clusters \
---services-secondary-range-name asuka-services \
---cluster-secondary-range-name asuka-pods \
---no-enable-autoupgrade \
---no-enable-autorepair \
---min-nodes=2 \
---max-nodes=4 \
---scopes default,cloud-platform,cloud-source-repos,service-control
+# --subnetwork gke-clusters \
+# --services-secondary-range-name asuka-services \
+# --cluster-secondary-range-name asuka-pods
 ```
 
 ## Usage

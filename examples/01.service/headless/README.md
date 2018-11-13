@@ -1,8 +1,8 @@
 # Headless Service
 
-Sometimes you don’t need or want load-balancing and a single service IP. In this case, you can create `headless` services by specifying `None` for the cluster IP (`.spec.clusterIP`).
+Sometimes you don’t need a IP for a service. In this case, you can create `headless` services by specifying `None` for the cluster IP (`.spec.clusterIP`).
 
-This option allows developers to reduce coupling to the Kubernetes system by allowing them freedom to do discovery their own way. Applications can still use a self-registration pattern and adapters for other discovery systems could easily be built upon this API.
+This option allows developers to reduce coupling to the Kubernetes system by allowing them freedom to do discovery in their own way. Applications can still use a self-registration pattern and adapters for other discovery systems could easily be built upon this API.
 
 For such Services, a cluster IP is not allocated, kube-proxy does not handle these services, and there is no load balancing or proxying done by the platform for them. How DNS is automatically configured depends on whether the service has selectors defined.
 
@@ -11,7 +11,7 @@ For such Services, a cluster IP is not allocated, kube-proxy does not handle the
 * Service
 
 ```sh
-k get service php-apache-svc -o yaml
+kubectl get service php-apache-svc -o yaml
 apiVersion: v1
 kind: Service
 metadata:
