@@ -1,4 +1,4 @@
-# Affinity and Anti-Affinity (hard)
+# Affinity and Anti-Affinity
 
 ## Prerequisites
 
