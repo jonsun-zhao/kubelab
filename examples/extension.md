@@ -1,14 +1,14 @@
 # How to extend examples
 
-i.e. I want to make the following changes to the `01.ingress/go-web` example
+For example, I want to make the following changes to `02.ingress/go-web`
 
 * shrink the deployment's replica to 1
 * attach a PVC to the pod
 
-## Create a new dir in `01.ingress/go-web`
+## Create a new dir in `02.ingress/go-web`
 
 ```sh
-mkdir 01.ingress/go-web/pvc && cd 01.ingress/go-web/pvc
+mkdir 02.ingress/go-web/pvc && cd 02.ingress/go-web/pvc
 ```
 
 ## Create YAMLs
