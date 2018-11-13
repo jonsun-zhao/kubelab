@@ -1,0 +1,11 @@
+steps:
+- name: 'gcr.io/cloud-builders/go:debian'
+  args: ['get', './...']
+  # env: ['PROJECT_ROOT=${_APP_NAME_}']
+- name: 'gcr.io/cloud-builders/go:debian'
+  args: ['install', '${_APP_NAME_}']
+- name: 'gcr.io/cloud-builders/gsutil'
+  args: ['-m', 'cp', 'bin/${_APP_NAME_}', 'gs://${_BUCKET_NAME_}/']
+substitutions:
+  _APP_NAME_: go-kubeutil
+  _BUCKET_NAME_: nmiu-play_tools
