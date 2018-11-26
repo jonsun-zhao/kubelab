@@ -1,0 +1,17 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: toolbox
+spec:
+  # serviceAccountName: client
+  containers:
+  - image: gcr.io/nmiu-play/toolbox
+    imagePullPolicy: Always
+    name: toolbox
+    resources:
+      limits:
+        cpu: 200m
+        memory: 128Mi
+      requests:
+        cpu: 100m
+        memory: 128Mi
