@@ -1,0 +1,4 @@
+bases:
+- ../../go-web
+patches:
+- patch.yaml
