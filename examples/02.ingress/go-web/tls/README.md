@@ -20,13 +20,13 @@ openssl req -x509 -newkey rsa:2048 \
 kubectl create secret tls premium-cloud-support-com-tls --cert tls.crt --key tls.key
 ```
 
-* Deploy
+## Deploy
 
 ```sh
 kustomize build . | kubectl apply -f -
 ```
 
-* Teardown
+## Teardown
 
 ```sh
 kustomize build . | kubectl delete -f -
