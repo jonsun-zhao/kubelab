@@ -15,7 +15,7 @@ spec:
       labels:
         app: php-apache
     spec:
-      serviceAccountName: client ## the SA granted with PSP
+      # serviceAccountName: client
       containers:
       - image: gcr.io/nmiu-play/php-apache
         imagePullPolicy: Always
