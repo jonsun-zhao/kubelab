@@ -1,6 +1,6 @@
-# TLS
+# HTTP/2
 
-Assigning TLS cert/key pair to the ingress
+Use HTTP/2 for HTTP LB <--> Backend communication
 
 ## Prerequisites
 

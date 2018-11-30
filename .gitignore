@@ -14,3 +14,7 @@
 # Terraform
 .terraform
 *.tfstate*
+
+# Temp yaml
+*_tmp.yaml
+*_temp.yaml
