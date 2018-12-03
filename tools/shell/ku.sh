@@ -1,68 +1,22 @@
 #!/bin/bash
 
-in_subnet()
-{
-  # Determine whether IP address is in the specified subnet.
-  #
-  # Args:
-  #   sub: Subnet, in CIDR notation.
-  #   ip: IP address to check.
-  #
-  # Returns:
-  #   1|0
-  #
-  local ip ip_a mask netmask sub sub_ip rval start end
-
-  # Define bitmask.
-  local readonly BITMASK=0xFFFFFFFF
-
-  # Set DEBUG status if not already defined in the script.
-  [[ "${DEBUG}" == "" ]] && DEBUG=0
-
-  # Read arguments.
-  IFS=/ read sub mask <<< "${1}"
-  IFS=. read -a sub_ip <<< "${sub}"
-  IFS=. read -a ip_a <<< "${2}"
-
-  # Calculate netmask.
-  netmask=$(($BITMASK<<$((32-$mask)) & $BITMASK))
-
-  # Determine address range.
-  start=0
-  for o in "${sub_ip[@]}"
-  do
-      start=$(($start<<8 | $o))
-  done
-
-  start=$(($start & $netmask))
-  end=$(($start | ~$netmask & $BITMASK))
-
-  # Convert IP address to 32-bit number.
-  ip=0
-  for o in "${ip_a[@]}"
-  do
-      ip=$(($ip<<8 | $o))
-  done
-
-  # Determine if IP in range.
-  (( $ip >= $start )) && (( $ip <= $end )) && rval=1 || rval=0
-
-  (( $DEBUG )) &&
-      printf "ip=0x%08X; start=0x%08X; end=0x%08X; in_subnet=%u\n" $ip $start $end $rval 1>&2
-
-  echo "${rval}"
-}
-
 kget()
 {
-  local kind=${1:?"Usage: $FUNCNAME [kind]"}
+  local kind=${1:?"Usage: $FUNCNAME [kind] (i.e. pods)"}
   local dir=${2:-.}
   local cmd=${3:-"kubectl"}
   echo ">> dumping ${kind} to ${dir}/${kind}"
   $cmd get $kind --all-namespaces -o json > $dir/$kind.json
 }
 
-list_nodes()
+cutf()
+{
+  local line=${1:?"Usage: $FUNCNAME [line] [field_number:1]"}
+  local f=${2:-1}
+  echo `echo "$line" | cut -d"|" -f${f}`
+}
+
+knodes()
 {
   local refresh=0
   while getopts 'r' opt; do
@@ -97,39 +51,39 @@ list_nodes()
             | sort
             | join("|")
           )
-        ] 
+        ]
       | join("|")
     ' | sed 's/"//g' | sort` )
 
   for n in ${nodes[@]};
   do
-    IFS='|' read -r -a arr <<< "$n"
-    node_name=${arr[0]}
-    pod_cidr=${arr[1]}
-    node_ip=${arr[2]}
+    node_name=`cutf $n 1`
+    pod_cidr=`cutf $n 2`
+    node_ip=`cutf $n 3`
 
     echo "[NODE: $node_ip] (podCIDR: $pod_cidr) ($node_name)"
     echo "--------------------------"
 
     pods=( `cat ${pf} | jq --arg NODENAME "$node_name" '
-        .items[] 
-          | select(.spec.nodeName == $NODENAME) 
-          | [ .metadata.name, (select(.status.podIP) | .status.podIP) ] 
+        .items[]
+          | select(.spec.nodeName == $NODENAME)
+          | [ .metadata.name, (select(.status.podIP) | .status.podIP) ]
           | join("|")
       ' | sed 's/"//g' | sort`)
 
     for p in ${pods[@]};
     do
-      IFS='|' read -r -a arr <<< "$p"
-      # echo ${arr[@]}
-      pod_name=${arr[0]}
-      pod_ip="n/a"
-      # echo ${#arr[@]}
+      pod_name=`cutf $p 1`
+      pod_ip=`cutf $p 2`
 
-      if (( ${#arr[@]} > 1 )); then
-        pod_ip=${arr[1]}
-        if (( ! `in_subnet $pod_cidr $pod_ip` )) && [ "$pod_ip" != "$node_ip" ]; then
-          pod_ip="!! ${pod_ip}"
+      # check if pod ip is empty
+      if [ -n "$pod_id" ]; then
+        # check if pod ip is in the pod cidr
+        if (! grepcidr "${pod_cidr}" <(echo "${pod_ip}") >/dev/null); then
+          # mark the pod unless the pod is using host network
+          if [ "$pod_ip" != "$node_ip" ]; then
+            pod_ip="[x] ${pod_ip}"
+          fi
         fi
       fi
       
@@ -140,4 +94,4 @@ list_nodes()
   done
 }
 
-list_nodes
+knodes -r
