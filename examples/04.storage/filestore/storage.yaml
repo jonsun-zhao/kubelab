@@ -1,0 +1,25 @@
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: fs01
+spec:
+  capacity:
+    storage: 2Ti
+  accessModes:
+  - ReadWriteMany
+  nfs:
+    path: /nfs01
+    server: 10.126.188.26
+
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: fs01-claim
+spec:
+  accessModes:
+  - ReadWriteMany
+  storageClassName: ""
+  resources:
+    requests:
+      storage: 2Ti
