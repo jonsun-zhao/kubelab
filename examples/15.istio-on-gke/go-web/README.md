@@ -195,15 +195,10 @@ Hostname: backend-v2-67cc94b87b-g6gsq
 * Delete the `istio-ingressgateway` ingress service
 
   ```sh
-  kubectl -n istio-system delete service istio-ingress
   kubectl -n istio-system delete service istio-ingressgateway
   ```
 
-* Delete the cluster using the same service account that creates it
-
-  ```sh
-  gcloud config set account ${SA}@${PROJECT_ID}.iam.gserviceaccount.com
-  ```
+* Delete the cluster
 
   ```sh
   gcloud alpha container clusters delete asuka
