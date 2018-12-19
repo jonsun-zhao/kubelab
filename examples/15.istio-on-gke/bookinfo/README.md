@@ -4,7 +4,7 @@
 
 [Deplay the cluster and setup the CLI](../)
 
-## Enablw sidecar injection
+## Enabling sidecar injection
 
 Istio sidecar auto-injection is disabled for all namespaces by default
 
