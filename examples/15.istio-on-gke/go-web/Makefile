@@ -7,5 +7,4 @@ apply:
 
 clean:
 	kubectl delete -f app.yaml
-	kubectl -n istio-system delete service istio-ingress
 	kubectl -n istio-system delete service istio-ingressgateway

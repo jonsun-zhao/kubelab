@@ -2,25 +2,21 @@
 
 ## Prerequesites
 
-Go through the steps described in the following sections of the [istio-on-gke](../) example:
+[Deplay the cluster and setup the CLI](../)
 
-* Prerequesites
-* Setup
-
-## Deploy
+## Deploy the application
 
 ```sh
 make apply
 ```
 
-* Get the IngressGateway IP
+* Retrieve the IngressGateway IP
 
 ```sh
 export GATEWAY_URL=$(kubectl -n istio-system get service istio-ingressgateway -o jsonpath='{.status.loadBalancer.ingress[0].ip}')
-# export GATEWAY_URL=$(kubectl -n istio-system get service istio-ingressgateway -o template --template="{{range .status.loadBalancer.ingress}}{{.ip}}{{end}}")
 ```
 
-* Confirm the app is running
+* Check the app
 
 ```sh
 curl -s http://$GATEWAY_URL/ping
