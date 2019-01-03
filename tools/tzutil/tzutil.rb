@@ -5,11 +5,6 @@ require 'pp'
 require 'date'
 require 'active_support/core_ext/time'
 
-def usage
-  puts @opt_parser
-  exit 1
-end
-
 class Time
   def to_str(zone, iso8601=false)
     if iso8601
@@ -30,6 +25,10 @@ class Time
   end
 end
 
+def usage
+  puts @opt_parser
+  exit 1
+end
 
 def print_header(columns)
   puts "| #{ columns.map { |_,g| g[:label].ljust(g[:width]) }.join(' | ') } |"
@@ -98,11 +97,3 @@ a1.each { |h| print_line(columns, h) }
 print_divider(columns)
 a2.each { |h| print_line(columns, h) }
 print_divider(columns)
-
-# convert
-# puts time.to_str(SYD)
-# puts time.to_str(LAX)
-# puts time.to_str(UTC)
-# puts time.to_str(NYC)
-# puts time.to_str(ZRH)
-# puts time.to_str(HND)
