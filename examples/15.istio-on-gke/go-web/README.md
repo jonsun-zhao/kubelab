@@ -107,7 +107,7 @@ Hostname: backend-v2-67cc94b87b-g6gsq
 
   ```sh
   curl -H "foo: bar" -w "@curl-format.txt" http://$GATEWAY_URL/ping
-  
+
   Reaching backend: http://backend:8000
 
   == Result ==
@@ -140,7 +140,7 @@ Hostname: backend-v2-67cc94b87b-g6gsq
   ```
 
 ### Abort the request if a specific header is set
-  
+
 * Envoy abort a request with header `foo: bar` when it reaches the backend
 
   ```sh
@@ -186,16 +186,10 @@ Hostname: backend-v2-67cc94b87b-g6gsq
 
 ## Teardown
 
-* Delete the application
+* Delete the application and the `istio-ingressgateway` ingress service
 
   ```sh
-  kubectl delete -f app.yaml
-  ```
-
-* Delete the `istio-ingressgateway` ingress service
-
-  ```sh
-  kubectl -n istio-system delete service istio-ingressgateway
+  make clean
   ```
 
 * Delete the cluster

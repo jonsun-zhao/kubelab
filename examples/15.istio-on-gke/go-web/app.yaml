@@ -80,8 +80,30 @@ spec:
           timeoutSeconds: 5
           successThreshold: 1
           failureThreshold: 5
-      # [START app_container]
+      # [END app_container]
 
+---
+apiVersion: autoscaling/v2beta1
+kind: HorizontalPodAutoscaler
+metadata:
+  name: frontend-hpa
+  namespace: istio-workload
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: frontend
+  minReplicas: 1
+  maxReplicas: 3
+  metrics:
+  - type: Resource
+    resource:
+      name: memory
+      targetAverageUtilization: 50
+  - type: Resource
+    resource:
+      name: cpu
+      targetAverageUtilization: 50
 
 ##################################################################################################
 # backend service
@@ -150,7 +172,7 @@ spec:
           timeoutSeconds: 5
           successThreshold: 1
           failureThreshold: 5
-      # [START app_container]
+      # [END app_container]
 
 ---
 apiVersion: extensions/v1beta1
@@ -203,7 +225,7 @@ spec:
           timeoutSeconds: 5
           successThreshold: 1
           failureThreshold: 5
-      # [START app_container]
+      # [END app_container]
       initContainers:
       - name: wait-for-db
         image: busybox
@@ -234,33 +256,13 @@ spec:
     metadata:
       labels:
         app: mongodb
+        version: v1
     spec:
       containers:
-      - name: mongodb 
+      # [START app_container]
+      - name: mongodb
         image: gcr.io/nmiu-play/mongodb:latest
         imagePullPolicy: IfNotPresent
         ports:
         - containerPort: 27017
-
----
-apiVersion: autoscaling/v2beta1
-kind: HorizontalPodAutoscaler
-metadata:
-  name: frontend-hpa
-  namespace: istio-workload
-spec:
-  scaleTargetRef:
-    apiVersion: apps/v1
-    kind: Deployment
-    name: frontend
-  minReplicas: 1
-  maxReplicas: 3
-  metrics:
-  - type: Resource
-    resource:
-      name: memory
-      targetAverageUtilization: 50
-  - type: Resource
-    resource:
-      name: cpu
-      targetAverageUtilization: 50
+      # [END app_container]
