@@ -11,15 +11,15 @@ class Time
       # self.in_time_zone(zone).strftime("%Y-%m-%dT%H:%M:%SZ")
       self.in_time_zone(zone).to_formatted_s(:iso8601)
     else
-      # self.in_time_zone(zone).strftime("%A, %Y-%m-%d %H:%M:%S %Z %z")
-      self.in_time_zone(zone).to_formatted_s(:rfc822)
+      self.in_time_zone(zone).strftime("%A, %Y-%m-%d %H:%M:%S %Z %z")
+      # self.in_time_zone(zone).to_formatted_s(:rfc822)
     end
   end
 
   def to_hash(zone)
     {
       tz: zone,
-      rfc822: self.to_str(zone),
+      brisk: self.to_str(zone),
       iso8601: self.to_str(zone, true)
     }
   end
@@ -80,7 +80,7 @@ if @offset
   puts
 end
 
-col_labels = { tz: "TZ", rfc822: "RFC822", iso8601: "ISO8601" }
+col_labels = { tz: "TZ", brisk: "BRISK", iso8601: "ISO8601" }
 
 a1 = [ time.to_hash(UTC), time.to_hash(LAX), time.to_hash(SYD) ]
 a2 = [ time.to_hash(NYC), time.to_hash(ZRH), time.to_hash(HND) ]
