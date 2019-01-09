@@ -195,5 +195,5 @@ Hostname: backend-v2-67cc94b87b-g6gsq
 * Delete the cluster
 
   ```sh
-  gcloud alpha container clusters delete asuka
+  gcloud beta container clusters delete asuka
   ```
