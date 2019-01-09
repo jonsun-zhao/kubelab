@@ -54,6 +54,11 @@ cutf()
   echo $(echo "$line" | cut -f${f} -d"${d}")
 }
 
+tcurl()
+{
+  curl -H "Authorization: Bearer $TOKEN" $@
+}
+
 # =====================
 #  Functions
 # =====================
@@ -246,7 +251,7 @@ kpod()
   ns=${2:-default}
   echo ">> Pod: $pod"
   echo ">> Namespace: $ns"
-  k -n $ns get pod $pod -o json | jq -r '
+  kubectl -n $ns get pod $pod -o json | jq -r '
     "Pod ID = " + .metadata.uid, ("Node = " + .spec.nodeName),
     (.status.containerStatuses[]
       | "Container = \(.name) [\(.containerID)]"
@@ -264,17 +269,17 @@ kpod_by_id()
     return 1
   fi
 
-  k get pods --all-namespaces -o json | jq -r ".items[] | select(.metadata.uid == \"$1\")"
+  kubectl get pods --all-namespaces -o json | jq -r ".items[] | select(.metadata.uid == \"$1\")"
 }
 
 kpod_all()
 {
-  k get pods --all-namespaces -o jsonpath='{range .items[*]}{"\n"}[ns]{.metadata.namespace} [pod]{.metadata.name} [pod_id]{.metadata.uid} [node]{.spec.nodeName} [status]{.status.phase}{"\n"}{range .status.containerStatuses[*]}>> [c]{.name} {.containerID}{"\n"}{end}{"\n"}{end}' | sed 's#//#|#g'
+  kubectl get pods --all-namespaces -o jsonpath='{range .items[*]}{"\n"}[ns]{.metadata.namespace} [pod]{.metadata.name} [pod_id]{.metadata.uid} [node]{.spec.nodeName} [status]{.status.phase}{"\n"}{range .status.containerStatuses[*]}>> [c]{.name} {.containerID}{"\n"}{end}{"\n"}{end}' | sed 's#//#|#g'
 }
 
 kpod_all_x()
 {
-  k get pods --all-namespaces -o json | jq -r '
+  kubectl get pods --all-namespaces -o json | jq -r '
     .items[]
     | (.metadata.namespace + " " + .metadata.name + " " + .metadata.uid + " " + .spec.nodeName + " " + .status.phase),
       (
@@ -341,7 +346,7 @@ kdump_all()
   do
     # skip secrets
     [[ $k == "secrets" ]] && continue
-    kget $k $dir $cmd
+    kdump $k $dir $cmd
   done
 
   echo -e "\n** output directory:  ${dir} **"
@@ -350,7 +355,30 @@ kdump_all()
 # list nodes with pods
 knodes()
 {
-  local nodes=( $(k get nodes --all-namespaces -o json | jq -r '
+  local refresh=0
+  while getopts 'r' opt; do
+      case $opt in
+          r) refresh=1 ;;
+          *) echo 'Error in command line parsing' >&2
+             exit 1
+      esac
+  done
+  shift "$(( OPTIND - 1 ))"
+
+  nf="nodes.json"
+  pf="pods.json"
+
+  # remove the cache files if refresh flag is on
+  if (( $refresh == 1 )); then
+    [ -f $nf ] && rm -f $nf
+    [ -f $pf ] && rm -f $pf
+  fi
+
+  [ -f $nf ] || kdump "nodes"
+  [ -f $pf ] || kdump "pods"
+  echo
+
+  nodes=( $(cat ${nf} | jq -r '
       .items[]
       | [
           .metadata.name, .spec.podCIDR,
@@ -373,7 +401,7 @@ knodes()
     echo "[NODE: $node_ip] (podCIDR: $pod_cidr) ($node_name)"
     echo "--------------------------"
 
-    local pods=( $(k get pods --all-namespaces -o json | jq --arg NODENAME "$node_name" '
+    local pods=( $(cat ${pf} | jq -r --arg NODENAME "$node_name" '
         .items[]
           | select(.spec.nodeName == $NODENAME)
           | [ .metadata.name, (select(.status.podIP) | .status.podIP) ]
@@ -523,7 +551,7 @@ ktoken_by_sc()
 
   sc=$1
   namespace=${2:-default}
-  k -n $namespace get secrets -o jsonpath="{.items[?(@.metadata.annotations['kubernetes\.io/service-account\.name']=='$sc')].data.token}"|base64_decode
+  kubectl -n $namespace get secrets -o jsonpath="{.items[?(@.metadata.annotations['kubernetes\.io/service-account\.name']=='$sc')].data.token}"|base64_decode
 }
 
 # get token by secret
@@ -539,5 +567,5 @@ ktoken_by_secret()
   secret=$1
   namespace=${2:-default}
 
-  k -n $namespace get secret $secret -o jsonpath="{.data.token}"|base64_decode
+  kubectl -n $namespace get secret $secret -o jsonpath="{.data.token}"|base64_decode
 }
