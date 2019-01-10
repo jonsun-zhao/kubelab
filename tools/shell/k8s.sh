@@ -15,7 +15,7 @@ MEMORY_REQUEST:.spec.containers[].resources.requests.memory,\
 MEMORY_LIMIT:.spec.containers[].resources.limits.memory" get pods'
 
 alias g="gcloud"
-alias gssh="g compute ssh  --ssh-flag=\"-o LogLevel=QUIET\""
+alias gssh='g compute ssh  --ssh-flag="-o LogLevel=QUIET"'
 alias gno="g --no-user-output-enabled"
 alias gcontainer="g container"
 alias gdefault="gactivate default"
@@ -61,17 +61,17 @@ cutf()
 # doesn't work while inspecting customer's project...
 gproject_number()
 {
-  project_id=${1:-`gcloud config get-value core/project 2>/dev/null`}
-  token=${2:-`gcloud auth print-access-token 2>/dev/null`}
+  project_id=${1:-`gcloud config get-value core/project`}
+  token=${2:-`gcloud auth print-access-token`}
   curl -s -H "Authorization: Bearer $token" "https://cloudresourcemanager.googleapis.com/v1beta1/projects/${project_id}" | jq -r ".projectNumber"
 }
 
 # switch between cloud configs
 gactivate()
 {
-  [ $ZSH_VERSION ] && FUNCNAME=${funcstack[1]}
+  [ -n "$ZSH_VERSION" ] && FUNCNAME=${funcstack[1]}
 
-  if [ $# -lt 1 ] ; then
+  if [ "$#" -lt 1 ] ; then
     echo "Usage: $FUNCNAME GCLOUD_CONFIG"
     return 1
   fi
@@ -91,9 +91,9 @@ gactivate()
 # switch to customer gcloud config and setup auth token
 gauth()
 {
-  [ $ZSH_VERSION ] && FUNCNAME=${funcstack[1]}
+  [ -n "$ZSH_VERSION" ] && FUNCNAME=${funcstack[1]}
 
-  if [ $# -lt 2 ] ; then
+  if [ "$#" -lt 2 ] ; then
     echo "Usage: $FUNCNAME PROJECT_ID TOKEN"
     return 1
   fi
@@ -111,15 +111,15 @@ gauth()
 # setup gcloud and kubectl for cluster inspection
 kinspect()
 {
-  [ $ZSH_VERSION ] && FUNCNAME=${funcstack[1]}
+  [ -n "$ZSH_VERSION" ] && FUNCNAME=${funcstack[1]}
 
-  if [ $# -lt 1 ]; then
+  if [ "$#" -lt 1 ]; then
     echo "Usage: $FUNCNAME CLUSTER_URL [PROJECT_NUMBER]"
     return 1
   fi
   local url=$1; shift
 
-  if [ $ZSH_VERSION ]; then
+  if [ -n "$ZSH_VERSION" ]; then
     # parse cluster inspection url
     # zsh's index is 1 based
     local url_path=${url[(ws:?:)1]}
@@ -204,8 +204,8 @@ kinspect()
   # kubectl config unset users.$ctx.auth-provider
   kubectl config set users.$ctx.token "iam-$(gcloud auth print-access-token)^$token"
 
-  # open cluser master vicery if project number is specified
-  if [ $# -eq 1 ]; then
+  # open the cluser master vicery page if project number is provided
+  if [ "$#" -eq 1 ]; then
     local project_number=$1; shift
     cluster_master_viceroy $project_number $cluster $location
   fi
@@ -214,9 +214,9 @@ kinspect()
 # list docker image ids in the GCR of the current project
 gdocker_image_id()
 {
-  [ $ZSH_VERSION ] && FUNCNAME=${funcstack[1]}
+  [ -n "$ZSH_VERSION" ] && FUNCNAME=${funcstack[1]}
 
-  if [ $# -lt 1 ] ; then
+  if [ "$#" -lt 1 ] ; then
     echo "Usage: $FUNCNAME IMAGE_NAME"
     return 1
   fi
@@ -263,9 +263,9 @@ gdocker_image_id()
 
 cluster_viceroy()
 {
-  [ $ZSH_VERSION ] && FUNCNAME=${funcstack[1]}
+  [ -n "$ZSH_VERSION" ] && FUNCNAME=${funcstack[1]}
 
-  if [ $# -lt 1 ] ; then
+  if [ "$#" -lt 1 ] ; then
     echo "Usage: $FUNCNAME PROJECT_NUMBER"
     return 1
   fi
@@ -276,9 +276,9 @@ cluster_viceroy()
 
 cluster_master_viceroy()
 {
-  [ $ZSH_VERSION ] && FUNCNAME=${funcstack[1]}
+  [ -n "$ZSH_VERSION" ] && FUNCNAME=${funcstack[1]}
 
-  if [ $# -lt 3 ] ; then
+  if [ "$#" -lt 3 ] ; then
     echo "Usage: $FUNCNAME PROJECT_NUMBER CLUSTER_NAME LOCATION"
     return 1
   fi
@@ -297,9 +297,9 @@ cluster_master_viceroy()
 # get pod by name
 kpod()
 {
-  [ $ZSH_VERSION ] && FUNCNAME=${funcstack[1]}
+  [ -n "$ZSH_VERSION" ] && FUNCNAME=${funcstack[1]}
 
-  if [ $# -lt 1 ] ; then
+  if [ "$#" -lt 1 ] ; then
     echo "Usage: $FUNCNAME POD_NAME [NAMESPACE]"
     return 1
   fi
@@ -322,9 +322,9 @@ kpod()
 # get pod detail by id
 kpod_by_id()
 {
-  [ $ZSH_VERSION ] && FUNCNAME=${funcstack[1]}
+  [ -n "$ZSH_VERSION" ] && FUNCNAME=${funcstack[1]}
 
-  if [ $# -lt 1 ] ; then
+  if [ "$#" -lt 1 ] ; then
     echo "Usage: $FUNCNAME POD_ID"
     return 1
   fi
@@ -358,9 +358,9 @@ kpod_all_x()
 # get pid from container id
 kpid_by_container_id()
 {
-  [ $ZSH_VERSION ] && FUNCNAME=${funcstack[1]}
+  [ -n "$ZSH_VERSION" ] && FUNCNAME=${funcstack[1]}
 
-  if [ $# -lt 2 ] ; then
+  if [ "$#" -lt 2 ] ; then
     echo "Usage: $FUNCNAME NODE CONTAINER_ID"
     return 1
   fi
@@ -380,9 +380,9 @@ kpid_by_container_id()
 # dump object by kind
 kdump()
 {
-  [ $ZSH_VERSION ] && FUNCNAME=${funcstack[1]}
+  [ -n "$ZSH_VERSION" ] && FUNCNAME=${funcstack[1]}
 
-  if [ $# -lt 1 ] ; then
+  if [ "$#" -lt 1 ] ; then
     echo "Usage: $FUNCNAME KIND (i.e. pods)"
     return 1
   fi
@@ -397,7 +397,7 @@ kdump()
 
 kdump_all()
 {
-  local cmd="kubectl-dev"
+  local cmd="k-dev"
   local dir="$($cmd config current-context)_$(date +%s)"
 
   [ -d $dir ] || mkdir $dir
@@ -497,18 +497,18 @@ knodes()
   done
 }
 
-# check if any node is not logging to SD
+# check if any node is not logging to SD in x minutes
 knodes_logging()
 {
-  [ $ZSH_VERSION ] && FUNCNAME=${funcstack[1]}
+  [ -n "$ZSH_VERSION" ] && FUNCNAME=${funcstack[1]}
 
-  if [ $# -lt 1 ] ; then
+  if [ "$#" -lt 1 ] ; then
     echo "Usage: $FUNCNAME NODE_PREFIX"
     return 1
   fi
 
   local node_prefix=$1
-  local minutes='60'
+  local minutes=${2:-60}
   local project=$(gcloud config get-value core/project)
   local date=''
 
@@ -530,7 +530,7 @@ knodes_logging()
   # read log into the temp file
   echo ">> fetching kubelet log from ${node_prefix} nodes in the last $minutes minutes"
 
-  gcloud logging read --format json --freshness 1h "
+  gcloud logging read --format=json --order=desc "
     resource.type=\"gce_instance\"
     logName=\"projects/${project}/logs/kubelet\"
     jsonPayload._HOSTNAME:\"${node_prefix}\"
@@ -538,13 +538,14 @@ knodes_logging()
   " >&3
 
   # local data=`cat <&4`
-  local data=$(cat <&4 | jq '.[] | [.jsonPayload._HOSTNAME]' | sort | uniq)
+  local data=$(cat <&4 | jq -r '.[] | .jsonPayload._HOSTNAME' | sort -u)
   local nodes=( $(kubectl get nodes -o jsonpath='{.items[*].spec.providerID}') )
   local all_good=true
   # echo $data
   for n in ${nodes[@]};
   do
     node_name=$(echo $n | awk -F/ '{print $NF}')
+    # echo $node_name
     if [[ ! "$data" =~ "$node_name" ]]; then
       echo "[x] node $node_name is not logging"
       $all_good && all_good=false
@@ -556,9 +557,9 @@ knodes_logging()
 # get token by serviceaccount
 ktoken_by_sc()
 {
-  [ $ZSH_VERSION ] && FUNCNAME=${funcstack[1]}
+  [ -n "$ZSH_VERSION" ] && FUNCNAME=${funcstack[1]}
 
-  if [ $# -lt 1 ] ; then
+  if [ "$#" -lt 1 ] ; then
     echo "Usage: $FUNCNAME SERVICE_ACCOUNT [NAMESPACE:-default]"
     return 1
   fi
@@ -571,9 +572,9 @@ ktoken_by_sc()
 # get token by secret
 ktoken_by_secret()
 {
-  [ $ZSH_VERSION ] && FUNCNAME=${funcstack[1]}
+  [ -n "$ZSH_VERSION" ] && FUNCNAME=${funcstack[1]}
 
-  if [ $# -lt 1 ] ; then
+  if [ "$#" -lt 1 ] ; then
     echo "Usage: $FUNCNAME SECRET [NAMESPACE:-default]"
     return 1
   fi
