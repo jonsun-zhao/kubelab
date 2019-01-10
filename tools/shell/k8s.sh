@@ -15,7 +15,7 @@ MEMORY_REQUEST:.spec.containers[].resources.requests.memory,\
 MEMORY_LIMIT:.spec.containers[].resources.limits.memory" get pods'
 
 alias g="gcloud"
-alias gssh="g compute ssh"
+alias gssh="g compute ssh  --ssh-flag=\"-o LogLevel=QUIET\""
 alias gno="g --no-user-output-enabled"
 alias gcontainer="g container"
 alias gdefault="gactivate default"
@@ -28,7 +28,7 @@ else
 fi
 
 # =====================
-#  Utilities
+#  Utils
 # =====================
 browse()
 {
@@ -54,14 +54,17 @@ cutf()
   echo $(echo "$line" | cut -f${f} -d"${d}")
 }
 
-tcurl()
-{
-  curl -H "Authorization: Bearer $TOKEN" $@
-}
+# =====================
+#  GCP Helpers
+# =====================
 
-# =====================
-#  Functions
-# =====================
+# doesn't work while inspecting customer's project...
+gproject_number()
+{
+  project_id=${1:-`gcloud config get-value core/project 2>/dev/null`}
+  token=${2:-`gcloud auth print-access-token 2>/dev/null`}
+  curl -s -H "Authorization: Bearer $token" "https://cloudresourcemanager.googleapis.com/v1beta1/projects/${project_id}" | jq -r ".projectNumber"
+}
 
 # switch between cloud configs
 gactivate()
@@ -208,6 +211,56 @@ kinspect()
   fi
 }
 
+# list docker image ids in the GCR of the current project
+gdocker_image_id()
+{
+  [ $ZSH_VERSION ] && FUNCNAME=${funcstack[1]}
+
+  if [ $# -lt 1 ] ; then
+    echo "Usage: $FUNCNAME IMAGE_NAME"
+    return 1
+  fi
+
+  local image=$1
+  local project=$(gcloud config get-value core/project)
+  local token=$(gcloud auth print-access-token)
+
+  local url="https://gcr.io/v2/$project/$image"
+  local j="Content-Type: application/json"
+  local t="Authorization: Bearer $token"
+
+  # echo $image
+  # echo $project
+  # echo $url
+  # echo $token
+
+  # → cat tag_list | jq '.manifest | to_entries[] | [.key, .value]'
+  # [
+  #   "sha256:09248ec73e524dc320e378c4a378ca1804692644ebaa24b95cf9c1d5d0f01196",
+  #   {
+  #     "imageSizeBytes": "5215719",
+  #     "layerId": "",
+  #     "mediaType": "application/vnd.docker.distribution.manifest.v2+json",
+  #     "tag": [],
+  #     "timeCreatedMs": "1532434848921",
+  #     "timeUploadedMs": "1532434855964"
+  #   }
+  # ]
+
+  for x in $(curl -s -H "$j" -H "$t" $url/tags/list 2>/dev/null | jq -r '
+      .manifest
+        | to_entries[]
+        | [.key, .value.imageSizeBytes]
+        | join("|")
+    ');
+  do
+    local tag=$(cutf $x 1)
+    local size=$(cutf $x 2) # imageSizeBytes
+    local image_id=$(curl -s -H "$j" -H "$t" $url/manifests/$tag 2>/dev/null | jq -r '.config.digest')
+    echo "$image|$image_id|$size"
+  done
+}
+
 cluster_viceroy()
 {
   [ $ZSH_VERSION ] && FUNCNAME=${funcstack[1]}
@@ -237,6 +290,10 @@ cluster_master_viceroy()
   browse "https://viceroy.corp.google.com/cloud_kubernetes/cluster/masters?cluster=${location}%2C+${project_number}%2C+${cluster_name}&env=prod"
 }
 
+# =====================
+#  k8s Helpers
+# =====================
+
 # get pod by name
 kpod()
 {
@@ -249,14 +306,17 @@ kpod()
 
   pod=$1
   ns=${2:-default}
-  echo ">> Pod: $pod"
-  echo ">> Namespace: $ns"
+
   kubectl -n $ns get pod $pod -o json | jq -r '
-    "Pod ID = " + .metadata.uid, ("Node = " + .spec.nodeName),
-    (.status.containerStatuses[]
-      | "Container = \(.name) [\(.containerID)]"
+    "[ns] " + .metadata.namespace,
+    "[pod] " + .metadata.name,
+    "[pod_id] " + .metadata.uid,
+    "[node] " + .spec.nodeName,
+    "[status] " + .status.phase,
+    (
+      .status.containerStatuses[] | (">> [c] " + .name + " " + .containerID)
     )
-  ' | sed 's#//#:#g'
+  ' | sed 's#://# => #g'
 }
 
 # get pod detail by id
@@ -274,19 +334,25 @@ kpod_by_id()
 
 kpod_all()
 {
-  kubectl get pods --all-namespaces -o jsonpath='{range .items[*]}{"\n"}[ns]{.metadata.namespace} [pod]{.metadata.name} [pod_id]{.metadata.uid} [node]{.spec.nodeName} [status]{.status.phase}{"\n"}{range .status.containerStatuses[*]}>> [c]{.name} {.containerID}{"\n"}{end}{"\n"}{end}' | sed 's#//#|#g'
+  kubectl get pods --all-namespaces -o jsonpath='{range .items[*]}{"\n"}[ns]{.metadata.namespace} [pod]{.metadata.name} [pod_id]{.metadata.uid} [node]{.spec.nodeName} [status]{.status.phase}{"\n"}{range .status.containerStatuses[*]}>> [c]{.name} {.containerID}{"\n"}{end}{"\n"}{end}' | sed 's#://# => #g'
 }
 
 kpod_all_x()
 {
   kubectl get pods --all-namespaces -o json | jq -r '
     .items[]
-    | (.metadata.namespace + " " + .metadata.name + " " + .metadata.uid + " " + .spec.nodeName + " " + .status.phase),
+    | (
+        "[ns]" + .metadata.namespace + " " +
+        "[pod]" + .metadata.name + " " +
+        "[pod_id]" + .metadata.uid + " " +
+        "[node]" + .spec.nodeName + " " +
+        "[status]" + .status.phase
+      ),
       (
-        .status.containerStatuses[] | (">> " + .name + " " + .containerID)
+        .status.containerStatuses[] | (">> [c] " + .name + " " + .containerID)
       ),
       ""
-  ' | sed "s#//#:#g"
+  ' | sed 's#://# => #g'
 }
 
 # get pid from container id
@@ -300,7 +366,7 @@ kpid_by_container_id()
   fi
 
   # get pid from docker inspect
-  pid=$(gssh $1 -- "sudo docker inspect --format="{{.Spec.Pid}}" $2 2>/dev/null")
+  pid=$(gssh $1 -- "sudo docker inspect --format="{{.State.Pid}}" $2 2>/dev/null")
 
   # try crictl if nothing is found in docker
   if [ $? -eq 0 ]; then
@@ -331,7 +397,7 @@ kdump()
 
 kdump_all()
 {
-  local cmd="k-dev"
+  local cmd="kubectl-dev"
   local dir="$($cmd config current-context)_$(date +%s)"
 
   [ -d $dir ] || mkdir $dir
@@ -446,11 +512,9 @@ knodes_logging()
   local project=$(gcloud config get-value core/project)
   local date=''
 
-  if [ "$(uname)" = "Darwin" ]; then
-    # Do something under Mac OS X platform
+  if [[ "$(uname)" == "Darwin" ]]; then
     date=$(date -v-${minutes}M -u +"%Y-%m-%dT%H:%M:%SZ")
-  elif [ "$(expr substr $(uname -s) 1 5)" == "Linux" ]; then
-    # Do something under GNU/Linux platform
+  elif [[ "$(uname)" == "Linux" ]]; then
     date=$(date -d "${minutes} minutes ago" -u +"%Y-%m-%dT%H:%M:%SZ")
   fi
 
@@ -489,56 +553,6 @@ knodes_logging()
   $all_good && echo ">> all nodes are logging"
 }
 
-# list docker image ids in the GCR of the current project
-gdocker_image_id()
-{
-  [ $ZSH_VERSION ] && FUNCNAME=${funcstack[1]}
-
-  if [ $# -lt 1 ] ; then
-    echo "Usage: $FUNCNAME IMAGE_NAME"
-    return 1
-  fi
-
-  local image=$1
-  local project=$(gcloud config get-value core/project)
-  local token=$(gcloud auth print-access-token)
-
-  local url="https://gcr.io/v2/$project/$image"
-  local j="Content-Type: application/json"
-  local t="Authorization: Bearer $token"
-
-  # echo $image
-  # echo $project
-  # echo $url
-  # echo $token
-
-  # → cat tag_list | jq '.manifest | to_entries[] | [.key, .value]'
-  # [
-  #   "sha256:09248ec73e524dc320e378c4a378ca1804692644ebaa24b95cf9c1d5d0f01196",
-  #   {
-  #     "imageSizeBytes": "5215719",
-  #     "layerId": "",
-  #     "mediaType": "application/vnd.docker.distribution.manifest.v2+json",
-  #     "tag": [],
-  #     "timeCreatedMs": "1532434848921",
-  #     "timeUploadedMs": "1532434855964"
-  #   }
-  # ]
-
-  for x in $(curl -s -H "$j" -H "$t" $url/tags/list 2>/dev/null | jq -r '
-      .manifest
-        | to_entries[]
-        | [.key, .value.imageSizeBytes]
-        | join("|")
-    ');
-  do
-    local tag=$(cutf $x 1)
-    local size=$(cutf $x 2) # imageSizeBytes
-    local image_id=$(curl -s -H "$j" -H "$t" $url/manifests/$tag 2>/dev/null | jq -r '.config.digest')
-    echo "$image|$image_id|$size"
-  done
-}
-
 # get token by serviceaccount
 ktoken_by_sc()
 {
@@ -568,4 +582,10 @@ ktoken_by_secret()
   namespace=${2:-default}
 
   kubectl -n $namespace get secret $secret -o jsonpath="{.data.token}"|base64_decode
+}
+
+# get cluster autoscaler status
+kautoscaler_status()
+{
+  kubectl -n kube-system get configmap cluster-autoscaler-status -o json | jq -r '.data.status'
 }
