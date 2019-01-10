@@ -421,10 +421,10 @@ kdump_all()
 # list nodes with pods
 knodes()
 {
-  local refresh=0
+  local refresh=false
   while getopts 'r' opt; do
       case $opt in
-          r) refresh=1 ;;
+          r) refresh=true ;;
           *) echo 'Error in command line parsing' >&2
              exit 1
       esac
@@ -435,7 +435,7 @@ knodes()
   pf="pods.json"
 
   # remove the cache files if refresh flag is on
-  if (( $refresh == 1 )); then
+  if $refresh; then
     [ -f $nf ] && rm -f $nf
     [ -f $pf ] && rm -f $pf
   fi
