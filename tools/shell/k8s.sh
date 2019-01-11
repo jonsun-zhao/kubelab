@@ -315,14 +315,15 @@ kpod()
         "[namespace]=" + .metadata.namespace,
         "[uid]=" + .metadata.uid,
         "[nodeName]=" + (.spec.nodeName|tostring),
+        "[podIP]=" + (.status.podIP|tostring),
         "[status]=" + (.status.phase|tostring)
       ] | join(" ")
     ),
     (
       .status.containerStatuses[] | [
-          ">> [container]=" + .name,
+          "#container: [name]=" + .name,
           .containerID
-      ] | @tsv
+      ] | join(" ")
     )
   ' | sed 's#://#=#g'
 }
@@ -356,8 +357,7 @@ kpods()
   f="pods.json"
 
   if ! $use_cache; then
-    rm -f $f 2>/dev/null
-    kdump "pods"
+    kdump "pods"; echo
   fi
 
   cat $f | jq -r '
@@ -368,14 +368,15 @@ kpods()
           "[namespace]=" + .metadata.namespace,
           "[uid]=" + .metadata.uid,
           "[nodeName]=" + (.spec.nodeName|tostring),
+          "[podIP]=" + (.status.podIP|tostring),
           "[status]=" + (.status.phase|tostring)
         ] | join(" ")
       ),
       (
         .status.containerStatuses[] | [
-          ">> [container]=" + .name,
+          "#container: [name]=" + .name,
           .containerID
-        ] | @tsv
+        ] | join(" ")
       ),
       ""
   ' | sed 's#://#=#g'
@@ -448,13 +449,8 @@ knodes()
   nf="nodes.json"
   pf="pods.json"
 
-  # use the cache files
   if ! $use_cache; then
-    rm -f $nf 2>/dev/null
-    rm -f $pf 2>/dev/null
-    kdump "nodes"
-    kdump "pods"
-    echo
+    kdump "nodes"; kdump "pods"; echo
   fi
 
   nodes=( $(cat ${nf} | jq -r '
@@ -557,7 +553,7 @@ knodes_logging()
   # echo $data
   for n in ${nodes[@]};
   do
-    node_name=$(echo $n | awk -F/ '{print $NF}')
+    local node_name=$(echo $n | awk -F/ '{print $NF}')
     # echo $node_name
     if [[ ! "$data" =~ "$node_name" ]]; then
       echo "[x] node $node_name is not logging"
@@ -630,12 +626,12 @@ kservice()
     ),
     (
       .spec.ports[] | [
-        ">> [name]=" + (.name|tostring),
+        "#port: [name]=" + (.name|tostring),
         "[protocol]=" + (.protocol|tostring),
         "[port]=" + (.port|tostring),
         "[nodePort]=" + (.nodePort|tostring),
         "[targetPort]=" + (.targetPort|tostring)
-      ] | @tsv
+      ] | join(" ")
     )
   '
 }
@@ -656,8 +652,7 @@ kservices()
   f="services.json"
 
   if ! $use_cache; then
-    rm -f $f 2>/dev/null
-    kdump "services"
+    kdump "services"; echo
   fi
 
   cat $f | jq -r '
@@ -668,18 +663,18 @@ kservices()
           "[namespace]=" + .metadata.namespace,
           "[type]=" + .spec.type,
           "[clusterIP]=" + (.spec.clusterIP|tostring),
-          "[loadBalancerIP]=" + (.spec.loadBalancerIP|tostring),
+          "[loadBalancerIP]=" + (.status.loadBalancer.ingress[0].ip | tostring),
           "[externalTrafficPolicy]=" + (.spec.externalTrafficPolicy|tostring)
         ] | join(" ")
       ),
       (
         .spec.ports[] | [
-          ">> [name]=" + (.name|tostring),
+          "#port: [name]=" + (.name|tostring),
           "[protocol]=" + (.protocol|tostring),
           "[port]=" + (.port|tostring),
           "[nodePort]=" + (.nodePort|tostring),
           "[targetPort]=" + (.targetPort|tostring)
-        ] | @tsv
+        ] | join(" ")
       ),
       ""
     '
