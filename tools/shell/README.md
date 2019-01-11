@@ -1,22 +1,23 @@
-# Shell helpers
+# Shell Helpers
 
 ## Prerequisites
 
 * Download the patched kubectl
 
 ```sh
-gsutil cp gs://nmiu-play_tools/kubectl-114-darwin /path/to/bin/
-gsutil cp gs://nmiu-play_tools/kubectl-114-linux /path/to/bin/
+gsutil cp gs://nmiu-play_tools/kubectl-114-darwin /path/to/bin/k-dev
+gsutil cp gs://nmiu-play_tools/kubectl-114-linux /path/to/bin/k-dev
+chmod +x /path/to/bin/k-dev
 ```
 
 ## Installation
 
-* Source the script in `.bashrc` or `.zshrc`
+* Source the scripts in `.bashrc` or `.zshrc`
 
 ```sh
 source /path/to/k8s.sh
 ```
 
-## Usage
+## Functions
 
-TBD
+* [current list](func.md)

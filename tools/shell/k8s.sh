@@ -15,7 +15,7 @@ MEMORY_REQUEST:.spec.containers[].resources.requests.memory,\
 MEMORY_LIMIT:.spec.containers[].resources.limits.memory" get pods'
 
 alias g="gcloud"
-alias gssh='g compute ssh  --ssh-flag="-o LogLevel=QUIET"'
+alias gssh='g compute ssh --ssh-flag="-o LogLevel=QUIET"'
 alias gno="g --no-user-output-enabled"
 alias gcontainer="g container"
 alias gdefault="gactivate default"
@@ -30,6 +30,7 @@ fi
 # =====================
 #  Utils
 # =====================
+
 browse()
 {
   if [ -z "$SSH_TTY" ]; then
@@ -305,21 +306,28 @@ kpod()
   fi
 
   pod=$1
-  ns=${2:-default}
+  namespace=${2:-default}
 
-  kubectl -n $ns get pod $pod -o json | jq -r '
-    "[ns] " + .metadata.namespace,
-    "[pod] " + .metadata.name,
-    "[pod_id] " + .metadata.uid,
-    "[node] " + .spec.nodeName,
-    "[status] " + .status.phase,
+  kubectl -n $namespace get pod $pod -o json | jq -r '
     (
-      .status.containerStatuses[] | (">> [c] " + .name + " " + .containerID)
+      [
+        "[name]=" + .metadata.name,
+        "[namespace]=" + .metadata.namespace,
+        "[uid]=" + .metadata.uid,
+        "[nodeName]=" + (.spec.nodeName|tostring),
+        "[status]=" + (.status.phase|tostring)
+      ] | join(" ")
+    ),
+    (
+      .status.containerStatuses[] | [
+          ">> [container]=" + .name,
+          .containerID
+      ] | @tsv
     )
-  ' | sed 's#://# => #g'
+  ' | sed 's#://#=#g'
 }
 
-# get pod detail by id
+# get pod by id
 kpod_by_id()
 {
   [ -n "$ZSH_VERSION" ] && FUNCNAME=${funcstack[1]}
@@ -332,30 +340,48 @@ kpod_by_id()
   kubectl get pods --all-namespaces -o json | jq -r ".items[] | select(.metadata.uid == \"$1\")"
 }
 
-kpod_all()
+# get pods
+kpods()
 {
-  kubectl get pods --all-namespaces -o jsonpath='{range .items[*]}{"\n"}[ns]{.metadata.namespace} [pod]{.metadata.name} [pod_id]{.metadata.uid} [node]{.spec.nodeName} [status]{.status.phase}{"\n"}{range .status.containerStatuses[*]}>> [c]{.name} {.containerID}{"\n"}{end}{"\n"}{end}' | sed 's#://# => #g'
-}
+  local use_cache=false
+  while getopts 'c' opt; do
+      case $opt in
+          c) use_cache=true ;;
+          *) echo 'Error in command line parsing' >&2
+             exit 1
+      esac
+  done
+  shift "$(( OPTIND - 1 ))"
 
-kpod_all_x()
-{
-  kubectl get pods --all-namespaces -o json | jq -r '
+  f="pods.json"
+
+  if ! $use_cache; then
+    rm -f $f 2>/dev/null
+    kdump "pods"
+  fi
+
+  cat $f | jq -r '
     .items[]
     | (
-        "[ns]" + .metadata.namespace + " " +
-        "[pod]" + .metadata.name + " " +
-        "[pod_id]" + .metadata.uid + " " +
-        "[node]" + .spec.nodeName + " " +
-        "[status]" + .status.phase
+        [
+          "[name]=" + .metadata.name,
+          "[namespace]=" + .metadata.namespace,
+          "[uid]=" + .metadata.uid,
+          "[nodeName]=" + (.spec.nodeName|tostring),
+          "[status]=" + (.status.phase|tostring)
+        ] | join(" ")
       ),
       (
-        .status.containerStatuses[] | (">> [c] " + .name + " " + .containerID)
+        .status.containerStatuses[] | [
+          ">> [container]=" + .name,
+          .containerID
+        ] | @tsv
       ),
       ""
-  ' | sed 's#://# => #g'
+  ' | sed 's#://#=#g'
 }
 
-# get pid from container id
+# get pid by container id
 kpid_by_container_id()
 {
   [ -n "$ZSH_VERSION" ] && FUNCNAME=${funcstack[1]}
@@ -372,12 +398,11 @@ kpid_by_container_id()
   if [ $? -eq 0 ]; then
     echo $pid
   else
-    data=$(gssh $1 -- "sudo crictl inspect $2 2>/dev/null")
-    [ ! -z "$data" ] && echo $data | jq '.info.pid'
+    echo $(gssh $1 -- "sudo crictl inspect $2 2>/dev/null") | jq -r '.info.pid'
   fi
 }
 
-# dump object by kind
+# dump object by type
 kdump()
 {
   [ -n "$ZSH_VERSION" ] && FUNCNAME=${funcstack[1]}
@@ -395,6 +420,7 @@ kdump()
   $cmd get $kind --all-namespaces -o json > $dir/$kind.json
 }
 
+# dump anything and everything
 kdump_all()
 {
   local cmd="k-dev"
@@ -406,13 +432,13 @@ kdump_all()
   echo -e "\n** output directory:  ${dir} **"
 }
 
-# list nodes with pods
+# get nodes and their pods
 knodes()
 {
-  local refresh=false
-  while getopts 'r' opt; do
+  local use_cache=false
+  while getopts 'c' opt; do
       case $opt in
-          r) refresh=true ;;
+          c) use_cache=true ;;
           *) echo 'Error in command line parsing' >&2
              exit 1
       esac
@@ -422,15 +448,14 @@ knodes()
   nf="nodes.json"
   pf="pods.json"
 
-  # remove the cache files if refresh flag is on
-  if $refresh; then
-    [ -f $nf ] && rm -f $nf
-    [ -f $pf ] && rm -f $pf
+  # use the cache files
+  if ! $use_cache; then
+    rm -f $nf 2>/dev/null
+    rm -f $pf 2>/dev/null
+    kdump "nodes"
+    kdump "pods"
+    echo
   fi
-
-  [ -f $nf ] || kdump "nodes"
-  [ -f $pf ] || kdump "pods"
-  echo
 
   nodes=( $(cat ${nf} | jq -r '
       .items[]
@@ -577,4 +602,85 @@ ktoken_by_secret()
 kautoscaler_status()
 {
   kubectl -n kube-system get configmap cluster-autoscaler-status -o json | jq -r '.data.status'
+}
+
+# get service by name
+kservice()
+{
+  [ -n "$ZSH_VERSION" ] && FUNCNAME=${funcstack[1]}
+
+  if [ "$#" -lt 1 ] ; then
+    echo "Usage: $FUNCNAME SERVICE_NAME [NAMESPACE]"
+    return 1
+  fi
+
+  service=$1
+  namespace=${2:-default}
+
+  kubectl -n $namespace get service $service -o json | jq -r '
+    (
+      [
+        "[name]=" + .metadata.name,
+        "[namespace]=" + .metadata.namespace,
+        "[type]=" + .spec.type,
+        "[clusterIP]=" + (.spec.clusterIP|tostring),
+        "[loadBalancerIP]=" + (.spec.loadBalancerIP|tostring),
+        "[externalTrafficPolicy]=" + (.spec.externalTrafficPolicy|tostring)
+      ] | join(" ")
+    ),
+    (
+      .spec.ports[] | [
+        ">> [name]=" + (.name|tostring),
+        "[protocol]=" + (.protocol|tostring),
+        "[port]=" + (.port|tostring),
+        "[nodePort]=" + (.nodePort|tostring),
+        "[targetPort]=" + (.targetPort|tostring)
+      ] | @tsv
+    )
+  '
+}
+
+# get services
+kservices()
+{
+  local use_cache=false
+  while getopts 'c' opt; do
+      case $opt in
+          c) use_cache=true ;;
+          *) echo 'Error in command line parsing' >&2
+             exit 1
+      esac
+  done
+  shift "$(( OPTIND - 1 ))"
+
+  f="services.json"
+
+  if ! $use_cache; then
+    rm -f $f 2>/dev/null
+    kdump "services"
+  fi
+
+  cat $f | jq -r '
+    .items[]
+    | (
+        [
+          "[name]=" + .metadata.name,
+          "[namespace]=" + .metadata.namespace,
+          "[type]=" + .spec.type,
+          "[clusterIP]=" + (.spec.clusterIP|tostring),
+          "[loadBalancerIP]=" + (.spec.loadBalancerIP|tostring),
+          "[externalTrafficPolicy]=" + (.spec.externalTrafficPolicy|tostring)
+        ] | join(" ")
+      ),
+      (
+        .spec.ports[] | [
+          ">> [name]=" + (.name|tostring),
+          "[protocol]=" + (.protocol|tostring),
+          "[port]=" + (.port|tostring),
+          "[nodePort]=" + (.nodePort|tostring),
+          "[targetPort]=" + (.targetPort|tostring)
+        ] | @tsv
+      ),
+      ""
+    '
 }
