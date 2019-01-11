@@ -402,19 +402,7 @@ kdump_all()
 
   [ -d $dir ] || mkdir $dir
 
-  local r1=( `$cmd api-resources --verbs=list --namespaced=false -o name | cut -d "." -f1 | sort -u` )
-  local r2=( `$cmd api-resources --verbs=list -o name | cut -d "." -f1 | sort -u` )
-  local resources=( "${r1[@]}" "${r2[@]}" )
-  local unique_resources=( $(echo "${resources[@]}" | tr ' ' '\n' | sort -u | tr '\n' ' ') )
-
-  # echo "dumping all resources"
-  for k in $unique_resources[@];
-  do
-    # skip secrets
-    [[ $k == "secrets" ]] && continue
-    kdump $k $dir $cmd
-  done
-
+  $cmd cluster-info dump --all-namespaces --output-directory=$dir
   echo -e "\n** output directory:  ${dir} **"
 }
 
