@@ -620,10 +620,6 @@ kservice()
     return 1
   fi
 
-  sf="services.json"
-  ef="endpoints.json"
-  pf="pods.json"
-
   if ! $use_cache; then
     kdump "services"
     kdump "endpoints"
@@ -634,8 +630,9 @@ kservice()
   service=$1
   namespace=${2:-default}
 
-  cat $sf | jq -r --arg SVC "$service" --arg NS "$namespace" '
-    .items[] | select(.metadata.name == $SVC and .metadata.namespace == $NS)
+  cat services.json | jq -r --arg SVC "$service" --arg NS "$namespace" '
+    .items[]
+    | select(.metadata.name == $SVC and .metadata.namespace == $NS)
     | (
         [
           "[name]=" + .metadata.name,
@@ -657,9 +654,9 @@ kservice()
       )
   '
 
-  endpoints=( $(cat endpoints.json | jq -r --arg SVC "$service" '
+  endpoints=( $(cat endpoints.json | jq -r --arg SVC "$service" --arg NS "$namespace" '
       .items[]
-        | select(.metadata.name == $SVC)
+        | select(.metadata.name == $SVC and .metadata.namespace == $NS)
         | .subsets[]
         | (.addresses[] | [.ip, .targetRef.name, .nodeName] | join("|"))
       '
@@ -670,20 +667,23 @@ kservice()
 
   for e in ${endpoints[@]};
   do
-    ep_ip=`cutf $e 1`
-    pod=`cutf $e 2`
-    node=`cutf $e 3`
+    set -- $(echo $e | sed "s/|/ /g")
+    ep_ip=$1; shift
+    pod=$1; shift
+    node=$1; shift
 
     pod_ip=$(cat pods.json | jq -r --arg POD "$pod" '
       .items[]
-        | select(.metadata.name == $POD)
+        | select(.metadata.name == $POD and .metadata.namespace == $NS)
         | (.status.podIP|tostring)
     ')
 
+    ep_str="#endpoint: [ip]=${ep_ip} [pod]=${pod} [node]=${node}"
+
     if [ "$ep_ip" = "$pod_ip" ]; then
-      echo "#endpoint: ${e}"
+      echo $ep_str
     else
-      echo "#endpoint: ${e} [<< this endpoint doesn't match with the pod IP: ${pod_ip}]"
+      echo "${ep_str} [<< endpoint doesn't match with the pod IP: ${pod_ip}]"
     fi
   done
 }
@@ -701,10 +701,6 @@ kservices()
   done
   shift "$(( OPTIND - 1 ))"
 
-  sf="services.json"
-  ef="endpoints.json"
-  pf="pods.json"
-
   if ! $use_cache; then
     kdump "services"
     kdump "endpoints"
@@ -712,30 +708,16 @@ kservices()
     echo
   fi
 
+  services=( $(cat services.json | jq -r '.items[] | [.metadata.name, .metadata.namespace] | join("|")') )
 
+  for s in ${services[@]}
+  do
+    set -- $(echo $s | sed "s/|/ /g")
+    name=$1; shift
+    namespace=$1; shift
+    # echo "$name ($namespace)"
 
-  cat $sf | jq -r '
-    .items[]
-    | (
-        [
-          "[name]=" + .metadata.name,
-          "[namespace]=" + .metadata.namespace,
-          "[type]=" + .spec.type,
-          "[clusterIP]=" + (.spec.clusterIP|tostring),
-          "[loadBalancerIP]=" + (.status.loadBalancer.ingress[0].ip | tostring),
-          "[externalTrafficPolicy]=" + (.spec.externalTrafficPolicy|tostring)
-        ] | join(" ")
-      ),
-      (
-        .spec.ports[] | [
-          "#port: [name]=" + (.name|tostring),
-          "[protocol]=" + (.protocol|tostring),
-          "[port]=" + (.port|tostring),
-          "[nodePort]=" + (.nodePort|tostring),
-          "[targetPort]=" + (.targetPort|tostring)
-        ] | join(" ")
-      ),
-      ""
-    '
-
+    kservice -c $name $namespace
+    echo
+  done
 }
