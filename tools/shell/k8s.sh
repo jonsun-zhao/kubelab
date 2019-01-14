@@ -605,35 +605,87 @@ kservice()
 {
   [ -n "$ZSH_VERSION" ] && FUNCNAME=${funcstack[1]}
 
+  local use_cache=false
+  while getopts 'c' opt; do
+      case $opt in
+          c) use_cache=true ;;
+          *) echo 'Error in command line parsing' >&2
+             exit 1
+      esac
+  done
+  shift "$(( OPTIND - 1 ))"
+
   if [ "$#" -lt 1 ] ; then
     echo "Usage: $FUNCNAME SERVICE_NAME [NAMESPACE]"
     return 1
   fi
 
+  sf="services.json"
+  ef="endpoints.json"
+  pf="pods.json"
+
+  if ! $use_cache; then
+    kdump "services"
+    kdump "endpoints"
+    kdump "pods"
+    echo
+  fi
+
   service=$1
   namespace=${2:-default}
 
-  kubectl -n $namespace get service $service -o json | jq -r '
-    (
-      [
-        "[name]=" + .metadata.name,
-        "[namespace]=" + .metadata.namespace,
-        "[type]=" + .spec.type,
-        "[clusterIP]=" + (.spec.clusterIP|tostring),
-        "[loadBalancerIP]=" + (.spec.loadBalancerIP|tostring),
-        "[externalTrafficPolicy]=" + (.spec.externalTrafficPolicy|tostring)
-      ] | join(" ")
-    ),
-    (
-      .spec.ports[] | [
-        "#port: [name]=" + (.name|tostring),
-        "[protocol]=" + (.protocol|tostring),
-        "[port]=" + (.port|tostring),
-        "[nodePort]=" + (.nodePort|tostring),
-        "[targetPort]=" + (.targetPort|tostring)
-      ] | join(" ")
-    )
+  cat $sf | jq -r --arg SVC "$service" --arg NS "$namespace" '
+    .items[] | select(.metadata.name == $SVC and .metadata.namespace == $NS)
+    | (
+        [
+          "[name]=" + .metadata.name,
+          "[namespace]=" + .metadata.namespace,
+          "[type]=" + .spec.type,
+          "[clusterIP]=" + (.spec.clusterIP|tostring),
+          "[loadBalancerIP]=" + (.spec.loadBalancerIP|tostring),
+          "[externalTrafficPolicy]=" + (.spec.externalTrafficPolicy|tostring)
+        ] | join(" ")
+      ),
+      (
+        .spec.ports[] | [
+          "#port: [name]=" + (.name|tostring),
+          "[protocol]=" + (.protocol|tostring),
+          "[port]=" + (.port|tostring),
+          "[nodePort]=" + (.nodePort|tostring),
+          "[targetPort]=" + (.targetPort|tostring)
+        ] | join(" ")
+      )
   '
+
+  endpoints=( $(cat endpoints.json | jq -r --arg SVC "$service" '
+      .items[]
+        | select(.metadata.name == $SVC)
+        | .subsets[]
+        | (.addresses[] | [.ip, .targetRef.name, .nodeName] | join("|"))
+      '
+    )
+  )
+
+  # echo $endpoints
+
+  for e in ${endpoints[@]};
+  do
+    ep_ip=`cutf $e 1`
+    pod=`cutf $e 2`
+    node=`cutf $e 3`
+
+    pod_ip=$(cat pods.json | jq -r --arg POD "$pod" '
+      .items[]
+        | select(.metadata.name == $POD)
+        | (.status.podIP|tostring)
+    ')
+
+    if [ "$ep_ip" = "$pod_ip" ]; then
+      echo "#endpoint: ${e}"
+    else
+      echo "#endpoint: ${e} [<< this endpoint doesn't match with the pod IP: ${pod_ip}]"
+    fi
+  done
 }
 
 # get services
@@ -649,13 +701,20 @@ kservices()
   done
   shift "$(( OPTIND - 1 ))"
 
-  f="services.json"
+  sf="services.json"
+  ef="endpoints.json"
+  pf="pods.json"
 
   if ! $use_cache; then
-    kdump "services"; echo
+    kdump "services"
+    kdump "endpoints"
+    kdump "pods"
+    echo
   fi
 
-  cat $f | jq -r '
+
+
+  cat $sf | jq -r '
     .items[]
     | (
         [
@@ -678,4 +737,5 @@ kservices()
       ),
       ""
     '
+
 }
