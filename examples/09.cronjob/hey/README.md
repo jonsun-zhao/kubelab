@@ -117,7 +117,7 @@ You may change the hey parameters in the `hey-secret` and/or `hey-config` to sui
 
 ### Change other hey parameters
 
-([all hey parameters](https://github.com/rakyll/hey))
+([all hey parameters](https://github.com/rakyll/hey#usage))
 
 Manually update the `command` section
 

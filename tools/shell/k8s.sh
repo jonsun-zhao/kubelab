@@ -669,18 +669,29 @@ kservice()
 
   for e in ${endpoints[@]};
   do
-    set -- $(echo $e | sed "s/|/ /g")
-    ep_ip=$1; shift
-    pod=$1; shift
-    node=$1; shift
+    # using cutf here as the pod/node sections can be empty
+    #
+    # i.e. for service "kubernetes" namespace "default"
+    #
+    # $e => "35.203.90.158||"
+    #
+
+    ep_ip=`cutf $e 1`
+    pod=`cutf $e 2`
+    node=`cutf $e 3`
+
+    ep_str="#endpoint: [ip]=${ep_ip} [pod]=${pod} [node]=${node}"
+
+    if [ -z $pod ]; then
+      echo $ep_str
+      return
+    fi
 
     pod_ip=$(cat pods.json | jq -r --arg POD "$pod" --arg NS "$namespace" '
       .items[]
         | select(.metadata.name == $POD and .metadata.namespace == $NS)
         | (.status.podIP|tostring)
     ')
-
-    ep_str="#endpoint: [ip]=${ep_ip} [pod]=${pod} [node]=${node}"
 
     if [ "$ep_ip" = "$pod_ip" ]; then
       echo $ep_str
