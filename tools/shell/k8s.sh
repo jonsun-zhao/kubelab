@@ -300,50 +300,6 @@ kpod()
 {
   [ -n "$ZSH_VERSION" ] && FUNCNAME=${funcstack[1]}
 
-  if [ "$#" -lt 1 ] ; then
-    echo "Usage: $FUNCNAME POD_NAME [NAMESPACE]"
-    return 1
-  fi
-
-  pod=$1
-  namespace=${2:-default}
-
-  kubectl -n $namespace get pod $pod -o json | jq -r '
-    (
-      [
-        "[name]=" + .metadata.name,
-        "[namespace]=" + .metadata.namespace,
-        "[uid]=" + .metadata.uid,
-        "[nodeName]=" + (.spec.nodeName|tostring),
-        "[podIP]=" + (.status.podIP|tostring),
-        "[status]=" + (.status.phase|tostring)
-      ] | join(" ")
-    ),
-    (
-      .status.containerStatuses[] | [
-          "#container: [name]=" + .name,
-          .containerID
-      ] | join(" ")
-    )
-  ' | sed 's#://#=#g'
-}
-
-# get pod by id
-kpod_by_id()
-{
-  [ -n "$ZSH_VERSION" ] && FUNCNAME=${funcstack[1]}
-
-  if [ "$#" -lt 1 ] ; then
-    echo "Usage: $FUNCNAME POD_ID"
-    return 1
-  fi
-
-  kubectl get pods --all-namespaces -o json | jq -r ".items[] | select(.metadata.uid == \"$1\")"
-}
-
-# get pods
-kpods()
-{
   local use_cache=false
   while getopts 'c' opt; do
       case $opt in
@@ -354,14 +310,21 @@ kpods()
   done
   shift "$(( OPTIND - 1 ))"
 
-  f="pods.json"
+  if [ "$#" -lt 1 ] ; then
+    echo "Usage: $FUNCNAME POD_NAME [NAMESPACE]"
+    return 1
+  fi
 
   if ! $use_cache; then
     kdump "pods"; echo
   fi
 
-  cat $f | jq -r '
+  pod=$1
+  namespace=${2:-default}
+
+  cat pods.json | jq -r --arg POD "$pod" --arg NS "$namespace"  '
     .items[]
+    | select(.metadata.name == $POD and .metadata.namespace == $NS)
     | (
         [
           "[name]=" + .metadata.name,
@@ -377,9 +340,52 @@ kpods()
           "#container: [name]=" + .name,
           .containerID
         ] | join(" ")
-      ),
-      ""
+      )
   ' | sed 's#://#=#g'
+}
+
+# get pods
+kpods()
+{
+  local use_cache=false
+  while getopts 'c' opt; do
+      case $opt in
+          c) use_cache=true ;;
+          *) echo 'Error in command line parsing' >&2
+             exit 1
+      esac
+  done
+  shift "$(( OPTIND - 1 ))"
+
+  if ! $use_cache; then
+    kdump "pods"; echo
+  fi
+
+  pods=( $(cat pods.json | jq -r '.items[] | [.metadata.name, .metadata.namespace] | join("|")') )
+
+  for p in ${pods[@]}
+  do
+    set -- $(echo $p | sed "s/|/ /g")
+    name=$1; shift
+    namespace=$1; shift
+    # echo "$name ($namespace)"
+
+    kpod -c $name $namespace
+    echo
+  done
+}
+
+# get pod by id
+kpod_by_id()
+{
+  [ -n "$ZSH_VERSION" ] && FUNCNAME=${funcstack[1]}
+
+  if [ "$#" -lt 1 ] ; then
+    echo "Usage: $FUNCNAME POD_ID"
+    return 1
+  fi
+
+  kubectl get pods --all-namespaces -o json | jq -r ".items[] | select(.metadata.uid == \"$1\")"
 }
 
 # get pid by container id
@@ -446,14 +452,11 @@ knodes()
   done
   shift "$(( OPTIND - 1 ))"
 
-  nf="nodes.json"
-  pf="pods.json"
-
   if ! $use_cache; then
     kdump "nodes"; kdump "pods"; echo
   fi
 
-  nodes=( $(cat ${nf} | jq -r '
+  nodes=( $(cat nodes.json | jq -r '
       .items[]
       | [
           .metadata.name, .spec.podCIDR,
@@ -476,7 +479,7 @@ knodes()
     echo "[NODE: $node_ip] (podCIDR: $pod_cidr) ($node_name)"
     echo "--------------------------"
 
-    local pods=( $(cat ${pf} | jq -r --arg NODENAME "$node_name" '
+    local pods=( $(cat pods.json | jq -r --arg NODENAME "$node_name" '
         .items[]
           | select(.spec.nodeName == $NODENAME)
           | [ .metadata.name, .metadata.namespace, (select(.status.podIP) | .status.podIP) ]
@@ -623,10 +626,7 @@ kservice()
   fi
 
   if ! $use_cache; then
-    kdump "services"
-    kdump "endpoints"
-    kdump "pods"
-    echo
+    kdump "services"; kdump "endpoints"; kdump "pods"; echo
   fi
 
   service=$1
@@ -671,7 +671,7 @@ kservice()
   do
     # using cutf here as the pod/node sections can be empty
     #
-    # i.e. for service "kubernetes" namespace "default"
+    # i.e. for service "kubernetes" in namespace "default"
     #
     # $e => "35.203.90.158||"
     #
@@ -715,10 +715,7 @@ kservices()
   shift "$(( OPTIND - 1 ))"
 
   if ! $use_cache; then
-    kdump "services"
-    kdump "endpoints"
-    kdump "pods"
-    echo
+    kdump "services"; kdump "endpoints"; kdump "pods"; echo
   fi
 
   services=( $(cat services.json | jq -r '.items[] | [.metadata.name, .metadata.namespace] | join("|")') )
