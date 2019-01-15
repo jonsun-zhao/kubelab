@@ -479,14 +479,16 @@ knodes()
     local pods=( $(cat ${pf} | jq -r --arg NODENAME "$node_name" '
         .items[]
           | select(.spec.nodeName == $NODENAME)
-          | [ .metadata.name, (select(.status.podIP) | .status.podIP) ]
+          | [ .metadata.name, .metadata.namespace, (select(.status.podIP) | .status.podIP) ]
           | join("|")
       ' | sort) )
 
     for p in ${pods[@]};
     do
-      local pod_name=$(cutf $p 1)
-      local pod_ip=$(cutf $p 2)
+      set -- $(echo $p | sed "s/|/ /g")
+      local pod_name=$1; shift
+      local namespace=$1; shift
+      local pod_ip=$1; shift
 
       # check if pod ip is empty
       if [ -n "$pod_id" ]; then
@@ -499,7 +501,7 @@ knodes()
         fi
       fi
 
-      echo "$pod_ip ($pod_name)"
+      echo "$pod_ip ($namespace:$pod_name)"
     done
 
     echo
@@ -672,7 +674,7 @@ kservice()
     pod=$1; shift
     node=$1; shift
 
-    pod_ip=$(cat pods.json | jq -r --arg POD "$pod" '
+    pod_ip=$(cat pods.json | jq -r --arg POD "$pod" --arg NS "$namespace" '
       .items[]
         | select(.metadata.name == $POD and .metadata.namespace == $NS)
         | (.status.podIP|tostring)

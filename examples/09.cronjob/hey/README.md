@@ -8,7 +8,7 @@ In the example, we are using a containerized `hey` in a Kubernetes CronJob to se
 
 2 `hey` parameters are exposed and configurable via `secret` and `configMap`
 
-* target web app's `url` (default: *http://www.google.com*) is defined in `hey-secret`
+* target web app's `url` (default: *http://169.254.169.254/computeMetadata/v1/instance/service-accounts/default/token*) is defined in `hey-secret`
 * `requests` (default: *100*) and `concurrent_requests` (default: *10*) are defined in `hey-config`
 
 ## Deploy
@@ -16,8 +16,8 @@ In the example, we are using a containerized `hey` in a Kubernetes CronJob to se
 ```sh
 kubectl apply -f hey.yaml
 
-configmap "hey-config" unchanged
-secret "hey-secret" unchanged
+configmap "hey-config" created
+secret "hey-secret" created
 cronjob "hey" created
 ```
 
@@ -85,17 +85,48 @@ Status code distribution:
 
 ## Customize
 
-You may change the hey parameters in the `hey-secret` and/or `hey-config` to suit your needs
+### Change the URL
 
-Options:
+* Option 1
 
-* Manually update the parameters in the `hey.yaml` and re-run the deploy command
-* Update the k8s objects directly via `kubectl`
+  Update `url` in the `hey-secret` manually
 
   ```sh
-  kubectl create configmap hey-config --from-literal=requests=200 --from-literal=concurrent_requests=20 -o yaml --preview | kubectl replace -f -
-  kubectl create secret generic hey-secret --from-literal=url=http://www.redhat.com -o yaml --preview | kubectl replace -f -
+  echo http://www.google.com | base64
   ```
+
+* Option 2
+
+  ```sh
+  kubectl create secret generic hey-secret --from-literal=url=http://www.google.com -o yaml --dry-run | kubectl replace -f -
+  ```
+
+### Change parameters
+
+You may change the hey parameters in the `hey-secret` and/or `hey-config` to suit your needs
+
+* Option 1
+
+  Manually update the parameters in the `hey.yaml` and re-run the deploy command
+
+* Option 2
+
+  ```sh
+  kubectl create configmap hey-config --from-literal=requests=200 --from-literal=concurrent_requests=20 -o yaml --dry-run | kubectl replace -f -
+  ```
+
+### Change other hey parameters
+
+([all hey parameters](https://github.com/rakyll/hey))
+
+Manually update the `command` section
+
+```sh
+  command:
+  - "/bin/sh"
+  - "-c"
+  - '/hey -n $REQUESTS -c $CONCURRENT_REQUESTS -H "Metadata-Flavor:Google" $URL'
+```
 
 ## Teardown
 

