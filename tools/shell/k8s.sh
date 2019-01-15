@@ -305,7 +305,7 @@ kpod()
       case $opt in
           c) use_cache=true ;;
           *) echo 'Error in command line parsing' >&2
-             exit 1
+             return 1
       esac
   done
   shift "$(( OPTIND - 1 ))"
@@ -352,7 +352,7 @@ kpods()
       case $opt in
           c) use_cache=true ;;
           *) echo 'Error in command line parsing' >&2
-             exit 1
+             return 1
       esac
   done
   shift "$(( OPTIND - 1 ))"
@@ -447,7 +447,7 @@ knodes()
       case $opt in
           c) use_cache=true ;;
           *) echo 'Error in command line parsing' >&2
-             exit 1
+             return 1
       esac
   done
   shift "$(( OPTIND - 1 ))"
@@ -615,7 +615,7 @@ kservice()
       case $opt in
           c) use_cache=true ;;
           *) echo 'Error in command line parsing' >&2
-             exit 1
+             return 1
       esac
   done
   shift "$(( OPTIND - 1 ))"
@@ -709,7 +709,7 @@ kservices()
       case $opt in
           c) use_cache=true ;;
           *) echo 'Error in command line parsing' >&2
-             exit 1
+             return 1
       esac
   done
   shift "$(( OPTIND - 1 ))"
