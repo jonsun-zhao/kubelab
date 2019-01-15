@@ -208,7 +208,7 @@ kinspect()
   # open the cluser master vicery page if project number is provided
   if [ "$#" -eq 1 ]; then
     local project_number=$1; shift
-    cluster_master_viceroy $project_number $cluster $location
+    kcluster_master_viceroy $project_number $cluster $location
   fi
 }
 
@@ -262,7 +262,7 @@ gdocker_image_id()
   done
 }
 
-cluster_viceroy()
+kcluster_viceroy()
 {
   [ -n "$ZSH_VERSION" ] && FUNCNAME=${funcstack[1]}
 
@@ -275,7 +275,7 @@ cluster_viceroy()
   browse "https://viceroy.corp.google.com/cloud_kubernetes/Project?proj_nums=${project_number}&env=prod"
 }
 
-cluster_master_viceroy()
+kcluster_master_viceroy()
 {
   [ -n "$ZSH_VERSION" ] && FUNCNAME=${funcstack[1]}
 
