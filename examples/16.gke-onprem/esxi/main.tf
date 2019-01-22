@@ -2,6 +2,7 @@ provider "packet" {
   auth_token = "${var.packet_auth_token}"
 }
 
+# fetch OS id from packet
 data "packet_operating_system" "esxi" {
   name             = "VMware ESXi 6.5"
   distro           = "vmware"
@@ -9,6 +10,7 @@ data "packet_operating_system" "esxi" {
   provisionable_on = "${var.packet_plan_name}"
 }
 
+# create packet volume
 # packet_volume doesn't have a name argument :(
 resource "packet_volume" "datastore" {
   description   = "vshpere data store"
@@ -19,6 +21,7 @@ resource "packet_volume" "datastore" {
   billing_cycle = "hourly"
 }
 
+# create packet device/machine
 resource "packet_device" "esxi" {
   hostname         = "${var.esxi_hostname}"
   plan             = "baremetal_0"
@@ -27,11 +30,12 @@ resource "packet_device" "esxi" {
   billing_cycle    = "hourly"
   project_id       = "${var.packet_project_id}"
 
-  ## generate the esxi-mod.sh from the volume attributes
+  # generate the bootstrap script
   provisioner "local-exec" {
     command = "${path.module}/files/gen_esxi_mod.sh ${var.packet_auth_token} ${packet_volume.datastore.id} ${var.esxi_admin_username} ${var.esxi_admin_passwordd}"
   }
 
+  # copy the bootstrap script onto esxi
   provisioner "file" {
     connection {
       type     = "ssh"
@@ -46,6 +50,7 @@ resource "packet_device" "esxi" {
   depends_on = [ "packet_volume.datastore" ]
 }
 
+# attach volume to the machine
 resource "packet_volume_attachment" "attach_volume" {
   device_id = "${packet_device.esxi.id}"
   volume_id = "${packet_volume.datastore.id}"
@@ -61,7 +66,7 @@ resource "packet_volume_attachment" "attach_volume" {
       private_key = "${file("~/.ssh/id_rsa")}"
     }
 
-    # Bootstrap script called with private_ip of each node in the clutser
+    # run bootstrap script on esxi
     inline = [
       "chmod +x /esxi_mod.sh",
       "sleep 10",
@@ -72,6 +77,7 @@ resource "packet_volume_attachment" "attach_volume" {
   depends_on = [ "packet_device.esxi" ]
 }
 
+# import OVAs to esxi
 resource "null_resource" "import-ovas" {
 
   provisioner "local-exec" {

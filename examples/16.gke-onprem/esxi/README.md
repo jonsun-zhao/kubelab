@@ -1,5 +1,10 @@
 # Deploy the vsphere environment
 
+## Prerequisites
+
+* Install [govc](https://github.com/vmware/govmomi/tree/master/govc)
+* Install [jq](https://stedolan.github.io/jq/download/)
+
 ## Prepare keys
 
 * Place your SSH key-pair in `~/.ssh` and name them
