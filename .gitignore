@@ -14,7 +14,11 @@
 # Terraform
 .terraform
 *.tfstate*
+*.tfvars
 
 # Temp yaml
 *_tmp.yaml
 *_temp.yaml
+
+# GKE On-Prem
+esxi_mod.sh
