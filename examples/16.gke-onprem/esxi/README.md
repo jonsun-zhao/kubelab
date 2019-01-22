@@ -14,7 +14,11 @@
 > Annoyingly the `packet_volume` resource doesn't support `name` argument, thus you have to change the existing `packet_volume` name to something unique
 
 ```sh
-sed -i "s/datastore/YOUR_VOLUME_NAME/g" main.tf
+# Linux
+sed -i "s/datastore/YOUR_VOLUME_NAME/g" *.tf
+
+# Mac
+sed -i '' "s/datastore/YOUR_VOLUME_NAME/g" *.tf
 ```
 
 ## Create the `terraform.tfvar`

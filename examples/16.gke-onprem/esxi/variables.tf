@@ -9,7 +9,7 @@ variable "packet_project_id" {
 
 variable "packet_plan_name" {
   description = "packet machine type"
-  default = "t1.small.x86"
+  default = "c2.medium.x86"
 }
 
 variable "esxi_hostname" {
