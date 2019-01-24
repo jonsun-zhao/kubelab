@@ -4,5 +4,5 @@ packet_plan_name = "CHANGEME"
 
 esxi_hostname = "CHANGEME"
 esxi_admin_username = "CHANGEME"
-esxi_admin_passwordd = "CHANGEME"
+esxi_admin_password = "CHANGEME"
 

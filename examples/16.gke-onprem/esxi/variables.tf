@@ -21,6 +21,6 @@ variable "esxi_admin_username" {
   default = "gkeadmin"
 }
 
-variable "esxi_admin_passwordd" {
+variable "esxi_admin_password" {
   description = "esxi admin password"
 }

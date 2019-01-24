@@ -41,7 +41,7 @@ cp terraform.tfvars.template terraform.tfvars
 
   esxi_hostname = "YOUR_ESXI_HOSTNAME"
   esxi_admin_username = "gkeadmin"
-  esxi_admin_passwordd = "YOUR_ESXI_ADMIN_PASSWORD"
+  esxi_admin_password = "YOUR_ESXI_ADMIN_PASSWORD"
   ```
 
 ## Deploy

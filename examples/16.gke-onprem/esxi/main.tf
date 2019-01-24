@@ -32,7 +32,7 @@ resource "packet_device" "esxi" {
 
   # generate the bootstrap script
   provisioner "local-exec" {
-    command = "${path.module}/files/gen_esxi_mod.sh ${var.packet_auth_token} ${packet_volume.datastore.id} ${var.esxi_admin_username} ${var.esxi_admin_passwordd}"
+    command = "${path.module}/files/gen_esxi_mod.sh ${var.packet_auth_token} ${packet_volume.datastore.id} ${var.esxi_admin_username} ${var.esxi_admin_password}"
   }
 
   # copy the bootstrap script onto esxi
@@ -92,7 +92,7 @@ EOF
       GOVC_INSECURE = 1
       GOVC_URL = "${packet_device.esxi.access_public_ipv4}"
       GOVC_USERNAME = "${var.esxi_admin_username}"
-      GOVC_PASSWORD = "${var.esxi_admin_passwordd}"
+      GOVC_PASSWORD = "${var.esxi_admin_password}"
       GOVC_DATASTORE = "persistent_ds1"
       GOVC_RESOURCE_POOL = "*/Resources"
     }
