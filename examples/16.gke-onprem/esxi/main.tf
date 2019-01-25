@@ -24,7 +24,7 @@ resource "packet_volume" "datastore" {
 # create packet device/machine
 resource "packet_device" "esxi" {
   hostname         = "${var.esxi_hostname}"
-  plan             = "baremetal_0"
+  plan             = "${var.packet_plan_name}"
   facility         = "sjc1"
   operating_system = "${data.packet_operating_system.esxi.id}"
   billing_cycle    = "hourly"
