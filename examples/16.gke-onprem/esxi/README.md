@@ -37,7 +37,7 @@ cp terraform.tfvars.template terraform.tfvars
   ```sh
   packet_auth_token = "YOUR_PACKET_API_KEY"
   packet_project_id = "231a57e1-a348-43ce-9b26-b1238e82dc4c"
-  packet_plan_name = "c2.medium.x86"
+  packet_device_plan = "c2.medium.x86"
 
   esxi_hostname = "YOUR_ESXI_HOSTNAME"
   esxi_admin_username = "gkeadmin"

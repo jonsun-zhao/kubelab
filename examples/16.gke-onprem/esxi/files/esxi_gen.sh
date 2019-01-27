@@ -10,6 +10,8 @@ pw=$1; shift
 cat > $out <<EOF
 #!/bin/sh
 
+sleep 20
+
 # setup esxi account and networking
 esxcli network vswitch standard add -v external
 esxcli network vswitch standard policy security set -f true -v external
@@ -23,8 +25,8 @@ esxcfg-vswitch management -A 'internal management'
 esxcfg-vswitch management -A 'internal vmk management'
 esxcfg-vmknic -a -i 172.16.10.3 -n 255.255.255.0 -p 'internal vmk management'
 esxcli network ip interface tag add -i vmk2 -t Management
-esxcli system account add -i \${user} -p \${pw} -c \${pw}
-esxcli system permission set -i \${user} -r Admin
+esxcli system account add -i ${user} -p ${pw} -c ${pw}
+esxcli system permission set -i ${user} -r Admin
 EOF
 
 set -- `curl -s -X GET --header 'Accept: application/json' --header "X-Auth-Token: ${token}" https://api.packet.net/storage/${volume} | jq -r '.access| (.ips[]|.), (.iqn)'`

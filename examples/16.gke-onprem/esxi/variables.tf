@@ -7,9 +7,14 @@ variable "packet_project_id" {
   default     = "231a57e1-a348-43ce-9b26-b1238e82dc4c"
 }
 
-variable "packet_plan_name" {
+variable "packet_device_plan" {
   description = "packet machine type"
   default     = "c2.medium.x86"
+}
+
+variable "packet_storage_plan" {
+  description = "packet storage type"
+  default     = "storage_1"
 }
 
 variable "esxi_hostname" {
@@ -23,4 +28,8 @@ variable "esxi_admin_username" {
 
 variable "esxi_admin_password" {
   description = "esxi admin password"
+}
+
+variable "ova_admin_ws" {
+  type = "string"
 }
