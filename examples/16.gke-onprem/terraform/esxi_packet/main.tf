@@ -2,6 +2,10 @@ provider "packet" {
   auth_token = "${var.packet_auth_token}"
 }
 
+provider "external" {
+  version = "~> 1.0"
+}
+
 # fetch OS id from packet
 data "packet_operating_system" "esxi" {
   name             = "VMware ESXi 6.5"
@@ -32,12 +36,7 @@ resource "packet_device" "esxi" {
 
   # generate the bootstrap script
   provisioner "local-exec" {
-    command = "${path.module}/files/esxi_gen.sh ${var.packet_auth_token} ${packet_volume.datastore.id} ${var.esxi_admin_username} ${var.esxi_admin_password}"
-  }
-
-  # generate the vapp property json for admin ws
-  provisioner "local-exec" {
-    command = "${path.module}/files/admin_ws_gen.sh ${var.packet_auth_token} ${packet_device.esxi.id}"
+    command = "${path.module}/files/gen_esxi_mod.sh ${var.packet_auth_token} ${packet_volume.datastore.id} ${var.esxi_admin_username} ${var.esxi_admin_password}"
   }
 
   depends_on = ["packet_volume.datastore"]
@@ -63,21 +62,8 @@ resource "packet_volume_attachment" "attach_volume" {
   depends_on = ["packet_device.esxi"]
 }
 
-# import admin workstation to esxi
-resource "null_resource" "import_admin_ws" {
-  provisioner "local-exec" {
-    command = "govc import.ova -options=${path.module}/files/admin_ws_tmp.json ${var.ova_admin_ws}"
-
-    # command = "echo $GOVC_URL; echo $GOVC_PASSWORD"
-    environment {
-      GOVC_INSECURE      = 1
-      GOVC_URL           = "${packet_device.esxi.access_public_ipv4}"
-      GOVC_USERNAME      = "${var.esxi_admin_username}"
-      GOVC_PASSWORD      = "${var.esxi_admin_password}"
-      GOVC_DATASTORE     = "persistent_ds1"
-      GOVC_RESOURCE_POOL = "*/Resources"
-    }
-  }
-
-  depends_on = ["packet_volume_attachment.attach_volume"]
+# fetch gw ip and expose it via output
+data "external" "esxi_gw_ip" {
+  program    = ["bash", "${path.module}/files/fetch_gw_ip.sh", "${var.packet_auth_token}", "${packet_device.esxi.id}"]
+  depends_on = ["packet_device.esxi"]
 }

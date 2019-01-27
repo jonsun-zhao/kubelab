@@ -7,3 +7,5 @@ esxi_admin_username = "CHANGEME"
 esxi_admin_password = "CHANGEME"
 
 ova_admin_ws = "CHANGEME"
+ova_vcsa = "CHANGEME"
+ova_f5 = "CHANGEME"

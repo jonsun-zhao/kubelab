@@ -7,4 +7,4 @@ suffix="${esxi_host_ip##*.}"
 
 admin_ws_ip="${prefix}.$((suffix+1))"
 
-echo '{"content": "'$admin_ws_ip'"}'
+echo '{"ip": "'$admin_ws_ip'"}'

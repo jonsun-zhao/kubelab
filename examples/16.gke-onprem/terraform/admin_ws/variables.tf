@@ -1,6 +1,10 @@
-# variable "admin_ws_public_ip" {
-#   type = "string"
-# }
+variable "esxi_public_ip" {
+  type = "string"
+}
+
+variable "esxi_gw_ip" {
+  type = "string"
+}
 
 variable "vcenter_admin_useranme" {
   type    = "string"
@@ -24,6 +28,10 @@ variable "admin_ws_admin_username" {
 }
 
 variable "admin_ws_admin_password" {
+  type = "string"
+}
+
+variable "ova_admin_ws" {
   type = "string"
 }
 

@@ -29,7 +29,3 @@ variable "esxi_admin_username" {
 variable "esxi_admin_password" {
   description = "esxi admin password"
 }
-
-variable "ova_admin_ws" {
-  type = "string"
-}

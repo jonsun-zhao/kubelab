@@ -1,6 +1,7 @@
 #!/bin/sh
 
-out="files/esxi_tmp.sh"
+dir="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
+out="${dir}/esxi_tmp.sh"
 
 token=$1; shift
 volume=$1; shift
