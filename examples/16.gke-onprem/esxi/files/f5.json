@@ -20,6 +20,6 @@
             "Network": "external vm network"
         }
     ],
-    "PowerOn": true,
+    "PowerOn": false,
     "WaitForIP": false
 }

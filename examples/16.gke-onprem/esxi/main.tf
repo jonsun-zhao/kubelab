@@ -32,22 +32,15 @@ resource "packet_device" "esxi" {
 
   # generate the bootstrap script
   provisioner "local-exec" {
-    command = "${path.module}/files/gen_esxi_mod.sh ${var.packet_auth_token} ${packet_volume.datastore.id} ${var.esxi_admin_username} ${var.esxi_admin_password}"
+    command = "${path.module}/files/esxi_gen.sh ${var.packet_auth_token} ${packet_volume.datastore.id} ${var.esxi_admin_username} ${var.esxi_admin_password}"
   }
 
-  # copy the bootstrap script onto esxi
-  provisioner "file" {
-    connection {
-      type     = "ssh"
-      user     = "root"
-      private_key = "${file("~/.ssh/id_rsa")}"
-    }
-
-    source      = "${path.module}/files/esxi_mod.sh"
-    destination = "/esxi_mod.sh"
+  # generate the vapp property json for admin ws
+  provisioner "local-exec" {
+    command = "${path.module}/files/admin_gen.sh ${var.packet_auth_token} ${packet_device.esxi.id}"
   }
 
-  depends_on = [ "packet_volume.datastore" ]
+  depends_on = ["packet_volume.datastore"]
 }
 
 # attach volume to the machine
@@ -56,47 +49,39 @@ resource "packet_volume_attachment" "attach_volume" {
   volume_id = "${packet_volume.datastore.id}"
 
   connection {
-    host = "${packet_device.esxi.access_public_ipv4}"
+    host        = "${packet_device.esxi.access_public_ipv4}"
+    type        = "ssh"
+    user        = "root"
+    private_key = "${file("~/.ssh/id_rsa")}"
   }
 
+  # run bootstrap script on esxi
   provisioner "remote-exec" {
-    connection {
-      type     = "ssh"
-      user     = "root"
-      private_key = "${file("~/.ssh/id_rsa")}"
-    }
-
-    # run bootstrap script on esxi
-    inline = [
-      "chmod +x /esxi_mod.sh",
-      "sleep 10",
-      "/esxi_mod.sh",
-    ]
+    script = "${path.module}/files/esxi_tmp.sh"
   }
 
-  depends_on = [ "packet_device.esxi" ]
+  depends_on = ["packet_device.esxi"]
 }
 
 # import OVAs to esxi
 resource "null_resource" "import-ovas" {
-
   provisioner "local-exec" {
     command = <<EOF
-govc import.ova -options=${path.module}/files/adminws.json http://storage.googleapis.com/nmiu-play_tools/adminws-9.ova;
+govc import.ova -options=${path.module}/files/admin_ws_tmp.json http://storage.googleapis.com/nmiu-play_tools/admin-ws-1.ova;
 govc import.ova -options=${path.module}/files/vcsa.json http://storage.googleapis.com/nmiu-play_tools/vcsa-2.ova;
 govc import.ova -options=${path.module}/files/f5.json http://storage.googleapis.com/nmiu-play_tools/f5-3.ova;
 EOF
 
     # command = "echo $GOVC_URL; echo $GOVC_PASSWORD"
     environment {
-      GOVC_INSECURE = 1
-      GOVC_URL = "${packet_device.esxi.access_public_ipv4}"
-      GOVC_USERNAME = "${var.esxi_admin_username}"
-      GOVC_PASSWORD = "${var.esxi_admin_password}"
-      GOVC_DATASTORE = "persistent_ds1"
+      GOVC_INSECURE      = 1
+      GOVC_URL           = "${packet_device.esxi.access_public_ipv4}"
+      GOVC_USERNAME      = "${var.esxi_admin_username}"
+      GOVC_PASSWORD      = "${var.esxi_admin_password}"
+      GOVC_DATASTORE     = "persistent_ds1"
       GOVC_RESOURCE_POOL = "*/Resources"
     }
   }
 
-  depends_on = [ "packet_volume_attachment.attach_volume" ]
+  depends_on = ["packet_volume_attachment.attach_volume"]
 }

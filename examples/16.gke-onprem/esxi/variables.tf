@@ -4,12 +4,12 @@ variable "packet_auth_token" {
 
 variable "packet_project_id" {
   description = "packet project hybrid-playground"
-  default = "231a57e1-a348-43ce-9b26-b1238e82dc4c"
+  default     = "231a57e1-a348-43ce-9b26-b1238e82dc4c"
 }
 
 variable "packet_plan_name" {
   description = "packet machine type"
-  default = "c2.medium.x86"
+  default     = "c2.medium.x86"
 }
 
 variable "esxi_hostname" {
@@ -18,7 +18,7 @@ variable "esxi_hostname" {
 
 variable "esxi_admin_username" {
   description = "esxi admin username"
-  default = "gkeadmin"
+  default     = "gkeadmin"
 }
 
 variable "esxi_admin_password" {

@@ -1,0 +1,8 @@
+packet_auth_token = "CHANGEME"
+packet_project_id = "CHANGEME"
+packet_plan_name = "CHANGEME"
+
+esxi_hostname = "CHANGEME"
+esxi_admin_username = "CHANGEME"
+esxi_admin_password = "CHANGEME"
+

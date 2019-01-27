@@ -12,6 +12,6 @@
             "Network": "internal management"
         }
     ],
-    "PowerOn": true,
+    "PowerOn": false,
     "WaitForIP": false
 }
