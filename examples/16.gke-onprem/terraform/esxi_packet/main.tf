@@ -34,9 +34,16 @@ resource "packet_device" "esxi" {
   billing_cycle    = "hourly"
   project_id       = "${var.packet_project_id}"
 
-  # wait a little while as the host might not be ready immediately 
+  # pause for 300 seconds as the host might not be ready immediately
   provisioner "local-exec" {
-    command = "sleep 300"
+    command = <<EOF
+echo "pause for 300 seconds"; \
+for i in {1..300}; \
+do \
+echo "current time: `date +%c`"; \
+sleep 1; \
+done;
+EOF
   }
 
   # generate the bootstrap script
@@ -62,6 +69,18 @@ resource "packet_volume_attachment" "attach_volume" {
   # run bootstrap script on esxi
   provisioner "remote-exec" {
     script = "${path.module}/files/esxi_tmp.sh"
+  }
+
+  # pause for 60 seconds to allow the networking modifications to take effect
+  provisioner "local-exec" {
+    command = <<EOF
+echo "pause for 60 seconds"; \
+for i in {1..60}; \
+do \
+echo "current time: `date +%c`"; \
+sleep 1; \
+done;
+EOF
   }
 
   depends_on = ["packet_device.esxi"]
