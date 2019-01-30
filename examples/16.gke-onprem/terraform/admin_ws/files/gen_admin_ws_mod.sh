@@ -1,7 +1,11 @@
 #!/bin/bash
 
 dir="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
+<<<<<<< HEAD
 out="{$dir}/admin_ws_tmp.sh"
+=======
+out="${dir}/admin_ws_tmp.sh"
+>>>>>>> neil
 
 esxi_host=172.16.10.3
 vcenter_admin_username=$1; shift
