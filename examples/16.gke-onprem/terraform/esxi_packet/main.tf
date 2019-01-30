@@ -89,5 +89,5 @@ EOF
 # fetch gw ip and expose it via output
 data "external" "esxi_gw_ip" {
   program    = ["bash", "${path.module}/files/fetch_gw_ip.sh", "${var.packet_auth_token}", "${packet_device.esxi.id}"]
-  depends_on = ["packet_device.esxi"]
+  depends_on = ["packet_volume_attachment.attach_volume"]
 }
