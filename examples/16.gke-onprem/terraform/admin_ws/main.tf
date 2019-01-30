@@ -30,14 +30,14 @@ resource "null_resource" "import_and_config_admin_ws" {
   # generate admin-ws configuration script
   provisioner "local-exec" {
     command = <<EOF
-  ${path.module}/files/admin_ws_gen.sh \
-  '${var.vcenter_admin_useranme}' \
-  '${var.vcenter_admin_password}' \
-  '${var.esxi_admin_username}' \
-  '${var.esxi_admin_password}' \
-  '${var.ova_vcsa}' \
-  '${var.ova_f5}'
-  EOF
+${path.module}/files/gen_admin_ws_mod.sh \
+'${var.vcenter_admin_useranme}' \
+'${var.vcenter_admin_password}' \
+'${var.esxi_admin_username}' \
+'${var.esxi_admin_password}' \
+'${var.ova_vcsa}' \
+'${var.ova_f5}'
+EOF
   }
 
   connection {

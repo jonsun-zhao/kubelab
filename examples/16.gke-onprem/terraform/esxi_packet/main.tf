@@ -14,7 +14,7 @@ data "packet_operating_system" "esxi" {
   provisionable_on = "${var.packet_device_plan}"
 }
 
-# create packet volume
+# create the datastore volume
 # packet_volume doesn't have a name argument :(
 resource "packet_volume" "datastore" {
   description   = "vshpere data store"
@@ -25,7 +25,7 @@ resource "packet_volume" "datastore" {
   billing_cycle = "hourly"
 }
 
-# create packet device/machine
+# deploy esxi host
 resource "packet_device" "esxi" {
   hostname         = "${var.esxi_hostname}"
   plan             = "${var.packet_device_plan}"
@@ -33,6 +33,11 @@ resource "packet_device" "esxi" {
   operating_system = "${data.packet_operating_system.esxi.id}"
   billing_cycle    = "hourly"
   project_id       = "${var.packet_project_id}"
+
+  # wait a little while as the host might not be ready immediately 
+  provisioner "local-exec" {
+    command = "sleep 300"
+  }
 
   # generate the bootstrap script
   provisioner "local-exec" {
