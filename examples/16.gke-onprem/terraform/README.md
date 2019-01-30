@@ -1,4 +1,4 @@
-# GKE-OP Lab
+# Build the Lab with Terraform
 
 ## Prerequisites
 
