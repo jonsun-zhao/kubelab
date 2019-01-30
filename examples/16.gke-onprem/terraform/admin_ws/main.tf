@@ -7,7 +7,7 @@ data "external" "admin_ws_public_ip" {
 }
 
 # set up admin workstation
-resource "null_resource" "import_and_config_admin_ws" {
+resource "null_resource" "import_admin_ws" {
   # generate the vapp property json for admin ws
   provisioner "local-exec" {
     command = "${path.module}/files/gen_json.sh ${var.esxi_gw_ip}"
@@ -26,7 +26,9 @@ resource "null_resource" "import_and_config_admin_ws" {
       GOVC_RESOURCE_POOL = "*/Resources"
     }
   }
+}
 
+resource "null_resource" "import_the_rest" {
   # generate admin-ws configuration script
   provisioner "local-exec" {
     command = <<EOF
@@ -73,6 +75,7 @@ EOF
   #   destination = "/tmp/admin_ws_tmp.sh"
   # }
 
+
   # provisioner "remote-exec" {
   #   # run bootstrap script on esxi
   #   inline = [
@@ -81,4 +84,6 @@ EOF
   #     "/tmp/admin_ws_tmp.sh",
   #   ]
   # }
+
+  depends_on = ["null_resource.import_admin_ws"]
 }
