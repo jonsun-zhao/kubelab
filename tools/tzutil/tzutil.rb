@@ -45,14 +45,22 @@ end
 
 @datetime = DateTime.now.to_s
 @ffset = nil
+@utc = false
+@quiet = false
 
 @opt_parser = OptionParser.new do |opts|
   opts.banner = "Usage: #{File.basename($0)} [options]"
   opts.on('-s', '--string [datetime]', String, 'Input DateTime String') do |d|
     @datetime = d
   end
-  opts.on('-o', '--offset [(-)seconds]', String, 'Time Adjustment (in seconds)' ) do |os|
+  opts.on('-o', '--offset [(-)seconds]', String, 'Time Adjustment (in seconds)') do |os|
     @offset = os
+  end
+  opts.on('-u' ,'--utc', 'Output to UTC format') do |u|
+    @utc = u
+  end
+  opts.on('-q' ,'--quiet', 'Output result only') do |q|
+    @quiet = q
   end
   opts.on_tail("-h", "--help", "Show this message") do
     puts opts
@@ -76,8 +84,14 @@ if @offset
   else
     time += @offset.to_i
   end
-  puts "Offset=#{@offset}(seconds)"
-  puts
+  if !@quiet
+    puts "Offset=#{@offset}(seconds)\n\n"
+  end
+end
+
+if @utc
+  puts time.to_str(UTC, true)
+  exit 0
 end
 
 col_labels = { tz: "TZ", brisk: "BRISK", iso8601: "ISO8601" }

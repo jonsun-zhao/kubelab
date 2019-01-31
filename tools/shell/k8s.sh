@@ -55,6 +55,18 @@ cutf()
   echo $(echo "$line" | cut -f${f} -d"${d}")
 }
 
+trim() {
+  local var="$*"
+
+  # convert newline to space
+  var=$( echo $var | tr '\n' ' ' )
+  # remove leading whitespace characters
+  var="${var#"${var%%[![:space:]]*}"}"
+  # remove trailing whitespace characters
+  var="${var%"${var##*[![:space:]]}"}"
+  echo -n "$var"
+}
+
 # =====================
 #  GCP Helpers
 # =====================
@@ -289,6 +301,42 @@ kcluster_master_viceroy()
   local location=$1; shift
 
   browse "https://viceroy.corp.google.com/cloud_kubernetes/cluster/masters?cluster=${location}%2C+${project_number}%2C+${cluster_name}&env=prod"
+}
+
+glogs()
+{
+  [ -n "$ZSH_VERSION" ] && FUNCNAME=${funcstack[1]}
+
+  local usage="Usage: $FUNCNAME -f FILTER -s [START_TIME] -e [END_TIME] -o [OUTPUT]"
+  local start_time=$( tzutil.rb -q -u -o '\-3600' ) # an hour ago
+  local end_time=$( tzutil.rb -q -u ) # now
+  local filter=''
+  local output='/tmp/output.json'
+
+  while getopts ':s:e:f:o:' opt; do
+      case $opt in
+          s) start_time=${OPTARG} ;;
+          e) end_time=${OPTARG} ;;
+          f) filter=${OPTARG} ;;
+          o) output=${OPTARG} ;;
+          *) echo $usage >&2
+             return 1
+      esac
+  done
+  shift "$(( OPTIND - 1 ))"
+
+  if [ -z "$filter" ]; then
+    echo "FILTER is required\n"
+    echo $usage
+    return 1
+  fi
+
+  local query="$( trim $filter ) timestamp>\"${start_time}\" timestamp<=\"${end_time}\""
+
+  echo "== query ==\n$query\n"
+  echo "== output ==\n$output"
+
+  gcloud logging read --format=json --order asc "${query}" > $output
 }
 
 # =====================
