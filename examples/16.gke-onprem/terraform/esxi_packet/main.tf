@@ -21,7 +21,7 @@ resource "packet_volume" "datastore" {
   facility      = "sjc1"
   project_id    = "${var.packet_project_id}"
   plan          = "${var.packet_storage_plan}"
-  size          = 500
+  size          = 1000
   billing_cycle = "hourly"
 }
 
@@ -33,18 +33,6 @@ resource "packet_device" "esxi" {
   operating_system = "${data.packet_operating_system.esxi.id}"
   billing_cycle    = "hourly"
   project_id       = "${var.packet_project_id}"
-
-  # pause for 300 seconds as the host might not be ready immediately
-  provisioner "local-exec" {
-    command = <<EOF
-echo "pause for 300 seconds"; \
-for i in {1..300}; \
-do \
-echo "current time: `date +%c`"; \
-sleep 1; \
-done;
-EOF
-  }
 
   # generate the bootstrap script
   provisioner "local-exec" {
@@ -69,18 +57,6 @@ resource "packet_volume_attachment" "attach_volume" {
   # run bootstrap script on esxi
   provisioner "remote-exec" {
     script = "${path.module}/files/esxi_tmp.sh"
-  }
-
-  # pause for 60 seconds to allow the networking modifications to take effect
-  provisioner "local-exec" {
-    command = <<EOF
-echo "pause for 60 seconds"; \
-for i in {1..60}; \
-do \
-echo "current time: `date +%c`"; \
-sleep 1; \
-done;
-EOF
   }
 
   depends_on = ["packet_device.esxi"]
