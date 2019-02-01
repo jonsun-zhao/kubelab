@@ -14,6 +14,7 @@ data "template_file" "admin_ws_json" {
   }
 }
 
+# build admin_ws json from template
 resource "local_file" "admin_ws_json" {
   content  = "${data.template_file.admin_ws_json.rendered}"
   filename = "${path.module}/files/admin_ws_tmp.json"
@@ -52,11 +53,13 @@ data "template_file" "admin_ws_sh" {
   }
 }
 
+# build admin_ws script from template
 resource "local_file" "admin_ws_sh" {
   content  = "${data.template_file.admin_ws_sh.rendered}"
   filename = "${path.module}/files/admin_ws_tmp.sh"
 }
 
+# import the rest of the ovas from admin workstation
 resource "null_resource" "import_the_rest" {
   connection {
     host     = "${data.external.admin_ws_public_ip.result["ip"]}"

@@ -34,11 +34,6 @@ resource "packet_device" "esxi" {
   billing_cycle    = "hourly"
   project_id       = "${var.packet_project_id}"
 
-  # generate the bootstrap script
-  provisioner "local-exec" {
-    command = "${path.module}/files/gen_esxi_mod.sh ${var.packet_auth_token} ${packet_volume.datastore.id} ${var.esxi_admin_username} ${var.esxi_admin_password}"
-  }
-
   depends_on = ["packet_volume.datastore"]
 }
 
@@ -53,7 +48,7 @@ data "template_file" "esxi_sh" {
   }
 }
 
-# build the esxi bootstrap script
+# build the esxi bootstrap script from template
 resource "local_file" "esxi_sh" {
   content  = "${data.template_file.esxi_sh.rendered}"
   filename = "${path.module}/files/esxi_tmp.sh"
