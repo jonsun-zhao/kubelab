@@ -32,7 +32,7 @@ variable "esxi_admin_password" {
   type = "string"
 }
 
-variable "vcenter_admin_useranme" {
+variable "vcenter_admin_username" {
   type    = "string"
   default = "administrator@gkeonprem.local"
 }

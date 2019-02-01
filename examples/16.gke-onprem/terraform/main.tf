@@ -16,7 +16,7 @@ module "admin_ws" {
   esxi_public_ip = "${module.esxi_packet.esxi_public_ip}"
   esxi_gw_ip     = "${module.esxi_packet.esxi_gw_ip}"
 
-  vcenter_admin_useranme  = "${var.vcenter_admin_useranme}"
+  vcenter_admin_username  = "${var.vcenter_admin_username}"
   vcenter_admin_password  = "${var.vcenter_admin_password}"
   esxi_admin_username     = "${var.esxi_admin_username}"
   esxi_admin_password     = "${var.esxi_admin_password}"

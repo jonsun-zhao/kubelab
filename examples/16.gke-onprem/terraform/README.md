@@ -46,7 +46,7 @@ cp terraform.tfvars.template terraform.tfvars
 
   esxi_admin_password = "YOUR_ESXI_ADMIN_PASSWORD"
 
-  vcenter_admin_useranme = "administrator@gkeonprem.local"
+  vcenter_admin_username = "administrator@gkeonprem.local"
 
   vcenter_admin_password = "YOUR_VCENTER_ADMIN_PASSWORD"
 

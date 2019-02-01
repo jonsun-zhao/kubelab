@@ -8,7 +8,7 @@
   "PropertyMapping": [
     {
       "Key": "gwip",
-      "Value": "CHANGEME"
+      "Value": "${gateway_ip}"
     }
   ],
   "NetworkMapping": [

@@ -42,6 +42,25 @@ resource "packet_device" "esxi" {
   depends_on = ["packet_volume.datastore"]
 }
 
+data "template_file" "esxi_sh" {
+  template = "${file("${path.module}/files/esxi_sh.tpl")}"
+
+  vars = {
+    token  = "${var.packet_auth_token}"
+    volume = "${packet_volume.datastore.id}"
+    user   = "${var.esxi_admin_username}"
+    pw     = "${var.esxi_admin_password}"
+  }
+}
+
+# build the esxi bootstrap script
+resource "local_file" "esxi_sh" {
+  content  = "${data.template_file.esxi_sh.rendered}"
+  filename = "${path.module}/files/esxi_tmp.sh"
+
+  depends_on = ["packet_device.esxi"]
+}
+
 # attach volume to the machine
 resource "packet_volume_attachment" "attach_volume" {
   device_id = "${packet_device.esxi.id}"
@@ -59,7 +78,7 @@ resource "packet_volume_attachment" "attach_volume" {
     script = "${path.module}/files/esxi_tmp.sh"
   }
 
-  depends_on = ["packet_device.esxi"]
+  depends_on = ["packet_device.esxi", "local_file.esxi_sh"]
 }
 
 # fetch gw ip and expose it via output

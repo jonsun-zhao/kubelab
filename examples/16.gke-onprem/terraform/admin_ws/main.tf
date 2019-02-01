@@ -6,13 +6,21 @@ data "external" "admin_ws_public_ip" {
   program = ["bash", "${path.module}/files/gen_admin_ws_ip.sh", "${var.esxi_public_ip}"]
 }
 
+data "template_file" "admin_ws_json" {
+  template = "${file("${path.module}/files/admin_ws_json.tpl")}"
+
+  vars = {
+    gateway_ip = "${var.esxi_gw_ip}"
+  }
+}
+
+resource "local_file" "admin_ws_json" {
+  content  = "${data.template_file.admin_ws_json.rendered}"
+  filename = "${path.module}/files/admin_ws_tmp.json"
+}
+
 # set up admin workstation
 resource "null_resource" "import_admin_ws" {
-  # generate the vapp property json for admin ws
-  provisioner "local-exec" {
-    command = "${path.module}/files/gen_json.sh ${var.esxi_gw_ip}"
-  }
-
   # import ova
   provisioner "local-exec" {
     command = "govc import.ova -options=${path.module}/files/admin_ws_tmp.json ${var.ova_admin_ws}"
@@ -26,22 +34,30 @@ resource "null_resource" "import_admin_ws" {
       GOVC_RESOURCE_POOL = "*/Resources"
     }
   }
+
+  depends_on = ["local_file.admin_ws_json"]
+}
+
+data "template_file" "admin_ws_sh" {
+  template = "${file("${path.module}/files/admin_ws_sh.tpl")}"
+
+  vars = {
+    vcenter_admin_username = "${var.vcenter_admin_username}"
+    vcenter_admin_password = "${var.vcenter_admin_password}"
+    esxi_admin_username    = "${var.esxi_admin_username}"
+    esxi_admin_password    = "${var.esxi_admin_password}"
+    ova_vcsa               = "${var.ova_vcsa}"
+    ova_f5                 = "${var.ova_f5}"
+    esxi_host              = "172.16.10.3"
+  }
+}
+
+resource "local_file" "admin_ws_sh" {
+  content  = "${data.template_file.admin_ws_sh.rendered}"
+  filename = "${path.module}/files/admin_ws_tmp.sh"
 }
 
 resource "null_resource" "import_the_rest" {
-  # generate admin-ws configuration script
-  provisioner "local-exec" {
-    command = <<EOF
-${path.module}/files/gen_admin_ws_mod.sh \
-'${var.vcenter_admin_useranme}' \
-'${var.vcenter_admin_password}' \
-'${var.esxi_admin_username}' \
-'${var.esxi_admin_password}' \
-'${var.ova_vcsa}' \
-'${var.ova_f5}'
-EOF
-  }
-
   connection {
     host     = "${data.external.admin_ws_public_ip.result["ip"]}"
     type     = "ssh"
@@ -85,5 +101,5 @@ EOF
   #   ]
   # }
 
-  depends_on = ["null_resource.import_admin_ws"]
+  depends_on = ["local_file.admin_ws_sh", "null_resource.import_admin_ws"]
 }
