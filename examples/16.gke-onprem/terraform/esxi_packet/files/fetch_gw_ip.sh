@@ -1,8 +1,16 @@
-#!/bin/sh
+#!/bin/bash
 
-token=$1; shift
-device=$1; shift
+set -e
 
-gw_ip=`curl -s -X GET --header 'Accept: application/json' --header "X-Auth-Token: ${token}" https://api.packet.net/devices/${device} | jq -r '.ip_addresses[0].gateway'`
+token=$1
+shift
+device=$1
+shift
 
-echo '{"ip": "'$gw_ip'"}'
+# fetch gateway ip from packet api
+gw_ip=$(curl -s -X GET --header 'Accept: application/json' --header "X-Auth-Token: ${token}" https://api.packet.net/devices/${device} | jq -r '.ip_addresses[0].gateway')
+
+# Safely produce a JSON object containing the result value.
+# jq will ensure that the value is properly quoted
+# and escaped to produce a valid JSON string.
+jq -n --arg ip "$gw_ip" '{"ip":$ip}'

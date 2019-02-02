@@ -37,6 +37,11 @@ resource "packet_device" "esxi" {
   depends_on = ["packet_volume.datastore"]
 }
 
+data "external" "volume_info" {
+  program    = ["bash", "${path.module}/files/fetch_vol_info.sh", "${var.packet_auth_token}", "${packet_volume.datastore.id}"]
+  depends_on = ["packet_volume.datastore"]
+}
+
 data "template_file" "esxi_sh" {
   template = "${file("${path.module}/files/esxi_sh.tpl")}"
 
@@ -45,7 +50,12 @@ data "template_file" "esxi_sh" {
     volume = "${packet_volume.datastore.id}"
     user   = "${var.esxi_admin_username}"
     pw     = "${var.esxi_admin_password}"
+    ip1    = "${data.external.volume_info.result["ip1"]}"
+    ip2    = "${data.external.volume_info.result["ip2"]}"
+    target = "${data.external.volume_info.result["target"]}"
   }
+
+  depends_on = ["data.external.volume_info"]
 }
 
 # build the esxi bootstrap script from template
