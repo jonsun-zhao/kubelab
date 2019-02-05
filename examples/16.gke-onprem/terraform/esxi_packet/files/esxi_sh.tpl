@@ -17,7 +17,6 @@ esxcfg-vmknic -a -i 172.16.10.3 -n 255.255.255.0 -p 'internal vmk management'
 esxcli network ip interface tag add -i vmk2 -t Management
 esxcli system account add -i ${user} -p ${pw} -c ${pw}
 esxcli system permission set -i ${user} -r Admin
-EOF
 
 # setup storage
 ls /dev/disks >disks1.txt
