@@ -4,11 +4,11 @@
 
 * Install [govc](https://github.com/vmware/govmomi/tree/master/govc)
 * Install [jq](https://stedolan.github.io/jq/download/)
-* Request an admin account in [packet.com](https://www.packet.com)
-* Place your **SSH key-pair** in `~/.ssh` and name them
+* Request a [packet.com](https://www.packet.com) account
+* Make sure your **SSH key-pair** are located in `~/.ssh` and named as follow
   * `id_rsa`
   * `id_rsa.pub`
-* Add the content of your `id_rsa.pub` to your `packet.com` profile
+* Create a **SSH key**, with the content of your `id_rsa.pub`, in your `packet.com` profile
 * Create a **API Key** in your `packet.com` profile
 
 ## Deployment
@@ -31,7 +31,7 @@ sed -i '' "s/datastore/YOUR_VOLUME_NAME/g" *.tf
 cp terraform.tfvars.template terraform.tfvars
 ```
 
-* Make necessary changes to the `terraform.tfvars` (*i.e.*)
+* Make necessary changes to the `terraform.tfvars`
 
   ```sh
   packet_project_id = "231a57e1-a348-43ce-9b26-b1238e82dc4c"
@@ -65,6 +65,7 @@ cp terraform.tfvars.template terraform.tfvars
 
 ```sh
 terraform init
+terraform plan
 terraform apply
 ```
 
