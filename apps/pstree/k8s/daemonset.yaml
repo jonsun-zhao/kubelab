@@ -1,0 +1,39 @@
+apiVersion: extensions/v1beta1
+kind: DaemonSet
+metadata:
+  name: debug-forkless
+spec:
+  selector:
+    matchLabels:
+      app: debug-forkless
+  template:
+    metadata:
+      annotations:
+        scheduler.alpha.kubernetes.io/critical-pod: ""
+      labels:
+        app: debug-forkless
+    spec:
+      hostPID: true
+      volumes:
+        - name: node-root
+          hostPath:
+            path: /
+      containers:
+      - name: pstree
+        image: gcr.io/nmiu-play/nofork-pstree
+        resources:
+          limits:
+            memory: 32Mi
+          requests:
+            cpu: 0.1
+      - name: df
+        image: gcr.io/dbg-4567ef402790/nofork-df:v1
+        volumeMounts:
+          - name: node-root
+            mountPath: /node-root
+            readOnly: true
+        resources:
+          limits:
+            memory: 32Mi
+          requests:
+            cpu: 0.1
