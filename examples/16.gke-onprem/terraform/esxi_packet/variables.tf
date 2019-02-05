@@ -14,7 +14,7 @@ variable "packet_device_plan" {
 
 variable "packet_storage_plan" {
   description = "packet storage type"
-  default     = "storage_1"
+  default     = "storage_2"
 }
 
 variable "esxi_hostname" {
@@ -23,7 +23,6 @@ variable "esxi_hostname" {
 
 variable "esxi_admin_username" {
   description = "esxi admin username"
-  default     = "gkeadmin"
 }
 
 variable "esxi_admin_password" {

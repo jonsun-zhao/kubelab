@@ -1,11 +1,27 @@
 packet_auth_token = "CHANGEME"
+
 packet_project_id = "CHANGEME"
+
 packet_device_plan = "CHANGEME"
 
+packet_storage_plan = "CHANGEME"
+
 esxi_hostname = "CHANGEME"
+
 esxi_admin_username = "CHANGEME"
+
 esxi_admin_password = "CHANGEME"
 
+vcenter_admin_username = "CHANGEME"
+
+vcenter_admin_password = "CHANGEME"
+
+admin_ws_admin_username = "CHANGEME"
+
+admin_ws_admin_password = "CHANGEME"
+
 ova_admin_ws = "CHANGEME"
+
 ova_vcsa = "CHANGEME"
+
 ova_f5 = "CHANGEME"
