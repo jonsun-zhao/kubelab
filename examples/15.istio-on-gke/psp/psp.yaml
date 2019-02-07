@@ -1,0 +1,56 @@
+---
+kind: ClusterRole
+apiVersion: rbac.authorization.k8s.io/v1
+metadata:
+  name: psp-test
+rules:
+- apiGroups:
+  - extensions
+  resources:
+  - podsecuritypolicies
+  resourceNames:
+  - gce.privileged
+  verbs:
+  - use
+
+---
+
+kind: ClusterRoleBinding
+apiVersion: rbac.authorization.k8s.io/v1
+metadata:
+  name: psp-test
+subjects:
+- kind: ServiceAccount
+  name: istio-citadel-service-account
+  namespace: istio-system
+- kind: ServiceAccount
+  name: istio-cleanup-secrets-service-account
+  namespace: istio-system
+- kind: ServiceAccount
+  name: istio-egressgateway-service-account
+  namespace: istio-system
+- kind: ServiceAccount
+  name: istio-galley-service-account
+  namespace: istio-system
+- kind: ServiceAccount
+  name: istio-ingressgateway-service-account
+  namespace: istio-system
+- kind: ServiceAccount
+  name: istio-mixer-service-account
+  namespace: istio-system
+- kind: ServiceAccount
+  name: istio-pilot-service-account
+  namespace: istio-system
+- kind: ServiceAccount
+  name: istio-security-post-install-account
+  namespace: istio-system
+- kind: ServiceAccount
+  name: istio-sidecar-injector-service-account
+  namespace: istio-system
+- kind: ServiceAccount
+  name: prometheus
+  namespace: istio-system
+roleRef:
+  kind: ClusterRole #this must be Role or ClusterRole
+  name: psp-test # this must match the name of the Role or ClusterRole you wish to bind to
+  apiGroup: rbac.authorization.k8s.io
