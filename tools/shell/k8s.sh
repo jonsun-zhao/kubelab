@@ -658,7 +658,7 @@ kautoscaler_status()
 # get service by name
 kservice()
 {
-  [ -n "$ZSH_VERSION" ] && FUNCNAME=${funcstack[1]}
+  [ -n "$ZSH_VERSION" ] && { FUNCNAME=${funcstack[1]}; setopt sh_word_split; }
 
   local use_cache=false
   while getopts 'c' opt; do
@@ -719,16 +719,17 @@ kservice()
 
   for e in ${endpoints[@]};
   do
-    # using cutf here as the pod/node sections can be empty
+    # the pod/node sections can be empty
     #
     # i.e. for service "kubernetes" in namespace "default"
     #
     # $e => "35.203.90.158||"
-    #
 
-    ep_ip=`cutf $e 1`
-    pod=`cutf $e 2`
-    node=`cutf $e 3`
+    set -- $(IFS=\|; echo $e)
+
+    ep_ip=$1
+    pod=$2
+    node=$3
 
     ep_str="#endpoint: [ip]=${ep_ip} [pod]=${pod} [node]=${node}"
 
