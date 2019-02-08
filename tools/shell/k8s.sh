@@ -227,7 +227,7 @@ kinspect()
 # list docker image ids in the GCR of the current project
 gdocker_image_id()
 {
-  [ -n "$ZSH_VERSION" ] && FUNCNAME=${funcstack[1]}
+  [ -n "$ZSH_VERSION" ] && { FUNCNAME=${funcstack[1]}; setopt sh_word_split; }
 
   if [ "$#" -lt 1 ] ; then
     echo "Usage: $FUNCNAME IMAGE_NAME"
@@ -267,8 +267,10 @@ gdocker_image_id()
         | join("|")
     ');
   do
-    local tag=$(cutf $x 1)
-    local size=$(cutf $x 2) # imageSizeBytes
+    set -- $(IFS=\|; echo $x)
+    local tag=$1 # tag id
+    local size=$2 # imageSizeBytes
+
     local image_id=$(curl -s -H "$j" -H "$t" $url/manifests/$tag 2>/dev/null | jq -r '.config.digest')
     echo "$image|$image_id|$size"
   done

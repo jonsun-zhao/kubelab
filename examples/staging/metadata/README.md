@@ -54,7 +54,7 @@ gcloud beta container clusters create asuka \
 --max-nodes=3 \
 --enable-stackdriver-kubernetes \
 --workload-metadata-from-node=SECURE \
---service-account=my-cluster-admin@nmiu-play.iam.gserviceaccount.com \
+--service-account=gke-node-sa@nmiu-play.iam.gserviceaccount.com \
 --metadata disable-legacy-endpoints=true
 ```
 
