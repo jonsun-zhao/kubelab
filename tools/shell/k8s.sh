@@ -782,3 +782,22 @@ kservices()
     echo
   done
 }
+
+# create a debug kube-dns pod with dns query logging enabled
+kcreate_kubedns_debug_pod()
+{
+  [ -n "$ZSH_VERSION" ] && FUNCNAME=${funcstack[1]}
+
+  if [ "$#" -lt 1 ] ; then
+    echo "Usage: $FUNCNAME POD_NAME"
+    return 1
+  fi
+
+  pod=$1
+
+  kubectl apply -f <(kubectl get pod -n kube-system ${pod} -o json | jq -e '
+    ((.spec.containers[] | select(.name == "dnsmasq") | .args[.args|length]) |= . + "--log-queries")
+    | (.metadata.name = "kube-dns-debug")
+    | (del(.metadata.labels."pod-template-hash"))'
+  )
+}
