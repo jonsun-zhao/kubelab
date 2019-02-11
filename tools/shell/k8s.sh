@@ -796,8 +796,10 @@ kcreate_kubedns_debug_pod()
   pod=$1
 
   kubectl apply -f <(kubectl get pod -n kube-system ${pod} -o json | jq -e '
-    ((.spec.containers[] | select(.name == "dnsmasq") | .args[.args|length]) |= . + "--log-queries")
+    (
+      (.spec.containers[] | select(.name == "dnsmasq") | .args) += ["--log-queries"]
+    )
     | (.metadata.name = "kube-dns-debug")
-    | (del(.metadata.labels."pod-template-hash"))'
-  )
+    | (del(.metadata.labels."pod-template-hash"))
+  ')
 }
