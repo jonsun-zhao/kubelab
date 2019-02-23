@@ -224,7 +224,8 @@ kinspect()
   fi
 }
 
-# list docker image ids in the GCR of the current project
+# list docker image ids in current project's gcr.io repository
+# Useful for cleaning up unwanted docker images in GCS
 gdocker_image_id()
 {
   [ -n "$ZSH_VERSION" ] && { FUNCNAME=${funcstack[1]}; setopt sh_word_split; }
@@ -276,6 +277,7 @@ gdocker_image_id()
   done
 }
 
+# open cluster viceroy page by project number
 kcluster_viceroy()
 {
   [ -n "$ZSH_VERSION" ] && FUNCNAME=${funcstack[1]}
@@ -289,6 +291,7 @@ kcluster_viceroy()
   browse "https://viceroy.corp.google.com/cloud_kubernetes/Project?proj_nums=${project_number}&env=prod"
 }
 
+# open cluster master viceroy page by project number
 kcluster_master_viceroy()
 {
   [ -n "$ZSH_VERSION" ] && FUNCNAME=${funcstack[1]}
@@ -305,6 +308,7 @@ kcluster_master_viceroy()
   browse "https://viceroy.corp.google.com/cloud_kubernetes/cluster/masters?cluster=${location}%2C+${project_number}%2C+${cluster_name}&env=prod"
 }
 
+# fetch stackdriver logs
 glogs()
 {
   [ -n "$ZSH_VERSION" ] && FUNCNAME=${funcstack[1]}
@@ -561,13 +565,13 @@ knodes()
   done
 }
 
-# check if any node is not logging to SD in x minutes
+# check if any node is not logging to stackdriver in X minutes (default: 60 minutes)
 knodes_logging()
 {
   [ -n "$ZSH_VERSION" ] && FUNCNAME=${funcstack[1]}
 
   if [ "$#" -lt 1 ] ; then
-    echo "Usage: $FUNCNAME NODE_PREFIX"
+    echo "Usage: $FUNCNAME NODE_PREFIX [MINUTES:-60]"
     return 1
   fi
 
@@ -619,7 +623,7 @@ knodes_logging()
 }
 
 # get token by serviceaccount
-ktoken_by_sc()
+ktoken_by_serviceaccount()
 {
   [ -n "$ZSH_VERSION" ] && FUNCNAME=${funcstack[1]}
 
