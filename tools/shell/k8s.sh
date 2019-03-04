@@ -27,39 +27,42 @@ else
   alias base64_decode="base64 -D"
 fi
 
+export NODES_JSON="nodes.json"
+export PODS_JSON="pods.json"
+export SERVICES_JSON="services.json"
+export ENDPOINTS_JSON="endpoints.json"
+
 # =====================
 #  Utils
 # =====================
 
-browse()
-{
+browse() {
   if [ -z "$SSH_TTY" ]; then
     case $OSTYPE in
-      darwin*)
-        open $*
-        ;;
-      *)
-        python -m webbrowser $* &>/dev/null
-        ;;
+    darwin*)
+      open $*
+      ;;
+    *)
+      python -m webbrowser $* &>/dev/null
+      ;;
     esac
   else
     echo "python -m webbrowser $* &>/dev/null"
   fi
 }
 
-cutf()
-{
-  local line=$1
-  local f=${2:-1}
-  local d=${3:-|}
-  echo $(echo "$line" | cut -f${f} -d"${d}")
-}
+# cutf() {
+#   local line=$1
+#   local f=${2:-1}
+#   local d=${3:-|}
+#   echo $(echo "$line" | cut -f${f} -d"${d}")
+# }
 
 trim() {
   local var="$*"
 
   # convert newline to space
-  var=$( echo $var | tr '\n' ' ' )
+  var=$(echo $var | tr '\n' ' ')
   # remove leading whitespace characters
   var="${var#"${var%%[![:space:]]*}"}"
   # remove trailing whitespace characters
@@ -67,31 +70,58 @@ trim() {
   echo -n "$var"
 }
 
+# dump object by type
+kdump() {
+  [ -n "$ZSH_VERSION" ] && FUNCNAME=${funcstack[1]}
+
+  if [ "$#" -lt 1 ]; then
+    echo "Usage: $FUNCNAME KIND (i.e. pods)"
+    return 1
+  fi
+
+  local kind=$1
+  local dir=${2:-.}
+  local cmd=${3:-"kubectl"}
+
+  echo ">> dumping ${kind} to ${dir}/${kind}.json"
+  $cmd get $kind --all-namespaces -o json >$dir/$kind.json
+}
+
+# dump anything and everything
+kdump_all() {
+  local cmd="k-dev"
+  local dir="$($cmd config current-context)_$(date +%s)"
+
+  [ -d $dir ] || mkdir $dir
+
+  $cmd cluster-info dump --all-namespaces --output-directory=$dir
+  echo -e "\n** output directory:  ${dir} **"
+}
+
 # =====================
 #  GCP Helpers
 # =====================
 
 # doesn't work while inspecting customer's project...
-gproject_number()
-{
-  project_id=${1:-`gcloud config get-value core/project`}
-  token=${2:-`gcloud auth print-access-token`}
+gproject_number() {
+  project_id=${1:-$(gcloud config get-value core/project)}
+  token=${2:-$(gcloud auth print-access-token)}
   curl -s -H "Authorization: Bearer $token" "https://cloudresourcemanager.googleapis.com/v1beta1/projects/${project_id}" | jq -r ".projectNumber"
 }
 
 # switch between cloud configs
-gactivate()
-{
+gactivate() {
   [ -n "$ZSH_VERSION" ] && FUNCNAME=${funcstack[1]}
 
-  if [ "$#" -lt 1 ] ; then
+  if [ "$#" -lt 1 ]; then
     echo "Usage: $FUNCNAME GCLOUD_CONFIG"
     return 1
   fi
-  local config=$1; shift
+  local config=$1
+  shift
 
   # clean up KUBECONFIG when switching away from the customer config
-  if [[ "$config" != "customer" && -n "$KUBECONFIG" ]] ; then
+  if [[ "$config" != "customer" && -n "$KUBECONFIG" ]]; then
     unset KUBECONFIG
   fi
   if (! gno config configurations activate $config); then
@@ -102,18 +132,17 @@ gactivate()
 }
 
 # switch to customer gcloud config and setup auth token
-gauth()
-{
+gauth() {
   [ -n "$ZSH_VERSION" ] && FUNCNAME=${funcstack[1]}
 
-  if [ "$#" -lt 2 ] ; then
+  if [ "$#" -lt 2 ]; then
     echo "Usage: $FUNCNAME PROJECT_ID TOKEN"
     return 1
   fi
-  local project_id=$1; shift
-  local token=$1; shift
+  local project_id=$1
+  local token=$2
   local token_file=~/.cloud_console_token
-  echo $token > $token_file
+  echo $token >$token_file
 
   # switch to customer config
   gcustomer
@@ -122,65 +151,55 @@ gauth()
 }
 
 # setup gcloud and kubectl for cluster inspection
-kinspect()
-{
-  [ -n "$ZSH_VERSION" ] && FUNCNAME=${funcstack[1]}
+kinspect() {
+  if [ -n "$ZSH_VERSION" ]; then
+    FUNCNAME=${funcstack[1]}
+    setopt sh_word_split
+    setopt KSH_ARRAYS # emulate the zero based ksh array
+  fi
 
   if [ "$#" -lt 1 ]; then
     echo "Usage: $FUNCNAME CLUSTER_URL [PROJECT_NUMBER]"
     return 1
   fi
-  local url=$1; shift
+  local url=$1
+  shift
 
-  if [ -n "$ZSH_VERSION" ]; then
-    # parse cluster inspection url
-    # zsh's index is 1 based
-    local url_path=${url[(ws:?:)1]}
-    local query=${url[(ws:?:)2]}
+  # split url by '?'
+  set -- $(
+    IFS=?
+    echo $url
+  )
+  local url_path=$1
+  local query=$2
 
-    # sample url:
-    # https://.../clusters/details/us-east1/cache-tier1-us-east1-1
-    local location=${url_path[(ws:/:)-2]} # cluster location
-    local cluster=${url_path[(ws:/:)-1]} # cluster name
+  # split url path by '/'
+  local path_arr=($(
+    IFS=/
+    echo $url_path
+  ))
+  local location=${path_arr[${#path_arr[@]} - 2]}
+  local cluster=${path_arr[${#path_arr[@]} - 1]}
 
-    local regional=false
-
-    # eval the k/v pairs from query into shell variables
-    # sample query:
-    # project=shopify-xxx&token=AHlSUJtXPumpPB-xxx&tab=details&...
-    for p in ${(ws:&:)query};
-    do
-      k=${p[(ws:=:)1]}
-      # echo "k=$k"
-      v=${p[(ws:=:)2]}
-      # echo "v=$v"
-      eval local $k=$v
-    done
-  else
-    # split url by '?'
-    local url_arr=( $(IFS=?; echo $url) )
-    local url_path=${url_arr[0]}
-    local query=${url_arr[1]}
-
-    # split url path by '/'
-    local path_arr=( $(IFS=/; echo $url_path) )
-    local location=${path_arr[${#path_arr[@]}-2]}
-    local cluster=${path_arr[${#path_arr[@]}-1]}
-
-    # split query string by '&'
-    local query_arr=( $(IFS=\&; echo $query) )
-    for p in ${query_arr[@]};
-    do
-      k=$(cutf $p 1 '=')
-      v=$(cutf $p 2 '=')
-      eval local $k=$v
-    done
-  fi
+  # split query string by '&'
+  local query_arr=($(
+    IFS=\&
+    echo $query
+  ))
+  for p in ${query_arr[@]}; do
+    set -- $(
+      IFS=\=
+      echo $p
+    )
+    local k=$1
+    local v=$2
+    eval local $k=$v
+  done
 
   echo
   echo "[LOCATION]: $location"
-  echo "[PROJECT]: $project"
   echo "[CLUSTER]: $cluster"
+  echo "[PROJECT]: $project"
   echo "[TOKEN]: $token"
   echo
 
@@ -219,18 +238,23 @@ kinspect()
 
   # open the cluser master vicery page if project number is provided
   if [ "$#" -eq 1 ]; then
-    local project_number=$1; shift
+    local project_number=$1
     kcluster_master_viceroy $project_number $cluster $location
   fi
+
+  # reset array behavior back to zsh default
+  [ -n "$ZSH_VERSION" ] && unsetopt KSH_ARRAYS
 }
 
 # list docker image ids in current project's gcr.io repository
 # Useful for cleaning up unwanted docker images in GCS
-gdocker_image_id()
-{
-  [ -n "$ZSH_VERSION" ] && { FUNCNAME=${funcstack[1]}; setopt sh_word_split; }
+gdocker_image_id() {
+  if [ -n "$ZSH_VERSION" ]; then
+    FUNCNAME=${funcstack[1]}
+    setopt sh_word_split
+  fi
 
-  if [ "$#" -lt 1 ] ; then
+  if [ "$#" -lt 1 ]; then
     echo "Usage: $FUNCNAME IMAGE_NAME"
     return 1
   fi
@@ -266,10 +290,12 @@ gdocker_image_id()
         | to_entries[]
         | [.key, .value.imageSizeBytes]
         | join("|")
-    ');
-  do
-    set -- $(IFS=\|; echo $x)
-    local tag=$1 # tag id
+    '); do
+    set -- $(
+      IFS=\|
+      echo $x
+    )
+    local tag=$1  # tag id
     local size=$2 # imageSizeBytes
 
     local image_id=$(curl -s -H "$j" -H "$t" $url/manifests/$tag 2>/dev/null | jq -r '.config.digest')
@@ -278,58 +304,57 @@ gdocker_image_id()
 }
 
 # open cluster viceroy page by project number
-kcluster_viceroy()
-{
+kcluster_viceroy() {
   [ -n "$ZSH_VERSION" ] && FUNCNAME=${funcstack[1]}
 
-  if [ "$#" -lt 1 ] ; then
+  if [ "$#" -lt 1 ]; then
     echo "Usage: $FUNCNAME PROJECT_NUMBER"
     return 1
   fi
 
-  local project_number=$1; shift
+  local project_number=$1
   browse "https://viceroy.corp.google.com/cloud_kubernetes/Project?proj_nums=${project_number}&env=prod"
 }
 
 # open cluster master viceroy page by project number
-kcluster_master_viceroy()
-{
+kcluster_master_viceroy() {
   [ -n "$ZSH_VERSION" ] && FUNCNAME=${funcstack[1]}
 
-  if [ "$#" -lt 3 ] ; then
+  if [ "$#" -lt 3 ]; then
     echo "Usage: $FUNCNAME PROJECT_NUMBER CLUSTER_NAME LOCATION"
     return 1
   fi
 
-  local project_number=$1; shift
-  local cluster_name=$1; shift
-  local location=$1; shift
+  local project_number=$1
+  local cluster_name=$2
+  local location=$3
 
   browse "https://viceroy.corp.google.com/cloud_kubernetes/cluster/masters?cluster=${location}%2C+${project_number}%2C+${cluster_name}&env=prod"
 }
 
 # fetch stackdriver logs
-glogs()
-{
+glogs() {
   [ -n "$ZSH_VERSION" ] && FUNCNAME=${funcstack[1]}
 
   local usage="Usage: $FUNCNAME -f FILTER -s [START_TIME] -e [END_TIME] -o [OUTPUT]"
-  local start_time=$( tzutil.rb -q -u -o '\-3600' ) # an hour ago
-  local end_time=$( tzutil.rb -q -u ) # now
+  local start_time=$(tzutil.rb -q -u -o '\-3600') # an hour ago
+  local end_time=$(tzutil.rb -q -u)               # now
   local filter=''
   local output='/tmp/output.json'
 
   while getopts ':s:e:f:o:' opt; do
-      case $opt in
-          s) start_time=${OPTARG} ;;
-          e) end_time=${OPTARG} ;;
-          f) filter=${OPTARG} ;;
-          o) output=${OPTARG} ;;
-          *) echo $usage >&2
-             return 1
-      esac
+    case $opt in
+    s) start_time=${OPTARG} ;;
+    e) end_time=${OPTARG} ;;
+    f) filter=${OPTARG} ;;
+    o) output=${OPTARG} ;;
+    *)
+      echo $usage >&2
+      return 1
+      ;;
+    esac
   done
-  shift "$(( OPTIND - 1 ))"
+  shift "$((OPTIND - 1))"
 
   if [ -z "$filter" ]; then
     echo "FILTER is required\n"
@@ -337,12 +362,12 @@ glogs()
     return 1
   fi
 
-  local query="$( trim $filter ) timestamp>\"${start_time}\" timestamp<=\"${end_time}\""
+  local query="$(trim $filter) timestamp>\"${start_time}\" timestamp<=\"${end_time}\""
 
   echo "== query ==\n$query\n"
   echo "== output ==\n$output"
 
-  gcloud logging read --format=json --order asc "${query}" > $output
+  gcloud logging read --format=json --order asc "${query}" >$output
 }
 
 # =====================
@@ -350,48 +375,40 @@ glogs()
 # =====================
 
 # get pod by name
-kpod()
-{
+kpod() {
   [ -n "$ZSH_VERSION" ] && FUNCNAME=${funcstack[1]}
 
-  local use_cache=false
-  while getopts 'c' opt; do
-      case $opt in
-          c) use_cache=true ;;
-          *) echo 'Error in command line parsing' >&2
-             return 1
-      esac
-  done
-  shift "$(( OPTIND - 1 ))"
-
-  if [ "$#" -lt 1 ] ; then
-    echo "Usage: $FUNCNAME POD_NAME [NAMESPACE]"
+  if [ "$#" -lt 1 ]; then
+    echo "Usage: $FUNCNAME POD_NAME [NAMESPACE:-default]"
     return 1
   fi
 
-  if ! $use_cache; then
-    kdump "pods"; echo
+  if [ -f $PODS_JSON ]; then
+    # echo ">> using cached file [$PODS_JSON]\n"
+  else
+    kdump "pods"
+    echo
   fi
 
   pod=$1
   namespace=${2:-default}
 
-  cat pods.json | jq -r --arg POD "$pod" --arg NS "$namespace"  '
+  cat $PODS_JSON | jq -r --arg POD "$pod" --arg NS "$namespace" '
     .items[]
     | select(.metadata.name == $POD and .metadata.namespace == $NS)
     | (
         [
-          "[name]=" + .metadata.name,
-          "[namespace]=" + .metadata.namespace,
-          "[uid]=" + .metadata.uid,
-          "[nodeName]=" + (.spec.nodeName|tostring),
-          "[podIP]=" + (.status.podIP|tostring),
-          "[status]=" + (.status.phase|tostring)
+          "name=[" + .metadata.name + "]",
+          "namespace=[" + .metadata.namespace + "]",
+          "uid=[" + .metadata.uid + "]",
+          "nodeName=[" + (.spec.nodeName|tostring) + "]",
+          "podIP=[" + (.status.podIP|tostring) + "]",
+          "status=[" + (.status.phase|tostring) + "]"
         ] | join(" ")
       ),
       (
         .status.containerStatuses[] | [
-          "#container: [name]=" + .name,
+          "#container: name=[" + .name + "]",
           .containerID
         ] | join(" ")
       )
@@ -399,42 +416,32 @@ kpod()
 }
 
 # get pods
-kpods()
-{
-  local use_cache=false
-  while getopts 'c' opt; do
-      case $opt in
-          c) use_cache=true ;;
-          *) echo 'Error in command line parsing' >&2
-             return 1
-      esac
-  done
-  shift "$(( OPTIND - 1 ))"
-
-  if ! $use_cache; then
-    kdump "pods"; echo
+kpods() {
+  if [ -f $PODS_JSON ]; then
+    echo ">> using cached file [$PODS_JSON]\n"
+  else
+    kdump "pods"
+    echo
   fi
 
-  pods=( $(cat pods.json | jq -r '.items[] | [.metadata.name, .metadata.namespace] | join("|")') )
+  pods=($(cat $PODS_JSON | jq -r '.items[] | [.metadata.name, .metadata.namespace] | join("|")'))
 
-  for p in ${pods[@]}
-  do
+  for p in ${pods[@]}; do
     set -- $(echo $p | sed "s/|/ /g")
-    name=$1; shift
-    namespace=$1; shift
+    name=$1
+    namespace=$2
     # echo "$name ($namespace)"
 
-    kpod -c $name $namespace
+    kpod $name $namespace
     echo
   done
 }
 
 # get pod by id
-kpod_by_id()
-{
+kpod_by_id() {
   [ -n "$ZSH_VERSION" ] && FUNCNAME=${funcstack[1]}
 
-  if [ "$#" -lt 1 ] ; then
+  if [ "$#" -lt 1 ]; then
     echo "Usage: $FUNCNAME POD_ID"
     return 1
   fi
@@ -443,11 +450,10 @@ kpod_by_id()
 }
 
 # get pid by container id
-kpid_by_container_id()
-{
+kpid_by_container_id() {
   [ -n "$ZSH_VERSION" ] && FUNCNAME=${funcstack[1]}
 
-  if [ "$#" -lt 2 ] ; then
+  if [ "$#" -lt 2 ]; then
     echo "Usage: $FUNCNAME NODE CONTAINER_ID"
     return 1
   fi
@@ -463,54 +469,22 @@ kpid_by_container_id()
   fi
 }
 
-# dump object by type
-kdump()
-{
-  [ -n "$ZSH_VERSION" ] && FUNCNAME=${funcstack[1]}
-
-  if [ "$#" -lt 1 ] ; then
-    echo "Usage: $FUNCNAME KIND (i.e. pods)"
-    return 1
-  fi
-
-  local kind=$1
-  local dir=${2:-.}
-  local cmd=${3:-"kubectl"}
-
-  echo ">> dumping ${kind} to ${dir}/${kind}.json"
-  $cmd get $kind --all-namespaces -o json > $dir/$kind.json
-}
-
-# dump anything and everything
-kdump_all()
-{
-  local cmd="k-dev"
-  local dir="$($cmd config current-context)_$(date +%s)"
-
-  [ -d $dir ] || mkdir $dir
-
-  $cmd cluster-info dump --all-namespaces --output-directory=$dir
-  echo -e "\n** output directory:  ${dir} **"
-}
-
 # get nodes and their pods
-knodes()
-{
-  local use_cache=false
-  while getopts 'c' opt; do
-      case $opt in
-          c) use_cache=true ;;
-          *) echo 'Error in command line parsing' >&2
-             return 1
-      esac
-  done
-  shift "$(( OPTIND - 1 ))"
-
-  if ! $use_cache; then
-    kdump "nodes"; kdump "pods"; echo
+knodes() {
+  if [ -n "$ZSH_VERSION" ]; then
+    FUNCNAME=${funcstack[1]}
+    setopt sh_word_split
   fi
 
-  nodes=( $(cat nodes.json | jq -r '
+  if [ -f $NODES_JSON ] && [ -f $PODS_JSON ]; then
+    echo ">> using cached files [ $NODES_JSON, $PODS_JSON ]\n"
+  else
+    kdump "nodes"
+    kdump "pods"
+    echo
+  fi
+
+  local nodes=($(cat $NODES_JSON | jq -r '
       .items[]
       | [
           .metadata.name, .spec.podCIDR,
@@ -518,34 +492,39 @@ knodes()
             | .status.addresses
             | map(select(.type != "Hostname").address)
             | sort
-            | join("|")
+            | join("/")
           )
         ]
       | join("|")
-    ' | sort) )
+    ' | sort))
 
-  for n in ${nodes[@]};
-  do
-    local node_name=$(cutf $n 1)
-    local pod_cidr=$(cutf $n 2)
-    local node_ip=$(cutf $n 3)
+  for n in ${nodes[@]}; do
+    set -- $(
+      IFS=\|
+      echo $n
+    )
+    local node_name=$1
+    local pod_cidr=$2
+    local node_ip=$3
 
-    echo "[NODE: $node_ip] (podCIDR: $pod_cidr) ($node_name)"
+    echo "NODE: [$node_ip] (podCIDR: $pod_cidr) ($node_name)"
     echo "--------------------------"
 
-    local pods=( $(cat pods.json | jq -r --arg NODENAME "$node_name" '
+    local pods=($(cat $PODS_JSON | jq -r --arg NODENAME "$node_name" '
         .items[]
           | select(.spec.nodeName == $NODENAME)
           | [ .metadata.name, .metadata.namespace, (select(.status.podIP) | .status.podIP) ]
           | join("|")
-      ' | sort) )
+      ' | sort))
 
-    for p in ${pods[@]};
-    do
-      set -- $(echo $p | sed "s/|/ /g")
-      local pod_name=$1; shift
-      local namespace=$1; shift
-      local pod_ip=$1; shift
+    for p in ${pods[@]}; do
+      set -- $(
+        IFS=\|
+        echo $p
+      )
+      local pod_name=$1
+      local namespace=$2
+      local pod_ip=$3
 
       # check if pod ip is empty
       if [ -n "$pod_id" ]; then
@@ -566,11 +545,10 @@ knodes()
 }
 
 # check if any node is not logging to stackdriver in X minutes (default: 60 minutes)
-knodes_logging()
-{
+knodes_logging() {
   [ -n "$ZSH_VERSION" ] && FUNCNAME=${funcstack[1]}
 
-  if [ "$#" -lt 1 ] ; then
+  if [ "$#" -lt 1 ]; then
     echo "Usage: $FUNCNAME NODE_PREFIX [MINUTES:-60]"
     return 1
   fi
@@ -607,11 +585,10 @@ knodes_logging()
 
   # local data=`cat <&4`
   local data=$(cat <&4 | jq -r '.[] | .jsonPayload._HOSTNAME' | sort -u)
-  local nodes=( $(kubectl get nodes -o jsonpath='{.items[*].spec.providerID}') )
+  local nodes=($(kubectl get nodes -o jsonpath='{.items[*].spec.providerID}'))
   local all_good=true
   # echo $data
-  for n in ${nodes[@]};
-  do
+  for n in ${nodes[@]}; do
     local node_name=$(echo $n | awk -F/ '{print $NF}')
     # echo $node_name
     if [[ ! "$data" =~ "$node_name" ]]; then
@@ -623,26 +600,24 @@ knodes_logging()
 }
 
 # get token by serviceaccount
-ktoken_by_serviceaccount()
-{
+ktoken_by_serviceaccount() {
   [ -n "$ZSH_VERSION" ] && FUNCNAME=${funcstack[1]}
 
-  if [ "$#" -lt 1 ] ; then
+  if [ "$#" -lt 1 ]; then
     echo "Usage: $FUNCNAME SERVICE_ACCOUNT [NAMESPACE:-default]"
     return 1
   fi
 
   sc=$1
   namespace=${2:-default}
-  kubectl -n $namespace get secrets -o jsonpath="{.items[?(@.metadata.annotations['kubernetes\.io/service-account\.name']=='$sc')].data.token}"|base64_decode
+  kubectl -n $namespace get secrets -o jsonpath="{.items[?(@.metadata.annotations['kubernetes\.io/service-account\.name']=='$sc')].data.token}" | base64_decode
 }
 
 # get token by secret
-ktoken_by_secret()
-{
+ktoken_by_secret() {
   [ -n "$ZSH_VERSION" ] && FUNCNAME=${funcstack[1]}
 
-  if [ "$#" -lt 1 ] ; then
+  if [ "$#" -lt 1 ]; then
     echo "Usage: $FUNCNAME SECRET [NAMESPACE:-default]"
     return 1
   fi
@@ -650,99 +625,96 @@ ktoken_by_secret()
   secret=$1
   namespace=${2:-default}
 
-  kubectl -n $namespace get secret $secret -o jsonpath="{.data.token}"|base64_decode
+  kubectl -n $namespace get secret $secret -o jsonpath="{.data.token}" | base64_decode
 }
 
 # get cluster autoscaler status
-kautoscaler_status()
-{
+kautoscaler_status() {
   kubectl -n kube-system get configmap cluster-autoscaler-status -o json | jq -r '.data.status'
 }
 
 # get service by name
-kservice()
-{
-  [ -n "$ZSH_VERSION" ] && { FUNCNAME=${funcstack[1]}; setopt sh_word_split; }
+kservice() {
+  if [ -n "$ZSH_VERSION" ]; then
+    FUNCNAME=${funcstack[1]}
+    setopt sh_word_split
+  fi
 
-  local use_cache=false
-  while getopts 'c' opt; do
-      case $opt in
-          c) use_cache=true ;;
-          *) echo 'Error in command line parsing' >&2
-             return 1
-      esac
-  done
-  shift "$(( OPTIND - 1 ))"
-
-  if [ "$#" -lt 1 ] ; then
-    echo "Usage: $FUNCNAME SERVICE_NAME [NAMESPACE]"
+  if [ "$#" -lt 1 ]; then
+    echo "Usage: $FUNCNAME SERVICE_NAME [NAMESPACE:-default]"
     return 1
   fi
 
-  if ! $use_cache; then
-    kdump "services"; kdump "endpoints"; kdump "pods"; echo
+  if [ -f $SERVICES_JSON ] && [ -f $PODS_JSON ] && [ -f $ENDPOINTS_JSON ]; then
+    # echo ">> using cached files [$SERVICES_JSON, $PODS_JSON, $ENDPOINTS_JSON]\n"
+  else
+    kdump "services"
+    kdump "endpoints"
+    kdump "pods"
+    echo
   fi
 
   service=$1
   namespace=${2:-default}
 
-  cat services.json | jq -r --arg SVC "$service" --arg NS "$namespace" '
+  cat $SERVICES_JSON | jq -r --arg SVC "$service" --arg NS "$namespace" '
     .items[]
     | select(.metadata.name == $SVC and .metadata.namespace == $NS)
     | (
         [
-          "[name]=" + .metadata.name,
-          "[namespace]=" + .metadata.namespace,
-          "[type]=" + .spec.type,
-          "[clusterIP]=" + (.spec.clusterIP|tostring),
-          "[loadBalancerIP]=" + (.spec.loadBalancerIP|tostring),
-          "[externalTrafficPolicy]=" + (.spec.externalTrafficPolicy|tostring)
+          "name=[" + .metadata.name + "]",
+          "namespace=[" + .metadata.namespace + "]",
+          "type=[" + .spec.type + "]",
+          "clusterIP=[" + (.spec.clusterIP|tostring) + "]",
+          "loadBalancerIP=[" + (.spec.loadBalancerIP|tostring) + "]",
+          "externalTrafficPolicy=[" + (.spec.externalTrafficPolicy|tostring) + "]"
         ] | join(" ")
       ),
       (
         .spec.ports[] | [
-          "#port: [name]=" + (.name|tostring),
-          "[protocol]=" + (.protocol|tostring),
-          "[port]=" + (.port|tostring),
-          "[nodePort]=" + (.nodePort|tostring),
-          "[targetPort]=" + (.targetPort|tostring)
+          "#port: name=[" + (.name|tostring) + "]",
+          "protocol=[" + (.protocol|tostring) + "]",
+          "port=[" + (.port|tostring) + "]",
+          "nodePort=[" + (.nodePort|tostring) + "]",
+          "targetPort=[" + (.targetPort|tostring) + "]"
         ] | join(" ")
       )
   '
 
-  endpoints=( $(cat endpoints.json | jq -r --arg SVC "$service" --arg NS "$namespace" '
+  endpoints=($(cat $ENDPOINTS_JSON | jq -r --arg SVC "$service" --arg NS "$namespace" '
       .items[]
         | select(.metadata.name == $SVC and .metadata.namespace == $NS)
         | .subsets[]
         | (.addresses[] | [.ip, .targetRef.name, .nodeName] | join("|"))
-      '
-    )
+      ')
   )
 
   # echo $endpoints
 
-  for e in ${endpoints[@]};
-  do
+  for e in ${endpoints[@]}; do
     # the pod/node sections can be empty
     #
     # i.e. for service "kubernetes" in namespace "default"
     #
     # $e => "35.203.90.158||"
 
-    set -- $(IFS=\|; echo $e)
+    set -- $(
+      IFS=\|
+      echo $e
+    )
 
     ep_ip=$1
     pod=$2
     node=$3
 
-    ep_str="#endpoint: [ip]=${ep_ip} [pod]=${pod} [node]=${node}"
+    ep_str="#endpoint: ip=[${ep_ip}] pod=[${pod}] node=[${node}]"
 
     if [ -z $pod ]; then
       echo $ep_str
       return
     fi
 
-    pod_ip=$(cat pods.json | jq -r --arg POD "$pod" --arg NS "$namespace" '
+    pod_ip=$(cat $PODS_JSON | jq -r --arg POD "$pod" --arg NS "$namespace" '
       .items[]
         | select(.metadata.name == $POD and .metadata.namespace == $NS)
         | (.status.podIP|tostring)
@@ -757,42 +729,42 @@ kservice()
 }
 
 # get services
-kservices()
-{
-  local use_cache=false
-  while getopts 'c' opt; do
-      case $opt in
-          c) use_cache=true ;;
-          *) echo 'Error in command line parsing' >&2
-             return 1
-      esac
-  done
-  shift "$(( OPTIND - 1 ))"
-
-  if ! $use_cache; then
-    kdump "services"; kdump "endpoints"; kdump "pods"; echo
+kservices() {
+  if [ -n "$ZSH_VERSION" ]; then
+    FUNCNAME=${funcstack[1]}
+    setopt sh_word_split
   fi
 
-  services=( $(cat services.json | jq -r '.items[] | [.metadata.name, .metadata.namespace] | join("|")') )
+  if [ -f $SERVICES_JSON ] && [ -f $PODS_JSON ] && [ -f $ENDPOINTS_JSON ]; then
+    echo ">> using cached files [$SERVICES_JSON, $PODS_JSON, $ENDPOINTS_JSON]\n"
+  else
+    kdump "services"
+    kdump "endpoints"
+    kdump "pods"
+    echo
+  fi
 
-  for s in ${services[@]}
-  do
-    set -- $(echo $s | sed "s/|/ /g")
-    name=$1; shift
-    namespace=$1; shift
+  services=($(cat $SERVICES_JSON | jq -r '.items[] | [.metadata.name, .metadata.namespace] | join("|")'))
+
+  for s in ${services[@]}; do
+    set -- $(
+      IFS=\|
+      echo $s
+    )
+    local name=$1
+    local namespace=$2
     # echo "$name ($namespace)"
 
-    kservice -c $name $namespace
+    kservice $name $namespace
     echo
   done
 }
 
 # create a debug kube-dns pod with dns query logging enabled
-kcreate_kubedns_debug_pod()
-{
+kcreate_kubedns_debug_pod() {
   [ -n "$ZSH_VERSION" ] && FUNCNAME=${funcstack[1]}
 
-  if [ "$#" -lt 1 ] ; then
+  if [ "$#" -lt 1 ]; then
     echo "Usage: $FUNCNAME POD_NAME"
     return 1
   fi
