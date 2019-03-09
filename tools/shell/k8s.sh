@@ -374,6 +374,199 @@ glogs() {
 #  k8s Helpers
 # =====================
 
+# get pod by id
+kpod_by_id() {
+  [ -n "$ZSH_VERSION" ] && FUNCNAME=${funcstack[1]}
+
+  if [ "$#" -lt 1 ]; then
+    echo "Usage: $FUNCNAME POD_ID"
+    return 1
+  fi
+
+  kubectl get pods --all-namespaces -o json | jq -r ".items[] | select(.metadata.uid == \"$1\")"
+}
+
+# get pid by container id
+kpid_by_container_id() {
+  [ -n "$ZSH_VERSION" ] && FUNCNAME=${funcstack[1]}
+
+  if [ "$#" -lt 2 ]; then
+    echo "Usage: $FUNCNAME NODE CONTAINER_ID"
+    return 1
+  fi
+
+  # get pid from docker inspect
+  pid=$(gssh $1 -- "sudo docker inspect --format="{{.State.Pid}}" $2 2>/dev/null")
+
+  # try crictl if nothing is found in docker
+  if [ $? -eq 0 ]; then
+    echo $pid
+  else
+    echo $(gssh $1 -- "sudo crictl inspect $2 2>/dev/null") | jq -r '.info.pid'
+  fi
+}
+
+# get token by serviceaccount
+ktoken_by_serviceaccount() {
+  [ -n "$ZSH_VERSION" ] && FUNCNAME=${funcstack[1]}
+
+  if [ "$#" -lt 1 ]; then
+    echo "Usage: $FUNCNAME SERVICE_ACCOUNT [NAMESPACE:-default]"
+    return 1
+  fi
+
+  sc=$1
+  namespace=${2:-default}
+  kubectl -n $namespace get secrets -o jsonpath="{.items[?(@.metadata.annotations['kubernetes\.io/service-account\.name']=='$sc')].data.token}" | base64_decode
+}
+
+# get token by secret
+ktoken_by_secret() {
+  [ -n "$ZSH_VERSION" ] && FUNCNAME=${funcstack[1]}
+
+  if [ "$#" -lt 1 ]; then
+    echo "Usage: $FUNCNAME SECRET [NAMESPACE:-default]"
+    return 1
+  fi
+
+  secret=$1
+  namespace=${2:-default}
+
+  kubectl -n $namespace get secret $secret -o jsonpath="{.data.token}" | base64_decode
+}
+
+# get cluster autoscaler status
+kautoscaler_status() {
+  kubectl -n kube-system get configmap cluster-autoscaler-status -o json | jq -r '.data.status'
+}
+
+# check if any node is not logging to stackdriver in X minutes (default: 60 minutes)
+knodes_logging() {
+  [ -n "$ZSH_VERSION" ] && FUNCNAME=${funcstack[1]}
+
+  if [ "$#" -lt 1 ]; then
+    echo "Usage: $FUNCNAME NODE_PREFIX [MINUTES:-60]"
+    return 1
+  fi
+
+  local node_prefix=$1
+  local minutes=${2:-60}
+  local project=$(gcloud config get-value core/project)
+  local date=''
+
+  if [[ "$(uname)" == "Darwin" ]]; then
+    date=$(date -v-${minutes}M -u +"%Y-%m-%dT%H:%M:%SZ")
+  elif [[ "$(uname)" == "Linux" ]]; then
+    date=$(date -d "${minutes} minutes ago" -u +"%Y-%m-%dT%H:%M:%SZ")
+  fi
+
+  local tmpfile=$(mktemp)
+  exec 3>"$tmpfile"
+  exec 4<"$tmpfile"
+  rm $tmpfile
+
+  # echo $node_prefix
+  # echo $project
+  # echo $date
+
+  # read log into the temp file
+  echo ">> fetching kubelet log from ${node_prefix} nodes in the last $minutes minutes"
+
+  gcloud logging read --format=json --order=desc "
+    resource.type=\"gce_instance\"
+    logName=\"projects/${project}/logs/kubelet\"
+    jsonPayload._HOSTNAME:\"${node_prefix}\"
+    timestamp>\"${date}\"
+  " >&3
+
+  # local data=`cat <&4`
+  local data=$(cat <&4 | jq -r '.[] | .jsonPayload._HOSTNAME' | sort -u)
+  local nodes=($(kubectl get nodes -o jsonpath='{.items[*].spec.providerID}'))
+  local all_good=true
+  # echo $data
+  for n in ${nodes[@]}; do
+    local node_name=$(echo $n | awk -F/ '{print $NF}')
+    # echo $node_name
+    if [[ ! "$data" =~ "$node_name" ]]; then
+      echo "[x] node $node_name is not logging"
+      $all_good && all_good=false
+    fi
+  done
+  $all_good && echo ">> all nodes are logging"
+}
+
+# create a debug kube-dns pod with dns query logging enabled
+kcreate_kubedns_debug_pod() {
+  [ -n "$ZSH_VERSION" ] && FUNCNAME=${funcstack[1]}
+
+  if [ "$#" -lt 1 ]; then
+    echo "Usage: $FUNCNAME POD_NAME"
+    return 1
+  fi
+
+  pod=$1
+
+  kubectl apply -f <(kubectl get pod -n kube-system ${pod} -o json | jq -e '
+    (
+      (.spec.containers[] | select(.name == "dnsmasq") | .args) += ["--log-queries"]
+    )
+    | (.metadata.name = "kube-dns-debug")
+    | (del(.metadata.labels."pod-template-hash"))
+  ')
+}
+
+# =========================
+#  Cluster Dump Helpers
+# =========================
+
+klist() {
+  [ -n "$ZSH_VERSION" ] && FUNCNAME=${funcstack[1]}
+
+  if [ "$#" -lt 1 ]; then
+    echo "Usage: $FUNCNAME FILE"
+    return 1
+  fi
+
+  local f=$1
+  if [ ! -f $f ]; then
+    echo "$f does not exist"
+    return 1
+  fi
+
+  cat $f | jq -r '
+    .items[]
+    |  [
+        "name=[" + .metadata.name + "]",
+        "namespace=[" + .metadata.namespace + "]",
+        "uid=[" + .metadata.uid + "]"
+      ]
+    | @tsv
+  '
+}
+
+kraw() {
+  [ -n "$ZSH_VERSION" ] && FUNCNAME=${funcstack[1]}
+
+  if [ "$#" -lt 2 ]; then
+    echo "Usage: $FUNCNAME FILE OBJECT_NAME"
+    return 1
+  fi
+
+  local f=$1
+  local n=$2
+
+  if [ ! -f $f ]; then
+    echo "$f does not exist"
+    return 1
+  fi
+
+  cat $f | jq -r --arg NAME "$n" '
+    .items[]
+    | select(.metadata.name == $NAME)
+    | .
+  '
+}
+
 # get pod by name
 kpod() {
   [ -n "$ZSH_VERSION" ] && FUNCNAME=${funcstack[1]}
@@ -435,38 +628,6 @@ kpods() {
     kpod $name $namespace
     echo
   done
-}
-
-# get pod by id
-kpod_by_id() {
-  [ -n "$ZSH_VERSION" ] && FUNCNAME=${funcstack[1]}
-
-  if [ "$#" -lt 1 ]; then
-    echo "Usage: $FUNCNAME POD_ID"
-    return 1
-  fi
-
-  kubectl get pods --all-namespaces -o json | jq -r ".items[] | select(.metadata.uid == \"$1\")"
-}
-
-# get pid by container id
-kpid_by_container_id() {
-  [ -n "$ZSH_VERSION" ] && FUNCNAME=${funcstack[1]}
-
-  if [ "$#" -lt 2 ]; then
-    echo "Usage: $FUNCNAME NODE CONTAINER_ID"
-    return 1
-  fi
-
-  # get pid from docker inspect
-  pid=$(gssh $1 -- "sudo docker inspect --format="{{.State.Pid}}" $2 2>/dev/null")
-
-  # try crictl if nothing is found in docker
-  if [ $? -eq 0 ]; then
-    echo $pid
-  else
-    echo $(gssh $1 -- "sudo crictl inspect $2 2>/dev/null") | jq -r '.info.pid'
-  fi
 }
 
 # get nodes and their pods
@@ -542,95 +703,6 @@ knodes() {
 
     echo
   done
-}
-
-# check if any node is not logging to stackdriver in X minutes (default: 60 minutes)
-knodes_logging() {
-  [ -n "$ZSH_VERSION" ] && FUNCNAME=${funcstack[1]}
-
-  if [ "$#" -lt 1 ]; then
-    echo "Usage: $FUNCNAME NODE_PREFIX [MINUTES:-60]"
-    return 1
-  fi
-
-  local node_prefix=$1
-  local minutes=${2:-60}
-  local project=$(gcloud config get-value core/project)
-  local date=''
-
-  if [[ "$(uname)" == "Darwin" ]]; then
-    date=$(date -v-${minutes}M -u +"%Y-%m-%dT%H:%M:%SZ")
-  elif [[ "$(uname)" == "Linux" ]]; then
-    date=$(date -d "${minutes} minutes ago" -u +"%Y-%m-%dT%H:%M:%SZ")
-  fi
-
-  local tmpfile=$(mktemp)
-  exec 3>"$tmpfile"
-  exec 4<"$tmpfile"
-  rm $tmpfile
-
-  # echo $node_prefix
-  # echo $project
-  # echo $date
-
-  # read log into the temp file
-  echo ">> fetching kubelet log from ${node_prefix} nodes in the last $minutes minutes"
-
-  gcloud logging read --format=json --order=desc "
-    resource.type=\"gce_instance\"
-    logName=\"projects/${project}/logs/kubelet\"
-    jsonPayload._HOSTNAME:\"${node_prefix}\"
-    timestamp>\"${date}\"
-  " >&3
-
-  # local data=`cat <&4`
-  local data=$(cat <&4 | jq -r '.[] | .jsonPayload._HOSTNAME' | sort -u)
-  local nodes=($(kubectl get nodes -o jsonpath='{.items[*].spec.providerID}'))
-  local all_good=true
-  # echo $data
-  for n in ${nodes[@]}; do
-    local node_name=$(echo $n | awk -F/ '{print $NF}')
-    # echo $node_name
-    if [[ ! "$data" =~ "$node_name" ]]; then
-      echo "[x] node $node_name is not logging"
-      $all_good && all_good=false
-    fi
-  done
-  $all_good && echo ">> all nodes are logging"
-}
-
-# get token by serviceaccount
-ktoken_by_serviceaccount() {
-  [ -n "$ZSH_VERSION" ] && FUNCNAME=${funcstack[1]}
-
-  if [ "$#" -lt 1 ]; then
-    echo "Usage: $FUNCNAME SERVICE_ACCOUNT [NAMESPACE:-default]"
-    return 1
-  fi
-
-  sc=$1
-  namespace=${2:-default}
-  kubectl -n $namespace get secrets -o jsonpath="{.items[?(@.metadata.annotations['kubernetes\.io/service-account\.name']=='$sc')].data.token}" | base64_decode
-}
-
-# get token by secret
-ktoken_by_secret() {
-  [ -n "$ZSH_VERSION" ] && FUNCNAME=${funcstack[1]}
-
-  if [ "$#" -lt 1 ]; then
-    echo "Usage: $FUNCNAME SECRET [NAMESPACE:-default]"
-    return 1
-  fi
-
-  secret=$1
-  namespace=${2:-default}
-
-  kubectl -n $namespace get secret $secret -o jsonpath="{.data.token}" | base64_decode
-}
-
-# get cluster autoscaler status
-kautoscaler_status() {
-  kubectl -n kube-system get configmap cluster-autoscaler-status -o json | jq -r '.data.status'
 }
 
 # get service by name
@@ -758,24 +830,4 @@ kservices() {
     kservice $name $namespace
     echo
   done
-}
-
-# create a debug kube-dns pod with dns query logging enabled
-kcreate_kubedns_debug_pod() {
-  [ -n "$ZSH_VERSION" ] && FUNCNAME=${funcstack[1]}
-
-  if [ "$#" -lt 1 ]; then
-    echo "Usage: $FUNCNAME POD_NAME"
-    return 1
-  fi
-
-  pod=$1
-
-  kubectl apply -f <(kubectl get pod -n kube-system ${pod} -o json | jq -e '
-    (
-      (.spec.containers[] | select(.name == "dnsmasq") | .args) += ["--log-queries"]
-    )
-    | (.metadata.name = "kube-dns-debug")
-    | (del(.metadata.labels."pod-template-hash"))
-  ')
 }
