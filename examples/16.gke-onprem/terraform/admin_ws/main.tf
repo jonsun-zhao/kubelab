@@ -3,7 +3,7 @@ provider "external" {
 }
 
 data "external" "admin_ws_public_ip" {
-  program = ["bash", "${path.module}/files/gen_admin_ws_ip.sh", "${var.esxi_public_ip}"]
+  program = ["bash", "${path.module}/files/gen_admin_ws_ip.sh", "${var.esxi_gw_ip}"]
 }
 
 data "template_file" "admin_ws_json" {
@@ -31,7 +31,7 @@ resource "null_resource" "import_admin_ws" {
       GOVC_URL           = "${var.esxi_public_ip}"
       GOVC_USERNAME      = "${var.esxi_admin_username}"
       GOVC_PASSWORD      = "${var.esxi_admin_password}"
-      GOVC_DATASTORE     = "persistent_ds1"
+      GOVC_DATASTORE     = "${var.esxi_ds_name}"
       GOVC_RESOURCE_POOL = "*/Resources"
     }
   }
@@ -47,6 +47,7 @@ data "template_file" "admin_ws_sh" {
     vcenter_admin_password = "${var.vcenter_admin_password}"
     esxi_admin_username    = "${var.esxi_admin_username}"
     esxi_admin_password    = "${var.esxi_admin_password}"
+    esxi_ds_name           = "${var.esxi_ds_name}"
     ova_vcsa               = "${var.ova_vcsa}"
     ova_f5                 = "${var.ova_f5}"
     esxi_host              = "172.16.10.3"

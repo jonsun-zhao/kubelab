@@ -32,6 +32,11 @@ variable "esxi_admin_password" {
   type = "string"
 }
 
+variable "esxi_ds_name" {
+  type    = "string"
+  default = "persistent_ds1"
+}
+
 variable "vcenter_admin_username" {
   type    = "string"
   default = "administrator@gkeonprem.local"

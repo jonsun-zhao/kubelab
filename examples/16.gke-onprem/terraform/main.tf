@@ -6,6 +6,7 @@ module "esxi_packet" {
   packet_device_plan  = "${var.packet_device_plan}"
   packet_storage_plan = "${var.packet_storage_plan}"
   esxi_hostname       = "${var.esxi_hostname}"
+  esxi_ds_name        = "${var.esxi_ds_name}"
   esxi_admin_username = "${var.esxi_admin_username}"
   esxi_admin_password = "${var.esxi_admin_password}"
 }
@@ -20,6 +21,7 @@ module "admin_ws" {
   vcenter_admin_password  = "${var.vcenter_admin_password}"
   esxi_admin_username     = "${var.esxi_admin_username}"
   esxi_admin_password     = "${var.esxi_admin_password}"
+  esxi_ds_name            = "${var.esxi_ds_name}"
   admin_ws_admin_username = "${var.admin_ws_admin_username}"
   admin_ws_admin_password = "${var.admin_ws_admin_password}"
   ova_admin_ws            = "${var.ova_admin_ws}"

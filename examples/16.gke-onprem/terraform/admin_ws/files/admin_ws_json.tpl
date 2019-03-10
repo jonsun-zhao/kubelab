@@ -4,7 +4,7 @@
   "IPProtocol": "IPv4",
   "InjectOvfEnv": true,
   "MarkAsTemplate": false,
-  "Name": "Admin WS",
+  "Name": "Admin-WS",
   "PropertyMapping": [
     {
       "Key": "gwip",

@@ -1,7 +1,7 @@
 resource "null_resource" "esxi" {
   provisioner "local-exec" "create_esxi" {
-    commmand = <<EOF
-echo ${var.local_pw} | sudo -S virt-install \
+    command = <<EOF
+echo ${var.pw_for_sudo} | sudo -S virt-install \
 --name=${var.esxi_vm_name} \
 --cpu=host-passthrough \
 --ram ${var.esxi_vm_memory_size} --vcpus=${var.esxi_vm_cores} \
@@ -21,7 +21,7 @@ EOF
     when = "destroy"
 
     command = <<EOF
-echo ${var.local_pw} | sudo -S su -c '\
+echo ${var.pw_for_sudo} | sudo -S su -c '\
 virsh destory ${var.esxi_vm_name}; \
 virsh undefine ${var.esxi_vm_name}; \
 virsh vol-delete --pool default ${var.esxi_vm_name}.qcow2 \

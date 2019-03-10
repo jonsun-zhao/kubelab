@@ -1,12 +1,6 @@
-packet_auth_token = "CHANGEME"
+esxi_public_ip = "CHANGEME"
 
-packet_project_id = "CHANGEME"
-
-packet_device_plan = "CHANGEME"
-
-packet_storage_plan = "CHANGEME"
-
-esxi_hostname = "CHANGEME"
+esxi_gw_ip = "CHANGEME"
 
 esxi_admin_username = "CHANGEME"
 
@@ -14,7 +8,7 @@ esxi_admin_password = "CHANGEME"
 
 esxi_ds_name = "CHANGEME"
 
-vcenter_admin_username = "CHANGEME"
+vcenter_admin_useranme = "CHANGEME"
 
 vcenter_admin_password = "CHANGEME"
 

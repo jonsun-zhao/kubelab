@@ -576,9 +576,7 @@ kpod() {
     return 1
   fi
 
-  if [ -f $PODS_JSON ]; then
-    # echo ">> using cached file [$PODS_JSON]\n"
-  else
+  if [ ! -f $PODS_JSON ]; then
     kdump "pods"
     echo
   fi
@@ -719,6 +717,7 @@ kservice() {
 
   if [ -f $SERVICES_JSON ] && [ -f $PODS_JSON ] && [ -f $ENDPOINTS_JSON ]; then
     # echo ">> using cached files [$SERVICES_JSON, $PODS_JSON, $ENDPOINTS_JSON]\n"
+    true
   else
     kdump "services"
     kdump "endpoints"

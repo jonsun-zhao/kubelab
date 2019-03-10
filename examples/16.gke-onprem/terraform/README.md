@@ -1,4 +1,4 @@
-# Build the Lab with Terraform
+# Build the Lab on Packet.com
 
 ## Prerequisites
 
@@ -25,16 +25,18 @@ sed -i "s/datastore/YOUR_VOLUME_NAME/g" *.tf
 sed -i '' "s/datastore/YOUR_VOLUME_NAME/g" *.tf
 ```
 
-### Prepare Terraform variables (`terraform.tfvar`)
+### Prepare Terraform variables
 
-```sh
-cp terraform.tfvars.template terraform.tfvars
-```
+* Create the `terraform.tfvars` file (example)
 
-* Make necessary changes to the `terraform.tfvars`
+  * **Please use the `ova_admin_ws` in the example as it is**
+  * The admin workstation OVA in `nmiu-play_tools` bucket is modified to accept a vApp property which is required for this terraform script
+  * Passwords can be found in the Lab doc
 
   ```sh
-  packet_project_id = "231a57e1-a348-43ce-9b26-b1238e82dc4c"
+  packet_auth_token = "YOUR_PACKET_ACCOUNT_AUTH_TOKEN"
+
+  packet_project_id = "YOUR_PACKET_PROJET"
 
   packet_device_plan = "c2.medium.x86"
 
@@ -54,14 +56,14 @@ cp terraform.tfvars.template terraform.tfvars
 
   admin_ws_admin_password = "YOUR_ADMIN_WS_ADMIN_PASSWORD"
 
-  ova_admin_ws = "http://storage.googleapis.com/nmiu-play_tools/admin-ws-1.ova"
+  ova_admin_ws = "http://storage.googleapis.com/nmiu-play_tools/admin-ws-20190308.ova"
 
-  ova_vcsa = "http://storage.googleapis.com/nmiu-play_tools/vcsa-2.ova"
+  ova_vcsa = "https://storage.googleapis.com/gke-on-prem-lab-ovas/current/vcsa-latest.ova"
 
-  ova_f5 = "http://storage.googleapis.com/nmiu-play_tools/f5-3.ova"
+  ova_f5 = "https://storage.googleapis.com/gke-on-prem-lab-ovas/current/f5-latest.ova"
   ```
 
-### Terraform apply
+### Run Terraform
 
 ```sh
 terraform init
@@ -85,7 +87,7 @@ Error: Error applying plan:
 * packet_volume_attachment.attach_volume: DELETE https://api.packet.net/storage/attachments/bfc274e8-8668-4b6b-94cf-7931f204a3bd: 422 Cannot detach since volume is actively being used on your server
 ```
 
-### Terraform destroy
+### Run Terraform
 
 ```sh
 terraform destroy

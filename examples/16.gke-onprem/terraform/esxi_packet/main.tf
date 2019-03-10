@@ -50,6 +50,7 @@ data "template_file" "esxi_sh" {
     volume = "${packet_volume.datastore.id}"
     user   = "${var.esxi_admin_username}"
     pw     = "${var.esxi_admin_password}"
+    ds     = "${var.esxi_ds_name}"
     ip1    = "${data.external.volume_info.result["ip1"]}"
     ip2    = "${data.external.volume_info.result["ip2"]}"
     target = "${data.external.volume_info.result["target"]}"

@@ -19,3 +19,6 @@
 # Temp files
 *_tmp.*
 *_temp.*
+
+# VS Code
+.vscode
