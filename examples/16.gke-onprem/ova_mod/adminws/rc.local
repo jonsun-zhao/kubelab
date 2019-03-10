@@ -1,0 +1,18 @@
+#!/bin/bash
+
+OVF_ENV='/opt/ovf_env.xml'
+
+if [ -f $OVF_ENV ]; then
+  echo "$OVF_ENV file exists, do nothing"
+  exit 0
+fi
+
+vmtoolsd --cmd "info-get guestinfo.ovfenv" > $OVF_ENV
+GW=`cat $OVF_ENV | grep -e gwip | cut -d'"' -f4`
+
+date +%c > /tmp/a
+echo $GW >> /tmp/a
+
+/opt/set-ip.sh $GW
+
+exit 0
