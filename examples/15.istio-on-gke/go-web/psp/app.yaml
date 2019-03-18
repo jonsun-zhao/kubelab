@@ -1,0 +1,312 @@
+##################################################################################################
+# psp
+##################################################################################################
+
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: client
+  namespace: istio-workload
+
+---
+kind: ClusterRole
+apiVersion: rbac.authorization.k8s.io/v1
+metadata:
+  name: psp-cr
+rules:
+  - apiGroups:
+      - extensions
+    resources:
+      - podsecuritypolicies
+    resourceNames:
+      - gce.privileged
+    verbs:
+      - use
+
+---
+kind: ClusterRoleBinding
+apiVersion: rbac.authorization.k8s.io/v1
+metadata:
+  name: psp-crb
+subjects:
+  - kind: ServiceAccount
+    name: client # Name is case sensitive
+    namespace: istio-workload
+roleRef:
+  kind: ClusterRole #this must be Role or ClusterRole
+  name: psp-cr # this must match the name of the Role or ClusterRole you wish to bind to
+  apiGroup: rbac.authorization.k8s.io
+
+##################################################################################################
+# frontend service
+##################################################################################################
+
+---
+kind: Service
+apiVersion: v1
+metadata:
+  name: frontend
+  namespace: istio-workload
+spec:
+  selector:
+    app: frontend
+  ports:
+    - name: http
+      protocol: TCP
+      port: 8000
+      targetPort: 8000
+
+---
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  name: frontend
+  namespace: istio-workload
+spec:
+  replicas: 1
+  template:
+    metadata:
+      namespace: istio-workload
+      labels:
+        app: frontend
+        version: v1
+    spec:
+      serviceAccountName: client
+      containers:
+        # [START app_container]
+        - name: frontend
+          image: gcr.io/nmiu-play/go-web:latest
+          imagePullPolicy: Always
+          args: ["-backend", "backend:8000"]
+          ports:
+            - name: http
+              containerPort: 8000
+              protocol: TCP
+            - name: https
+              containerPort: 10443
+              protocol: TCP
+          resources:
+            limits:
+              cpu: 500m
+              memory: 500Mi
+            requests:
+              cpu: 100m
+              memory: 100Mi
+          livenessProbe:
+            # httpGet:
+            #   path: /liveness
+            #   port: 8000
+            #   scheme: HTTP
+            exec: # mTLS is blocking kubelet from reaching the probes on the app serving port (https://github.com/istio/istio/issues/2628)
+              command:
+                - /bin/sh
+                - -c
+                - curl localhost:8000/liveness
+            initialDelaySeconds: 10
+            timeoutSeconds: 5
+            successThreshold: 1
+            failureThreshold: 5
+          readinessProbe:
+            # httpGet:
+            #   path: /readiness
+            #   port: 8000
+            #   scheme: HTTP
+            exec:
+              command:
+                - /bin/sh
+                - -c
+                - curl localhost:8000/readiness
+            initialDelaySeconds: 10
+            timeoutSeconds: 5
+            successThreshold: 1
+            failureThreshold: 5
+      # [END app_container]
+
+---
+apiVersion: autoscaling/v2beta1
+kind: HorizontalPodAutoscaler
+metadata:
+  name: frontend-hpa
+  namespace: istio-workload
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: frontend
+  minReplicas: 1
+  maxReplicas: 3
+  metrics:
+    - type: Resource
+      resource:
+        name: memory
+        targetAverageUtilization: 50
+    - type: Resource
+      resource:
+        name: cpu
+        targetAverageUtilization: 50
+
+##################################################################################################
+# backend service
+##################################################################################################
+---
+kind: Service
+apiVersion: v1
+metadata:
+  name: backend
+  namespace: istio-workload
+spec:
+  selector:
+    app: backend
+  ports:
+    - name: http
+      protocol: TCP
+      port: 8000
+      targetPort: 8000
+
+---
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  name: backend-v1
+  namespace: istio-workload
+spec:
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: backend
+        version: v1
+    spec:
+      serviceAccountName: client
+      containers:
+        # [START app_container]
+        - name: backend
+          image: gcr.io/nmiu-play/go-web:latest
+          imagePullPolicy: Always
+          env:
+            - name: VERSION
+              value: "v1"
+          ports:
+            - name: http
+              containerPort: 8000
+              protocol: TCP
+            - name: https
+              containerPort: 10443
+              protocol: TCP
+          livenessProbe:
+            exec:
+              command:
+                - /bin/sh
+                - -c
+                - curl localhost:8000/liveness
+            initialDelaySeconds: 10
+            timeoutSeconds: 5
+            successThreshold: 1
+            failureThreshold: 5
+          readinessProbe:
+            exec:
+              command:
+                - /bin/sh
+                - -c
+                - curl localhost:8000/readiness
+            initialDelaySeconds: 10
+            timeoutSeconds: 5
+            successThreshold: 1
+            failureThreshold: 5
+      # [END app_container]
+
+---
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  name: backend-v2
+  namespace: istio-workload
+spec:
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: backend
+        version: v2
+    spec:
+      serviceAccountName: client
+      containers:
+        # [START app_container]
+        - name: backend
+          image: gcr.io/nmiu-play/go-web:latest
+          imagePullPolicy: Always
+          env:
+            - name: MONGODB_URL
+              value: mongodb
+            - name: VERSION
+              value: "v2"
+          ports:
+            - name: http
+              containerPort: 8000
+              protocol: TCP
+            - name: https
+              containerPort: 10443
+              protocol: TCP
+          livenessProbe:
+            exec:
+              command:
+                - /bin/sh
+                - -c
+                - curl localhost:8000/liveness
+            initialDelaySeconds: 10
+            timeoutSeconds: 5
+            successThreshold: 1
+            failureThreshold: 5
+          readinessProbe:
+            exec:
+              command:
+                - /bin/sh
+                - -c
+                - curl localhost:8000/readiness
+            initialDelaySeconds: 10
+            timeoutSeconds: 5
+            successThreshold: 1
+            failureThreshold: 5
+      # [END app_container]
+      initContainers:
+        - name: wait-for-db
+          image: busybox
+          command: ["sh", "-c", "until nc -z mongodb 27017; do sleep 2; done"]
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: mongodb
+  namespace: istio-workload
+spec:
+  ports:
+    - port: 27017
+      name: mongo
+  selector:
+    app: mongodb
+
+---
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  name: mongodb
+  namespace: istio-workload
+spec:
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: mongodb
+        version: v1
+    spec:
+      serviceAccountName: client
+      containers:
+        # [START app_container]
+        - name: mongodb
+          image: gcr.io/nmiu-play/mongodb:latest
+          imagePullPolicy: IfNotPresent
+          ports:
+            - containerPort: 27017
+      # [END app_container]

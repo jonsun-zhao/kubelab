@@ -5,6 +5,7 @@ module "esxi_packet" {
   packet_project_id   = "${var.packet_project_id}"
   packet_device_plan  = "${var.packet_device_plan}"
   packet_storage_plan = "${var.packet_storage_plan}"
+  packet_facility     = "${var.packet_facility}"
   esxi_hostname       = "${var.esxi_hostname}"
   esxi_ds_name        = "${var.esxi_ds_name}"
   esxi_admin_username = "${var.esxi_admin_username}"

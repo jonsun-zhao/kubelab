@@ -40,6 +40,8 @@ sed -i '' "s/datastore/YOUR_VOLUME_NAME/g" *.tf
 
   packet_device_plan = "c2.medium.x86"
 
+  packet_facility = "sjc1"
+
   packet_storage_plan = "storage_2"
 
   esxi_hostname = "YOUR_ESXI_HOSTNAME"

@@ -18,7 +18,7 @@ data "packet_operating_system" "esxi" {
 # packet_volume doesn't have a name argument :(
 resource "packet_volume" "datastore" {
   description   = "vshpere data store"
-  facility      = "sjc1"
+  facility      = "${var.packet_facility}"
   project_id    = "${var.packet_project_id}"
   plan          = "${var.packet_storage_plan}"
   size          = 1000
@@ -29,7 +29,7 @@ resource "packet_volume" "datastore" {
 resource "packet_device" "esxi" {
   hostname         = "${var.esxi_hostname}"
   plan             = "${var.packet_device_plan}"
-  facility         = "sjc1"
+  facility         = "${var.packet_facility}"
   operating_system = "${data.packet_operating_system.esxi.id}"
   billing_cycle    = "hourly"
   project_id       = "${var.packet_project_id}"

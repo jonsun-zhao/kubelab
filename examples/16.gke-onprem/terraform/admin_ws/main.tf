@@ -60,50 +60,41 @@ resource "local_file" "admin_ws_sh" {
   filename = "${path.module}/files/admin_ws_tmp.sh"
 }
 
-# import the rest of the ovas from admin workstation
-resource "null_resource" "import_the_rest" {
-  connection {
-    host     = "${data.external.admin_ws_public_ip.result["ip"]}"
-    type     = "ssh"
-    user     = "${var.admin_ws_admin_username}"
-    password = "${var.admin_ws_admin_password}"
-  }
-
-  # upload supporting files to admin-ws
-  provisioner "file" {
-    source      = "${path.module}/files/govc"
-    destination = "/tmp/govc"
-  }
-
-  provisioner "file" {
-    source      = "${path.module}/files/vcsa.json"
-    destination = "/tmp/vcsa.json"
-  }
-
-  provisioner "file" {
-    source      = "${path.module}/files/f5.json"
-    destination = "/tmp/f5.json"
-  }
-
-  # run the admin-ws configuration script remotely
-  provisioner "remote-exec" {
-    script = "${path.module}/files/admin_ws_tmp.sh"
-  }
-
-  # provisioner "file" {
-  #   source      = "${path.module}/files/admin_ws_tmp.sh"
-  #   destination = "/tmp/admin_ws_tmp.sh"
-  # }
+# # import the rest of the ovas from admin workstation
+# resource "null_resource" "import_the_rest" {
+#   connection {
+#     host     = "${data.external.admin_ws_public_ip.result["ip"]}"
+#     type     = "ssh"
+#     user     = "${var.admin_ws_admin_username}"
+#     password = "${var.admin_ws_admin_password}"
+#   }
 
 
-  # provisioner "remote-exec" {
-  #   # run bootstrap script on esxi
-  #   inline = [
-  #     "chmod +x /tmp/govc",
-  #     "chmod +x /tmp/admin_ws_tmp.sh",
-  #     "/tmp/admin_ws_tmp.sh",
-  #   ]
-  # }
+#   # upload supporting files to admin-ws
+#   provisioner "file" {
+#     source      = "${path.module}/files/govc"
+#     destination = "/tmp/govc"
+#   }
 
-  depends_on = ["local_file.admin_ws_sh", "null_resource.import_admin_ws"]
-}
+
+#   provisioner "file" {
+#     source      = "${path.module}/files/vcsa.json"
+#     destination = "/tmp/vcsa.json"
+#   }
+
+
+#   provisioner "file" {
+#     source      = "${path.module}/files/f5.json"
+#     destination = "/tmp/f5.json"
+#   }
+
+
+#   # run the admin-ws configuration script remotely
+#   provisioner "remote-exec" {
+#     script = "${path.module}/files/admin_ws_tmp.sh"
+#   }
+
+
+#   depends_on = ["local_file.admin_ws_sh", "null_resource.import_admin_ws"]
+# }
+
