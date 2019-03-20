@@ -2,7 +2,7 @@
 kind: ClusterRole
 apiVersion: rbac.authorization.k8s.io/v1
 metadata:
-  name: psp-test
+  name: psp-istio
 rules:
 - apiGroups:
   - extensions
@@ -18,7 +18,7 @@ rules:
 kind: ClusterRoleBinding
 apiVersion: rbac.authorization.k8s.io/v1
 metadata:
-  name: psp-test
+  name: psp-istio
 subjects:
 - kind: ServiceAccount
   name: istio-citadel-service-account
@@ -52,5 +52,5 @@ subjects:
   namespace: istio-system
 roleRef:
   kind: ClusterRole #this must be Role or ClusterRole
-  name: psp-test # this must match the name of the Role or ClusterRole you wish to bind to
+  name: psp-istio # this must match the name of the Role or ClusterRole you wish to bind to
   apiGroup: rbac.authorization.k8s.io
