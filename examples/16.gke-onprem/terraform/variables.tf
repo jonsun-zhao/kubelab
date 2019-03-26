@@ -6,7 +6,13 @@ variable "packet_auth_token" {
 variable "packet_project_id" {
   description = "hybrid-playground"
   type        = "string"
-  default     = "231a57e1-a348-43ce-9b26-b1238e82dc4c"
+  default     = ""
+}
+
+variable "packet_region" {
+  description = "packet region for server and storage"
+  type        = "string"
+  default     = "svl1"
 }
 
 variable "packet_device_plan" {
@@ -30,11 +36,6 @@ variable "esxi_admin_username" {
 
 variable "esxi_admin_password" {
   type = "string"
-}
-
-variable "esxi_ds_name" {
-  type    = "string"
-  default = "persistent_ds1"
 }
 
 variable "vcenter_admin_username" {
@@ -64,4 +65,24 @@ variable "ova_vcsa" {
 
 variable "ova_f5" {
   type = "string"
+}
+
+variable "f5_addr" {
+  type = "string"
+  default = "172.16.10.4"
+}
+
+variable "f5_user" {
+  type = "string"
+  default = "admin"
+}
+
+variable "f5_pass" {
+  type = "string"
+  default = "gk30npr3m!"
+}
+
+variable "f5_key" {
+  type = "string"
+  default = ""
 }

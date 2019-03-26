@@ -1,9 +1,0 @@
-esxi_vm_name = "CHANGEME"
-
-esxi_vm_cores = "CHANGEME"
-
-esxi_vm_memory_size = "CHANGEME"
-
-esxi_vm_storage_size = "CHANGEME"
-
-esxi_vm_iso = "CHANGEME"
