@@ -36,7 +36,7 @@ gsutil cp gs://nmiu-play_tools/dnsbench-darwin /path/to/your/bin
     > NOTE: Please adjust the `_BUCKET_NAME_` in `cloudbuild.yaml` to suit your needs
 
     ```sh
-    gsutil cp gs://nmiu-play_tools/dnsbench /path/to/your/bin
+    gsutil cp gs://nmiu-play_tools/dnsbench-$_GOOS_ /path/to/your/bin
     ```
 
   * Local
