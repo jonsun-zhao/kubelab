@@ -98,6 +98,10 @@ kdump_all() {
   echo -e "\n** output directory:  ${dir} **"
 }
 
+ka() {
+  kubectl "$@" --all-namespaces
+}
+
 # =====================
 #  GCP Helpers
 # =====================
@@ -828,5 +832,31 @@ kservices() {
 
     kservice $name $namespace
     echo
+  done
+}
+
+# =====================
+#  istio Helpers
+# =====================
+
+istio_dump_proxy_config() {
+  if [ -n "$ZSH_VERSION" ]; then
+    FUNCNAME=${funcstack[1]}
+  fi
+
+  output_dir="/tmp"
+
+  if [ "$#" -lt 1 ]; then
+    echo "Usage: $FUNCNAME POD_NAME [NAMESPACE:-default]"
+    return 1
+  fi
+
+  pod=$1
+  namespace=${2:-default}
+
+  configs=(cluster listener route endpoint)
+
+  for i in "${configs[@]}"; do
+    istioctl proxy-config $i -n ${namespace} ${pod} -o json >${output_dir}/${pod}_${namespace}_${i}.json
   done
 }
