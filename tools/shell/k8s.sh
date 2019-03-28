@@ -8,6 +8,7 @@ alias ki="k -n istio-system"
 alias kx="k exec"
 alias kw="k -o wide"
 alias ksw="ks -o wide"
+alias kiwl="k -n istio-workload"
 
 alias kpod_res='k -o custom-columns="NAME:.metadata.name,\
 CPU_REQUEST:.spec.containers[].resources.requests.cpu,\

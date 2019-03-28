@@ -2,7 +2,7 @@
 apiVersion: v1
 kind: Pod
 metadata:
-  name: toolbox
+  name: postgres-toolbox
   namespace: istio-workload
 spec:
   containers:
@@ -23,7 +23,7 @@ spec:
         [
           "/cloud_sql_proxy",
           "--dir=/cloudsql",
-          "-instances=nmiu-play:us-central1:sinatra1=tcp:3306",
+          "-instances=nmiu-play:us-central1:memegen-db=tcp:5432",
           "-credential_file=/secrets/cloudsql/cloudsqlclient.json",
         ]
       volumeMounts:

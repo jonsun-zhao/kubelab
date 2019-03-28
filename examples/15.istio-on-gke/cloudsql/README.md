@@ -1,3 +1,6 @@
 # Istio + CloudSQL
 
-kubectl -n istio-workload create secret generic cloudsql-instance-credentials --from-file=cloudsqlclient.json
+Tests the `cloud_sql_proxy` functionality in a Istio mesh
+
+* [mysql](mysql)
+* [postgres](postgres)

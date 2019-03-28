@@ -3,54 +3,20 @@
 apiVersion: networking.istio.io/v1alpha3
 kind: DestinationRule
 metadata:
-  name: cloud-sql-instance
+  name: postgres-cloud-sql-instance
   namespace: istio-workload
 spec:
-  host: 35.184.231.104
+  host: 35.224.127.4
   trafficPolicy:
     tls:
       mode: DISABLE
-
----
-# Cloud SQL Proxy makes requests to `oauth2.googleapis.com`
-apiVersion: networking.istio.io/v1alpha3
-kind: ServiceEntry
-metadata:
-  name: oauth2.googleapis.com
-  namespace: istio-workload
-spec:
-  hosts:
-    - oauth2.googleapis.com
-  ports:
-    - name: https
-      number: 443
-      protocol: TLS
-  resolution: DNS
-  location: MESH_EXTERNAL
-
----
-# Cloud SQL Proxy makes requests to `www.googleapis.com`
-apiVersion: networking.istio.io/v1alpha3
-kind: ServiceEntry
-metadata:
-  name: www.googleapis.com
-  namespace: istio-workload
-spec:
-  hosts:
-    - www.googleapis.com
-  ports:
-    - number: 443
-      name: https
-      protocol: HTTPS
-  resolution: DNS
-  location: MESH_EXTERNAL
 
 ---
 # Add the CloudSQL's external IP to the mesh
 apiVersion: networking.istio.io/v1alpha3
 kind: ServiceEntry
 metadata:
-  name: cloud-sql-instance
+  name: postgres-cloud-sql-instance
   namespace: istio-workload
 spec:
   hosts:
@@ -59,10 +25,10 @@ spec:
     # namely "curl: (56) Recv failure: Connection reset by peer"
     #
     # use `gcloud sql instances list` to find out the IP address of your Google Cloud Instance
-    - 35.184.231.104
+    - 35.224.127.4
   addresses:
     # use `gcloud sql instances list` to find out the IP address of your Google Cloud Instance
-    - 35.184.231.104/32 # a block of IPs in CIDR notation
+    - 35.224.127.4/32 # a block of IPs in CIDR notation
   ports:
     - name: tcp
       number: 3307 # at the moment, Google Cloud SQL always available on port 3307
