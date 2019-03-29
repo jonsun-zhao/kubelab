@@ -1,15 +1,15 @@
----
-# Disable mTLS to the CloudSQL instance
-apiVersion: networking.istio.io/v1alpha3
-kind: DestinationRule
-metadata:
-  name: postgres-cloud-sql-instance
-  namespace: istio-workload
-spec:
-  host: 35.224.127.4
-  trafficPolicy:
-    tls:
-      mode: DISABLE
+# ---
+# # Disable mTLS to the CloudSQL instance
+# apiVersion: networking.istio.io/v1alpha3
+# kind: DestinationRule
+# metadata:
+#   name: postgres-cloud-sql-instance
+#   namespace: istio-workload
+# spec:
+#   host: 35.224.127.4
+#   trafficPolicy:
+#     tls:
+#       mode: DISABLE
 
 ---
 # Add the CloudSQL's external IP to the mesh
@@ -20,12 +20,7 @@ metadata:
   namespace: istio-workload
 spec:
   hosts:
-    # although blog article says that `hosts` field is ignored for TCP service entries,
-    # clients fail to establish connection when `hosts` is omitted,
-    # namely "curl: (56) Recv failure: Connection reset by peer"
-    #
-    # use `gcloud sql instances list` to find out the IP address of your Google Cloud Instance
-    - 35.224.127.4
+    - cloudsql.external
   addresses:
     # use `gcloud sql instances list` to find out the IP address of your Google Cloud Instance
     - 35.224.127.4/32 # a block of IPs in CIDR notation

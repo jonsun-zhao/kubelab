@@ -4,7 +4,7 @@
 
 * Setup a Postgres CloudSQL instance/database `memegen-db` following this [Codelab](https://codelabs.developers.google.com/codelabs/cloud-postgresql-gke-memegen)
 * Run the `memegen` application locally with `cloud_sql_proxy`
-* Create a meme in app which will populate the `meme` table in the DB
+* Create a meme in the app which will populate the `meme` table in the DB
 * Allow workloads in the mesh to reach google domains (required by `cloud_sql_proxy`)
 
   ```sh
@@ -17,9 +17,9 @@
   kubectl apply -f egress_to_cloudsql.yaml
   ```
 
-## Sidecar
+## Options
 
-> `cloud_sql_proxy` is deployed as a sidecar
+### `cloud_sql_proxy` as a sidecar
 
 ```sh
 kubectl apply -f sidecar.yaml
@@ -37,9 +37,7 @@ Type "help" for help.
 memegen=>
 ```
 
-## Standalone
-
-> `cloud_sql_proxy` is deployed as a standalone service listening on port `5432`
+### `cloud_sql_proxy` as a standalone service
 
 ```sh
 kubectl apply -f standalone.yaml

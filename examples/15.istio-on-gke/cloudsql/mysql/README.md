@@ -15,17 +15,15 @@
   kubectl apply -f egress_to_cloudsql.yaml
   ```
 
-## Sidecar
+## Options
 
-> `cloud_sql_proxy` is deployed as a sidecar
+### `cloud_sql_proxy` as a sidecar
 
 ```sh
 kubectl apply -f sidecar.yaml
 ```
 
-## Standalone
-
-> `cloud_sql_proxy` is deployed as a standalone service listening on port `3306`
+### `cloud_sql_proxy` as a standalone service
 
 ```sh
 kubectl apply -f standalone.yaml
