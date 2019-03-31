@@ -836,6 +836,32 @@ kservices() {
   done
 }
 
+# get container's virtual nic name from the node
+kcontainer_nic() {
+  [ -n "$ZSH_VERSION" ] && FUNCNAME=${funcstack[1]}
+
+  if [ "$#" -lt 1 ]; then
+    echo "Usage: $FUNCNAME POD_NAME [NAMESPACE:-default] [CONTAINER_NAME]"
+    return 1
+  fi
+
+  pod=$1
+  namespace=${2:-default}
+  container=$3
+
+  if [ -n "${container}" ]; then
+    iflink=$(k -n ${namespace} exec ${pod} -c ${container} -it -- /bin/sh -c 'cat /sys/class/net/eth0/iflink' | tr -d '[:space:]')
+  else
+    iflink=$(k -n ${namespace} exec ${pod} -it -- /bin/sh -c 'cat /sys/class/net/eth0/iflink' | tr -d '[:space:]')
+  fi
+
+  # echo $iflink
+  node=$(k -n ${namespace} get pod ${pod} -o json | jq -r '.spec.nodeName|tostring' | tr -d '[:space:]')
+  nic=$(gssh $node -- "grep ${iflink} /sys/class/net/*/ifindex | cut -d/ -f5")
+  echo "node: $node"
+  echo "nic: $nic"
+}
+
 # =====================
 #  istio Helpers
 # =====================
