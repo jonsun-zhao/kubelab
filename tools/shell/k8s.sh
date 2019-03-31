@@ -845,8 +845,6 @@ istio_dump_proxy_config() {
     FUNCNAME=${funcstack[1]}
   fi
 
-  output_dir="/tmp"
-
   if [ "$#" -lt 1 ]; then
     echo "Usage: $FUNCNAME POD_NAME [NAMESPACE:-default]"
     return 1
@@ -855,9 +853,13 @@ istio_dump_proxy_config() {
   pod=$1
   namespace=${2:-default}
 
+  output_dir="/tmp/${pod}_${namespace}_$(date +%s)"
+  [ -d $output_dir ] || mkdir -p $output_dir
+
   configs=(cluster listener route endpoint)
 
   for i in "${configs[@]}"; do
-    istioctl proxy-config $i -n ${namespace} ${pod} -o json >${output_dir}/${pod}_${namespace}_${i}.json
+    echo "> dumping $i to ${output_dir}/${i}.json"
+    istioctl proxy-config $i -n ${namespace} ${pod} -o json >${output_dir}/${i}.json
   done
 }
