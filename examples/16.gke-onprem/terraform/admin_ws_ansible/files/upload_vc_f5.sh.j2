@@ -1,0 +1,24 @@
+#!/bin/bash
+
+export GOVC_USERNAME='{{ esxi_username }}'
+export GOVC_PASSWORD='{{ esxi_password }}'
+export GOVC_URL='{{ esxi_public_ip }}'
+export GOVC_INSECURE=1
+export GOVC_VM='Admin WS'
+export GOVC_GUEST_LOGIN='{{ govc_guest_login }}'
+
+### UPLOADS VCENTER OVA ###
+govc import.ova \
+  -k \
+  -ds='persistent_ds1' \
+  -pool='*/Resources' \
+  -options='{{ playbook_dir }}/vcsa.json' \
+  {{ ova_vcsa }} 2>&1
+
+### UPLOADS F5 OVA ###
+govc import.ova \
+  -k \
+  -ds='persistent_ds1' \
+  -pool='*/Resources' \
+  -options='{{ playbook_dir }}/f5.json' \
+  {{ ova_f5 }} 2>&1

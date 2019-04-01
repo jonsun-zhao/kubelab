@@ -1,0 +1,25 @@
+#!/bin/bash
+
+export GOVC_USERNAME='{{ esxi_username }}'
+export GOVC_PASSWORD='{{ esxi_password }}'
+export GOVC_URL='{{ esxi_public_ip }}'
+export GOVC_INSECURE=1
+export GOVC_VM='Admin WS'
+export GOVC_GUEST_LOGIN='{{ govc_guest_login }}'
+
+### UPLOADS ADMIN WS OVA ###
+govc import.ova \
+  -k \
+  -ds='persistent_ds1' \
+  -pool='*/Resources' \
+  -options='{{ playbook_dir }}/admin_ws.json' \
+  {{ ova_admin_ws }} 2>&1
+
+sleep 30
+
+### UPLOAD AND RUN SET-IP SCRIPT ###
+govc guest.upload {{ playbook_dir }}/set-ip.sh /home/gkeadmin/set-ip2.sh
+govc guest.chmod 0755 /home/gkeadmin/set-ip2.sh
+govc guest.start /bin/sh /home/gkeadmin/set-ip2.sh
+
+

@@ -1,0 +1,17 @@
+{
+    "Annotation": "VMware vCenter Server Appliance",
+    "DiskProvisioning": "thin",
+    "IPAllocationPolicy": "dhcpPolicy",
+    "IPProtocol": "IPv4",
+    "InjectOvfEnv": true,
+    "MarkAsTemplate": false,
+    "Name": "vCenter Appliance",
+    "NetworkMapping": [
+        {
+            "Name": "internal management",
+            "Network": "internal management"
+        }
+    ],
+    "PowerOn": true,
+    "WaitForIP": true
+}
