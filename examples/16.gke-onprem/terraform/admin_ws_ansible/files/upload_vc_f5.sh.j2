@@ -10,7 +10,7 @@ export GOVC_GUEST_LOGIN='{{ govc_guest_login }}'
 ### UPLOADS VCENTER OVA ###
 govc import.ova \
   -k \
-  -ds='persistent_ds1' \
+  -ds='{{ esxi_ds_name }}' \
   -pool='*/Resources' \
   -options='{{ playbook_dir }}/vcsa.json' \
   {{ ova_vcsa }} 2>&1
@@ -18,7 +18,7 @@ govc import.ova \
 ### UPLOADS F5 OVA ###
 govc import.ova \
   -k \
-  -ds='persistent_ds1' \
+  -ds='{{ esxi_ds_name }}' \
   -pool='*/Resources' \
   -options='{{ playbook_dir }}/f5.json' \
   {{ ova_f5 }} 2>&1

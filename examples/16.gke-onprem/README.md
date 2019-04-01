@@ -29,7 +29,7 @@ cp terraform.tfvars.template terraform.tfvars
 * Make necessary changes to the `terraform.tfvars`
 
   ```sh
-  packet_project_id = ""
+  packet_project_id = "YOUR_PACKET_PROJECT_ID"
 
   packet_device_plan = "c2.medium.x86"
 
@@ -65,6 +65,7 @@ terraform apply
 ```
 
 ### Run Ansible after terraform succesfully provision packet environment to setup the Admin Workstation, vCenter Appliance, and the F5 BIG-IP Appliance
+
 ```sh
 cd admin_ws_ansible/file
 ansible-playbook main.yaml -i inventory.yaml

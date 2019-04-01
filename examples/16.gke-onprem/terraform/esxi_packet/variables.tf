@@ -4,7 +4,7 @@ variable "packet_auth_token" {
 
 variable "packet_region" {
   description = "packet server and storage region"
-  default = "svl1"
+  default     = "svl1"
 }
 
 variable "packet_project_id" {
@@ -22,6 +22,10 @@ variable "packet_storage_plan" {
 
 variable "esxi_hostname" {
   description = "esxi hostname"
+}
+
+variable "esxi_ds_name" {
+  description = "esxi datastore name"
 }
 
 variable "esxi_admin_username" {

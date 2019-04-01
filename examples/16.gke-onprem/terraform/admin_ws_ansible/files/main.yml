@@ -64,7 +64,7 @@
         mode: 0777
 
     - name: Upload Vcenter OVA
-      shell: govc import.ova -k -ds='persistent_ds1' -pool='*/Resources' -options='/tmp/vcsa.json' /tmp/vcsa-latest.ova
+      shell: govc import.ova -k -ds='{{ esxi_ds_name }}' -pool='*/Resources' -options='/tmp/vcsa.json' /tmp/vcsa-latest.ova
       environment:
         GOVC_USERNAME: '{{ esxi_username }}'
         GOVC_PASSWORD: '{{ esxi_password }}'
@@ -88,7 +88,7 @@
         - debug
 
     - name: Upload F5 OVA
-      shell: govc import.ova -k -ds='persistent_ds1' -pool='*/Resources' -options='/tmp/f5.json' /tmp/f5-latest.ova
+      shell: govc import.ova -k -ds='{{ esxi_ds_name }}' -pool='*/Resources' -options='/tmp/f5.json' /tmp/f5-latest.ova
       environment:
         GOVC_USERNAME: '{{ esxi_username }}'
         GOVC_PASSWORD: '{{ esxi_password }}'

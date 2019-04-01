@@ -33,4 +33,4 @@ ls /dev/disks >disks2.txt
 DISK=$(diff disks1.txt disks2.txt | grep ^+naa | sed 's/^+//g')
 LAST=$(($(partedUtil "getptbl" /vmfs/devices/disks/$DISK | grep ^[0-9] | cut -d' ' -f4) - 50))
 partedUtil "setptbl" "/vmfs/devices/disks/$DISK" "gpt" "1 2048 $LAST AA31E02A400F11DB9590000C2911D1B8 0"
-vmkfstools -C vmfs6 -b 1m -S persistent_ds1 /vmfs/devices/disks/$DISK:1
+vmkfstools -C vmfs6 -b 1m -S ${ds} /vmfs/devices/disks/$DISK:1

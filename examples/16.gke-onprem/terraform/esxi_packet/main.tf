@@ -27,12 +27,12 @@ resource "packet_volume" "datastore" {
 
 # deploy esxi host
 resource "packet_device" "esxi" {
-  hostname         = "${var.esxi_hostname}"
-  plan             = "${var.packet_device_plan}"
-  facility         = "${var.packet_region}"
-  operating_system = "${data.packet_operating_system.esxi.id}"
-  billing_cycle    = "hourly"
-  project_id       = "${var.packet_project_id}"
+  hostname                = "${var.esxi_hostname}"
+  plan                    = "${var.packet_device_plan}"
+  facility                = "${var.packet_region}"
+  operating_system        = "${data.packet_operating_system.esxi.id}"
+  billing_cycle           = "hourly"
+  project_id              = "${var.packet_project_id}"
   public_ipv4_subnet_size = "29"
 
   depends_on = ["packet_volume.datastore"]
@@ -51,6 +51,7 @@ data "template_file" "esxi_sh" {
     volume = "${packet_volume.datastore.id}"
     user   = "${var.esxi_admin_username}"
     pw     = "${var.esxi_admin_password}"
+    ds     = "${var.esxi_ds_name}"
     ip1    = "${data.external.volume_info.result["ip1"]}"
     ip2    = "${data.external.volume_info.result["ip2"]}"
     target = "${data.external.volume_info.result["target"]}"
@@ -92,7 +93,6 @@ data "external" "esxi_gw_ip" {
   program    = ["bash", "${path.module}/files/fetch_gw_ip.sh", "${var.packet_auth_token}", "${packet_device.esxi.id}"]
   depends_on = ["packet_volume_attachment.attach_volume"]
 }
-
 
 ### THIS CAN BE UNCOMMMENTED ONCE TERRAFORM 0.12 IS RELEASED #####
 //data "template_file" "packet_gw_public" {

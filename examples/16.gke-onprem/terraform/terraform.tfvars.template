@@ -12,6 +12,8 @@ esxi_admin_username = "CHANGEME"
 
 esxi_admin_password = "CHANGEME"
 
+esxi_ds_name = "CHANGEME"
+
 vcenter_admin_username = "CHANGEME"
 
 vcenter_admin_password = "CHANGEME"

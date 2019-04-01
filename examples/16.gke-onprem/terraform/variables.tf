@@ -38,6 +38,11 @@ variable "esxi_admin_password" {
   type = "string"
 }
 
+variable "esxi_ds_name" {
+  type    = "string"
+  default = "persistent_ds1"
+}
+
 variable "vcenter_admin_username" {
   type    = "string"
   default = "administrator@gkeonprem.local"
@@ -68,21 +73,21 @@ variable "ova_f5" {
 }
 
 variable "f5_addr" {
-  type = "string"
+  type    = "string"
   default = "172.16.10.4"
 }
 
 variable "f5_user" {
-  type = "string"
+  type    = "string"
   default = "admin"
 }
 
 variable "f5_pass" {
-  type = "string"
+  type    = "string"
   default = "gk30npr3m!"
 }
 
 variable "f5_key" {
-  type = "string"
+  type    = "string"
   default = ""
 }

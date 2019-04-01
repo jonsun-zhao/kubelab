@@ -7,6 +7,7 @@ module "esxi_packet" {
   packet_device_plan  = "${var.packet_device_plan}"
   packet_storage_plan = "${var.packet_storage_plan}"
   esxi_hostname       = "${var.esxi_hostname}"
+  esxi_ds_name        = "${var.esxi_ds_name}"
   esxi_admin_username = "${var.esxi_admin_username}"
   esxi_admin_password = "${var.esxi_admin_password}"
 }
@@ -26,7 +27,6 @@ module "esxi_packet" {
 //
 //}
 
-
 //module "admin_ws" {
 //  source = "./admin_ws"
 //
@@ -43,7 +43,6 @@ module "esxi_packet" {
 //
 //}
 
-
 module "admin_ws_ansible" {
   source = "./admin_ws_ansible"
 
@@ -54,6 +53,7 @@ module "admin_ws_ansible" {
   esxi_gw_ip              = "${module.esxi_packet.esxi_gw_ip}"
   esxi_admin_username     = "${var.esxi_admin_username}"
   esxi_admin_password     = "${var.esxi_admin_password}"
+  esxi_ds_name            = "${var.esxi_ds_name}"
   esxi_hostname           = "${var.esxi_hostname}"
   admin_ws_admin_username = "${var.admin_ws_admin_username}"
   admin_ws_admin_password = "${var.admin_ws_admin_password}"
@@ -61,6 +61,4 @@ module "admin_ws_ansible" {
   ova_admin_ws            = "${var.ova_admin_ws}"
   ova_vcsa                = "${var.ova_vcsa}"
   ova_f5                  = "${var.ova_f5}"
-
-
 }

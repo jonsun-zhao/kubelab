@@ -10,7 +10,7 @@ export GOVC_GUEST_LOGIN='{{ govc_guest_login }}'
 ### UPLOADS ADMIN WS OVA ###
 govc import.ova \
   -k \
-  -ds='persistent_ds1' \
+  -ds='{{ esxi_ds_name }}' \
   -pool='*/Resources' \
   -options='{{ playbook_dir }}/admin_ws.json' \
   {{ ova_admin_ws }} 2>&1
