@@ -6,7 +6,6 @@ variable "packet_auth_token" {
 variable "packet_project_id" {
   description = "hybrid-playground"
   type        = "string"
-  default     = ""
 }
 
 variable "packet_region" {

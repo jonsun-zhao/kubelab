@@ -2,6 +2,8 @@ packet_auth_token = "CHANGEME"
 
 packet_project_id = "CHANGEME"
 
+packet_region = "CHANGEME"
+
 packet_device_plan = "CHANGEME"
 
 packet_storage_plan = "CHANGEME"
