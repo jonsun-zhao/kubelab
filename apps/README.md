@@ -19,6 +19,6 @@
 * [rails](rails)
   * A simple Ruby-on-Rails application backed by MySQL
 
-* [toolbox](toolbox)
+* [hammer](hammer)
   * A Centos 7 based utility pod
   * Useful for hitting `ClusterIP` type service within the K8s cluster

@@ -23,7 +23,7 @@ kustomize build . | kubectl apply -f -
 ### Try kubectl in the test pod
 
 ```sh
-kubectl exec toolbox -it bash
+kubectl exec hammer -it bash
 ```
 
 ```sh
@@ -56,7 +56,7 @@ kubectl apply -f rolebinding.yaml
 k get pods
 
 NAME         READY     STATUS    RESTARTS   AGE
-toolbox      1/1       Running   0          1h
+hammer      1/1       Running   0          1h
 ```
 
 ```sh
@@ -81,7 +81,7 @@ Error from server (Forbidden): pods is forbidden: User "jaw@google.com" cannot l
 ```sh
 kubectl get pods --as=jaw@google.com --as-group=nm-k8s-rbac@google.com
 NAME         READY     STATUS    RESTARTS   AGE
-toolbox      1/1       Running   0          4h
+hammer      1/1       Running   0          4h
 ```
 
 _kube-apiserver log:_
@@ -113,7 +113,7 @@ kubectl apply -f impersonate.yaml
 k get pods --as=jaw@google.com --as-group=nm-k8s-rbac@google.com
 
 NAME         READY     STATUS    RESTARTS   AGE
-toolbox      1/1       Running   0          4h
+hammer      1/1       Running   0          4h
 ```
 
 _kube-apiserver log:_

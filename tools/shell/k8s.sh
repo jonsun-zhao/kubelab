@@ -216,6 +216,8 @@ kinspect() {
   echo ">> Switching gcloud to customer config"
   gauth $project $token
 
+  local regional=false
+
   if [[ $location =~ [[:digit:]]$ ]]; then
     regional=true
   fi

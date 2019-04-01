@@ -1,5 +1,5 @@
 bases:
-- ../../../apps/toolbox/k8s
+- ../../../apps/hammer/k8s
 patches:
 - patch.yaml
 resources:

@@ -2,14 +2,14 @@
 apiVersion: v1
 kind: Pod
 metadata:
-  name: toolbox
+  name: hammer
   labels:
-    app: toolbox
+    app: hammer
 spec:
   containers:
   # [START app_container]
-  - name: toolbox
-    image: gcr.io/nmiu-play/toolbox
+  - name: hammer
+    image: gcr.io/nmiu-play/hammer
     imagePullPolicy: Always
     resources:
       requests:

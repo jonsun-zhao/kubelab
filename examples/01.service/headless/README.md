@@ -55,7 +55,7 @@ php-apache-dep-58bc5f5b77-xjwm5   1/1       Running   0          18m       10.28
 * Service FQDN
 
 ```sh
-[root@toolbox ~]# dig php-apache-svc.default.svc.cluster.local.
+[root@hammer ~]# dig php-apache-svc.default.svc.cluster.local.
 ...
 ;; QUESTION SECTION:
 ;php-apache-svc.default.svc.cluster.local. IN A

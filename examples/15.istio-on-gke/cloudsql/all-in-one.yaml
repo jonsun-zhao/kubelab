@@ -140,13 +140,13 @@ spec:
 apiVersion: v1
 kind: Pod
 metadata:
-  name: toolbox-standalone
+  name: hammer-standalone
   namespace: istio-workload
 spec:
   containers:
-    - image: gcr.io/nmiu-play/toolbox
+    - image: gcr.io/nmiu-play/hammer
       imagePullPolicy: Always
-      name: toolbox
+      name: hammer
       resources:
         limits:
           cpu: 500m
@@ -154,3 +154,7 @@ spec:
         requests:
           cpu: 100m
           memory: 128Mi
+      securityContext:
+        capabilities:
+          add:
+            - NET_ADMIN

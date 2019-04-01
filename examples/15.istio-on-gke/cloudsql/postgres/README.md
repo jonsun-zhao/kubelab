@@ -26,8 +26,8 @@ kubectl apply -f sidecar.yaml
 ```
 
 ```sh
-→ kiwl exec postgres-toolbox -c toolbox -it bash
-[root@postgres-toolbox ~]# psql -h localhost -p 5432 -U postgres memegen
+→ kiwl exec postgres-hammer -c hammer -it bash
+[root@postgres-hammer ~]# psql -h localhost -p 5432 -U postgres memegen
 Password for user postgres:
 psql (9.2.24, server 9.6.10)
 WARNING: psql version 9.2, server version 9.6.
@@ -44,8 +44,8 @@ kubectl apply -f standalone.yaml
 ```
 
 ```sh
-→ kiwl exec postgres-toolbox-standalone -c toolbox -it bash
-[root@postgres-toolbox-standalone ~]# psql -h postgres-cloudsql-proxy -U postgres memegen
+→ kiwl exec postgres-hammer-standalone -c hammer -it bash
+[root@postgres-hammer-standalone ~]# psql -h postgres-cloudsql-proxy -U postgres memegen
 Password for user postgres:
 psql (9.2.24, server 9.6.10)
 WARNING: psql version 9.2, server version 9.6.

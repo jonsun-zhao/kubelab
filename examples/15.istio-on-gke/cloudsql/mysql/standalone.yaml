@@ -90,13 +90,13 @@ spec:
 apiVersion: v1
 kind: Pod
 metadata:
-  name: mysql-toolbox-standalone
+  name: mysql-hammer-standalone
   namespace: istio-workload
 spec:
   containers:
-    - image: gcr.io/nmiu-play/toolbox
+    - image: gcr.io/nmiu-play/hammer
       imagePullPolicy: Always
-      name: toolbox
+      name: hammer
       resources:
         limits:
           cpu: 500m

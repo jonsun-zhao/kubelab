@@ -2,11 +2,11 @@
 apiVersion: v1
 kind: Pod
 metadata:
-  name: toolbox
+  name: hammer
 spec:
   containers:
     # [START app_container]
-    - name: toolbox
+    - name: hammer
       volumeMounts:
         - name: data
           mountPath: /data
