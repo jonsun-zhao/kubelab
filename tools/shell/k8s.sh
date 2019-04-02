@@ -229,7 +229,6 @@ kinspect() {
   fi
 
   export KUBECONFIG=~/gke_${project}_${location}_${cluster}-config.txt
-  # export CLUSTER=$cluster
   echo ">> Setting KUBECONFIG to $KUBECONFIG"
   echo ">> Getting cluster credentials"
   if $regional; then
@@ -881,10 +880,10 @@ istio_dump_proxy_config() {
   pod=$1
   namespace=${2:-default}
 
-  output_dir="/tmp/${pod}_${namespace}_$(date +%s)"
+  output_dir="${pod}_${namespace}_$(date +%s)"
   [ -d $output_dir ] || mkdir -p $output_dir
 
-  configs=(cluster listener route endpoint)
+  configs=(cluster listener route endpoint bootstrap)
 
   for i in "${configs[@]}"; do
     echo "> dumping $i to ${output_dir}/${i}.json"
