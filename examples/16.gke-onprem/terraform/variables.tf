@@ -6,15 +6,12 @@ variable "packet_auth_token" {
 variable "packet_project_id" {
   description = "packet project id"
   type        = "string"
-<<<<<<< HEAD
 }
 
 variable "packet_region" {
   description = "packet region for server and storage"
   type        = "string"
   default     = "svl1"
-=======
->>>>>>> guest_run
 }
 
 variable "packet_device_plan" {
