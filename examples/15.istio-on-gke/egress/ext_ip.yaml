@@ -1,0 +1,44 @@
+---
+kind: Service
+apiVersion: v1
+metadata:
+  name: svc-foo
+  namespace: istio-workload
+spec:
+  # clusterIP: None
+  ports:
+    - name: http
+      protocol: TCP
+      port: 10080
+      targetPort: 80
+    - name: https
+      protocol: TCP
+      port: 10443
+      targetPort: 443
+
+---
+kind: Endpoints
+apiVersion: v1
+metadata:
+  name: svc-foo
+  namespace: istio-workload
+subsets:
+  - addresses:
+      - ip: 10.10.0.4
+    ports:
+      - name: http
+        port: 80
+      - name: https
+        port: 443
+
+---
+apiVersion: networking.istio.io/v1alpha3
+kind: DestinationRule
+metadata:
+  name: dr-svc-foo
+  namespace: istio-workload
+spec:
+  host: "svc-foo.istio-workload.svc.cluster.local"
+  trafficPolicy:
+    tls:
+      mode: DISABLE

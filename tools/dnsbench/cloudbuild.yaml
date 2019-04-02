@@ -1,0 +1,25 @@
+steps:
+  - name: "gcr.io/cloud-builders/git"
+    args:
+      [
+        "clone",
+        "https://github.com/AskMediaGroup/dnsbench.git",
+        "src/github.com/askcom/dnsbench",
+      ]
+  - name: "gcr.io/cloud-builders/go:debian"
+    args:
+      [
+        "build",
+        "-o",
+        "bin/${_APP_NAME_}-${_GOOS_}",
+        "github.com/askcom/dnsbench/cmd/${_APP_NAME_}",
+      ]
+    env: ["GOOS=${_GOOS_}", "GOARCH=${_GOARCH_}"]
+  - name: "gcr.io/cloud-builders/gsutil"
+    args: ["-m", "cp", "bin/${_APP_NAME_}-${_GOOS_}", "gs://${_BUCKET_NAME_}/"]
+substitutions:
+  _GOOS_: linux
+  # _GOOS_: darwin
+  _GOARCH_: amd64
+  _APP_NAME_: dnsbench
+  _BUCKET_NAME_: nmiu-play_tools

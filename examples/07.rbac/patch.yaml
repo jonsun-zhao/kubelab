@@ -2,11 +2,11 @@
 apiVersion: v1
 kind: Pod
 metadata:
-  name: toolbox
+  name: hammer
 spec:
   serviceAccountName: client
   containers:
-  - name: toolbox
+  - name: hammer
     volumeMounts:
     - name: foo
       mountPath: "/etc/foo"

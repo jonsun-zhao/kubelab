@@ -8,6 +8,7 @@ alias ki="k -n istio-system"
 alias kx="k exec"
 alias kw="k -o wide"
 alias ksw="ks -o wide"
+alias kiwl="k -n istio-workload"
 
 alias kpod_res='k -o custom-columns="NAME:.metadata.name,\
 CPU_REQUEST:.spec.containers[].resources.requests.cpu,\
@@ -96,6 +97,10 @@ kdump_all() {
 
   $cmd cluster-info dump --all-namespaces --output-directory=$dir
   echo -e "\n** output directory:  ${dir} **"
+}
+
+ka() {
+  kubectl "$@" --all-namespaces
 }
 
 # =====================
@@ -210,6 +215,8 @@ kinspect() {
 
   echo ">> Switching gcloud to customer config"
   gauth $project $token
+
+  local regional=false
 
   if [[ $location =~ [[:digit:]]$ ]]; then
     regional=true
@@ -828,5 +835,59 @@ kservices() {
 
     kservice $name $namespace
     echo
+  done
+}
+
+# get container's virtual nic name from the node
+kcontainer_nic() {
+  [ -n "$ZSH_VERSION" ] && FUNCNAME=${funcstack[1]}
+
+  if [ "$#" -lt 1 ]; then
+    echo "Usage: $FUNCNAME POD_NAME [NAMESPACE:-default] [CONTAINER_NAME]"
+    return 1
+  fi
+
+  pod=$1
+  namespace=${2:-default}
+  container=$3
+
+  if [ -n "${container}" ]; then
+    iflink=$(k -n ${namespace} exec ${pod} -c ${container} -it -- /bin/sh -c 'cat /sys/class/net/eth0/iflink' | tr -d '[:space:]')
+  else
+    iflink=$(k -n ${namespace} exec ${pod} -it -- /bin/sh -c 'cat /sys/class/net/eth0/iflink' | tr -d '[:space:]')
+  fi
+
+  # echo $iflink
+  node=$(k -n ${namespace} get pod ${pod} -o json | jq -r '.spec.nodeName|tostring' | tr -d '[:space:]')
+  nic=$(gssh $node -- "grep ${iflink} /sys/class/net/*/ifindex | cut -d/ -f5")
+  echo "node: $node"
+  echo "nic: $nic"
+}
+
+# =====================
+#  istio Helpers
+# =====================
+
+istio_dump_proxy_config() {
+  if [ -n "$ZSH_VERSION" ]; then
+    FUNCNAME=${funcstack[1]}
+  fi
+
+  if [ "$#" -lt 1 ]; then
+    echo "Usage: $FUNCNAME POD_NAME [NAMESPACE:-default]"
+    return 1
+  fi
+
+  pod=$1
+  namespace=${2:-default}
+
+  output_dir="/tmp/${pod}_${namespace}_$(date +%s)"
+  [ -d $output_dir ] || mkdir -p $output_dir
+
+  configs=(cluster listener route endpoint)
+
+  for i in "${configs[@]}"; do
+    echo "> dumping $i to ${output_dir}/${i}.json"
+    istioctl proxy-config $i -n ${namespace} ${pod} -o json >${output_dir}/${i}.json
   done
 }

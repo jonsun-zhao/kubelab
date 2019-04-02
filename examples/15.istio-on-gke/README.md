@@ -7,7 +7,7 @@ gcloud beta container clusters create asuka \
   --machine-type=n1-standard-2 \
   --num-nodes=3 \
   --image-type=COS \
-  --cluster-version=1.11 \
+  --cluster-version=1.12 \
   --tags=ssh \
   --addons=Istio,HttpLoadBalancing --istio-config=auth=MTLS_STRICT \
   --preemptible \

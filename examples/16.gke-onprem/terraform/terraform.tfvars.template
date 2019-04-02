@@ -8,6 +8,8 @@ packet_device_plan = "CHANGEME"
 
 packet_storage_plan = "CHANGEME"
 
+packet_facility = "CHANGME"
+
 esxi_hostname = "CHANGEME"
 
 esxi_admin_username = "CHANGEME"

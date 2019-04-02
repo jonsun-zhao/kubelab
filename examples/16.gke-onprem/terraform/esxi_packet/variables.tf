@@ -15,6 +15,12 @@ variable "packet_device_plan" {
   description = "packet machine type"
 }
 
+variable "packet_facility" {
+  description = "packet data center"
+  type        = "string"
+  default     = "sjc1"
+}
+
 variable "packet_storage_plan" {
   description = "packet storage type"
   default     = "storage_2"

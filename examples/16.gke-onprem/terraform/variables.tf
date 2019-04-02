@@ -4,14 +4,17 @@ variable "packet_auth_token" {
 }
 
 variable "packet_project_id" {
-  description = "hybrid-playground"
+  description = "packet project id"
   type        = "string"
+<<<<<<< HEAD
 }
 
 variable "packet_region" {
   description = "packet region for server and storage"
   type        = "string"
   default     = "svl1"
+=======
+>>>>>>> guest_run
 }
 
 variable "packet_device_plan" {
@@ -23,6 +26,12 @@ variable "packet_device_plan" {
 variable "packet_storage_plan" {
   type    = "string"
   default = "storage_1"
+}
+
+variable "packet_facility" {
+  description = "packet data center"
+  type        = "string"
+  default     = "sjc1"
 }
 
 variable "esxi_hostname" {

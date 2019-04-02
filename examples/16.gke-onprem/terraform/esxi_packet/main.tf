@@ -18,7 +18,11 @@ data "packet_operating_system" "esxi" {
 # packet_volume doesn't have a name argument :(
 resource "packet_volume" "datastore" {
   description   = "vshpere data store"
+<<<<<<< HEAD
   facility      = "${var.packet_region}"
+=======
+  facility      = "${var.packet_facility}"
+>>>>>>> guest_run
   project_id    = "${var.packet_project_id}"
   plan          = "${var.packet_storage_plan}"
   size          = 1000
@@ -27,6 +31,7 @@ resource "packet_volume" "datastore" {
 
 # deploy esxi host
 resource "packet_device" "esxi" {
+<<<<<<< HEAD
   hostname                = "${var.esxi_hostname}"
   plan                    = "${var.packet_device_plan}"
   facility                = "${var.packet_region}"
@@ -34,6 +39,14 @@ resource "packet_device" "esxi" {
   billing_cycle           = "hourly"
   project_id              = "${var.packet_project_id}"
   public_ipv4_subnet_size = "29"
+=======
+  hostname         = "${var.esxi_hostname}"
+  plan             = "${var.packet_device_plan}"
+  facility         = "${var.packet_facility}"
+  operating_system = "${data.packet_operating_system.esxi.id}"
+  billing_cycle    = "hourly"
+  project_id       = "${var.packet_project_id}"
+>>>>>>> guest_run
 
   depends_on = ["packet_volume.datastore"]
 }
