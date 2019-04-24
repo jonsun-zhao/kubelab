@@ -1,0 +1,43 @@
+---
+apiVersion: v1
+kind: Pod
+metadata:
+  name: mysql-hammer
+  namespace: istio-workload
+spec:
+  containers:
+    - image: gcr.io/nmiu-play/hammer
+      imagePullPolicy: Always
+      name: hammer
+      resources:
+        limits:
+          cpu: 500m
+          memory: 128Mi
+        requests:
+          cpu: 100m
+          memory: 128Mi
+    # [START proxy_container]
+    - name: cloudsql-proxy
+      image: gcr.io/cloudsql-docker/gce-proxy:latest
+      command:
+        [
+          "/cloud_sql_proxy",
+          "--dir=/cloudsql",
+          "-instances=[CLOUDSQL_INSTANCE]=tcp:3306",
+          "-credential_file=/secrets/cloudsql/cloudsqlclient.json",
+        ]
+      volumeMounts:
+        - name: cloudsql-instance-credentials
+          mountPath: /secrets/cloudsql
+          readOnly: true
+        - name: cloudsql
+          mountPath: /cloudsql
+    # [END proxy_container]
+  # [START volumes]
+  volumes:
+    - name: cloudsql-instance-credentials
+      secret:
+        secretName: cloudsql-instance-credentials
+    - name: cloudsql
+      emptyDir:
+  # [END volumes]

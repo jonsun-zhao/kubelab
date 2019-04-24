@@ -7,4 +7,7 @@ apply:
 
 clean:
 	-kubectl delete -f app.yaml
+	-kubectl delete -f gateway.yaml
+	-kubectl delete -f destination-rule.yaml
+	-kubectl delete -f namespace.yaml
 	-kubectl -n istio-system delete service istio-ingressgateway

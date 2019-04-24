@@ -42,6 +42,6 @@ kubectl -n istio-workload create secret generic cloudsql-instance-credentials --
 
 ## Examples
 
-* [mysql](mysql)
-* [postgres](postgres)
-* [all-in-one](all-in-one.yaml)
+* [standalone-all](standalone-all.yaml)
+* [sidecar-mysql](sidecar-mysql.yaml)
+* [sidecar-postgres](sidecar-postgres.yaml)

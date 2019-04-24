@@ -1,0 +1,160 @@
+#########
+# ServiceEntry to allow access to HTTPS googleapis
+#########
+---
+apiVersion: networking.istio.io/v1alpha3
+kind: ServiceEntry
+metadata:
+  name: googleapis.com
+  namespace: istio-workload
+spec:
+  hosts:
+    - www.googleapis.com
+    - oauth2.googleapis.com
+  ports:
+    - name: https
+      number: 443
+      protocol: TLS
+  resolution: DNS
+  location: MESH_EXTERNAL
+
+#########
+# DestinationRule to allow TCP egress to cloud sql instances on 3307
+#########
+---
+# Add the CloudSQL's external IP to the mesh
+apiVersion: networking.istio.io/v1alpha3
+kind: ServiceEntry
+metadata:
+  name: mysql-cloud-sql-instance
+  namespace: istio-workload
+spec:
+  hosts:
+    - cloudsql.external
+  addresses:
+    - x.x.x.x/32
+    - y.y.y.y/32
+  ports:
+    - name: tcp
+      number: 3307 # at the moment, Google Cloud SQL always available on port 3307
+      protocol: tcp # enable TCP traffic
+  location: MESH_EXTERNAL
+
+# ---
+# # Disable mTLS to the CloudSQL instance
+# apiVersion: networking.istio.io/v1alpha3
+# kind: DestinationRule
+# metadata:
+#   name: mysql-cloud-sql-instance
+#   namespace: istio-workload
+# spec:
+#   host: x.x.x.x
+#   trafficPolicy:
+#     tls:
+#       mode: DISABLE
+
+# ---
+# # Disable mTLS to the CloudSQL instance
+# apiVersion: networking.istio.io/v1alpha3
+# kind: DestinationRule
+# metadata:
+#   name: postgres-cloud-sql-instance
+#   namespace: istio-workload
+# spec:
+#   host: y.y.y.y
+#   trafficPolicy:
+#     tls:
+#       mode: DISABLE
+
+#########
+# Create a expose the standalone CloudSQL proxy pod
+#########
+---
+apiVersion: v1
+kind: Pod
+metadata:
+  name: cloudsql-proxy
+  namespace: istio-workload
+  labels:
+    app: cloudsql-proxy
+    # version: v1
+spec:
+  containers:
+    # [START proxy_container]
+    - name: cloudsql-proxy
+      image: gcr.io/cloudsql-docker/gce-proxy:latest
+      command:
+        [
+          "/cloud_sql_proxy",
+          "--dir=/cloudsql",
+          "-instances=[CLOUDSQL_INSTANCE]=tcp:0.0.0.0:3306,[CLOUDSQL_INSTANCE]=tcp:0.0.0.0:5432",
+          "-credential_file=/secrets/cloudsql/cloudsqlclient.json",
+        ]
+      volumeMounts:
+        - name: cloudsql-instance-credentials
+          mountPath: /secrets/cloudsql
+          readOnly: true
+        - name: cloudsql
+          mountPath: /cloudsql
+      ports:
+        - containerPort: 3306
+          name: mysql-port
+          protocol: TCP
+        - containerPort: 5432
+          name: postgres-port
+          protocol: TCP
+    # [END proxy_container]
+  # [START volumes]
+  volumes:
+    - name: cloudsql-instance-credentials
+      secret:
+        secretName: cloudsql-instance-credentials
+    - name: cloudsql
+      emptyDir:
+  # [END volumes]
+
+---
+kind: Service
+apiVersion: v1
+metadata:
+  name: cloudsql-proxy
+  namespace: istio-workload
+spec:
+  selector:
+    app: cloudsql-proxy
+  ports:
+    - name: mysql-port
+      protocol: TCP
+      port: 3306
+      targetPort: 3306
+    - name: postgres-port
+      protocol: TCP
+      port: 5432
+      targetPort: 5432
+  type: ClusterIP
+
+#########
+# Client
+#########
+---
+apiVersion: v1
+kind: Pod
+metadata:
+  name: hammer-standalone
+  namespace: istio-workload
+spec:
+  containers:
+    - image: gcr.io/nmiu-play/hammer
+      imagePullPolicy: Always
+      name: hammer
+      resources:
+        limits:
+          cpu: 500m
+          memory: 128Mi
+        requests:
+          cpu: 100m
+          memory: 128Mi
+      securityContext:
+        capabilities:
+          add:
+            - NET_ADMIN
