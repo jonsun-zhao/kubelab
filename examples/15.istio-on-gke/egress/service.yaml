@@ -1,0 +1,32 @@
+---
+kind: Service
+apiVersion: v1
+metadata:
+  name: svc-foo
+  namespace: istio-workload
+spec:
+  clusterIP: None
+  ports:
+    - name: http
+      protocol: TCP
+      port: 80
+      targetPort: 80
+    - name: https
+      protocol: TCP
+      port: 443
+      targetPort: 443
+
+---
+kind: Endpoints
+apiVersion: v1
+metadata:
+  name: svc-foo
+  namespace: istio-workload
+subsets:
+  - addresses:
+      - ip: 10.10.0.4
+    ports:
+      - name: http
+        port: 80
+      - name: https
+        port: 443
