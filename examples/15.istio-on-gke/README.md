@@ -33,12 +33,6 @@ gcloud beta container clusters create asuka \
 
 ## Further reads
 
-* Disable auto-injection for a namespace
-
-  ```sh
-  kustomize build . | kubectl apply -f -
-  ```
-
 * View the grafana dashboard
 
   ```sh

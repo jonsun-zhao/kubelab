@@ -5,7 +5,9 @@ ENV PATH /opt/google-cloud-sdk/bin:$PATH
 
 USER root
 
-RUN yum -y install which wget ruby git vim bind-utils net-tools postgresql mysql telnet nc iptables tcpdump
+RUN yum -y install which wget ruby git vim jq \
+  bind-utils net-tools telnet nc iptables tcpdump \
+  postgresql mysql
 
 COPY bin /usr/local/bin/
 COPY src /usr/src
