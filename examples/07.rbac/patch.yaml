@@ -5,6 +5,7 @@ metadata:
   name: hammer
 spec:
   serviceAccountName: client
+  automountServiceAccountToken: false
   containers:
   - name: hammer
     volumeMounts:
