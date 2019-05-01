@@ -1,6 +1,7 @@
 # Build the Packet Lab with Terraform
 
-## TO DO LIST AND GOTCHA'S!
+## TO DO LIST AND GOTCHAS
+
 * You still need to `shut down` the `Admin WS` and `enable cpu performance counter` for the gke install to work. I haven't figured out how to do this with govc but it seems possible as you can in terraform's VMware resources which uses [govmoni library](https://github.com/terraform-providers/terraform-provider-vsphere/search?q=cpu_performance_counters_enabled&unscoped_q=cpu_performance_counters_enabled)
 * Need to breakout the `main.yml` ansible file into modules to make it easier to manage
 * Build a tear down module in ansible to tear down the install and then reinstall the VMs
