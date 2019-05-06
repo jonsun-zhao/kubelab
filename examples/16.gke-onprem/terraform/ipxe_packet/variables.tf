@@ -15,23 +15,10 @@ variable "packet_device_plan" {
   description = "packet machine type"
 }
 
-variable "packet_storage_plan" {
-  description = "packet storage type"
-  default     = "storage_2"
-}
-
 variable "esxi_hostname" {
   description = "esxi hostname"
 }
 
-variable "esxi_ds_name" {
-  description = "esxi datastore name"
-}
-
-variable "esxi_admin_username" {
-  description = "esxi admin username"
-}
-
-variable "esxi_admin_password" {
-  description = "esxi admin password"
+variable "ipxe_script_url" {
+  description = "iPXE script URL"
 }

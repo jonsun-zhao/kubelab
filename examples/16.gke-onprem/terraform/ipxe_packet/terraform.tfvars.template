@@ -1,0 +1,11 @@
+packet_auth_token = "CHANGEME"
+
+packet_project_id = "CHANGEME"
+
+packet_region = "CHANGEME"
+
+packet_device_plan = "CHANGEME"
+
+esxi_hostname = "CHANGEME"
+
+ipxe_script_url = "CHANGEME"

@@ -11,7 +11,7 @@ variable "packet_project_id" {
 variable "packet_region" {
   description = "packet region for server and storage"
   type        = "string"
-  default     = "svl1"
+  default     = "sjc1"
 }
 
 variable "packet_device_plan" {
@@ -23,12 +23,6 @@ variable "packet_device_plan" {
 variable "packet_storage_plan" {
   type    = "string"
   default = "storage_1"
-}
-
-variable "packet_facility" {
-  description = "packet data center"
-  type        = "string"
-  default     = "sjc1"
 }
 
 variable "esxi_hostname" {

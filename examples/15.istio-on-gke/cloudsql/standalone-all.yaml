@@ -98,10 +98,10 @@ spec:
           mountPath: /cloudsql
       ports:
         - containerPort: 3306
-          name: mysql-port
+          name: tcp-mysql
           protocol: TCP
         - containerPort: 5432
-          name: postgres-port
+          name: tcp-postgres
           protocol: TCP
     # [END proxy_container]
   # [START volumes]
@@ -123,11 +123,11 @@ spec:
   selector:
     app: cloudsql-proxy
   ports:
-    - name: mysql-port
+    - name: tcp-mysql
       protocol: TCP
       port: 3306
       targetPort: 3306
-    - name: postgres-port
+    - name: tcp-postgres
       protocol: TCP
       port: 5432
       targetPort: 5432
@@ -157,4 +157,4 @@ spec:
       securityContext:
         capabilities:
           add:
-            - NET_ADMIN
+            - NET_ADMIN # need inspect iptables rules
