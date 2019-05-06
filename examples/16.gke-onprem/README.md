@@ -1,5 +1,7 @@
 # Build the Packet Lab with Terraform
 
+> Important: this code is outdated. Please follow the latest lab creation doc [here](go/gke-op-packet-lab-guidev2)
+
 ## TO DO LIST AND GOTCHAS
 
 * You still need to `shut down` the `Admin WS` and `enable cpu performance counter` for the gke install to work. I haven't figured out how to do this with govc but it seems possible as you can in terraform's VMware resources which uses [govmoni library](https://github.com/terraform-providers/terraform-provider-vsphere/search?q=cpu_performance_counters_enabled&unscoped_q=cpu_performance_counters_enabled)
