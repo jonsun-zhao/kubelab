@@ -186,10 +186,16 @@ Hostname: backend-v2-67cc94b87b-g6gsq
 
 ## Teardown
 
-* Delete the application and the `istio-ingressgateway` ingress service
+* Delete the application
 
   ```sh
   make clean
+  ```
+
+* Delete the `istio-ingressgateway` ingress service
+
+  ```sh
+  kubectl -n istio-system delete service istio-ingressgateway
   ```
 
 * Delete the cluster
