@@ -1,0 +1,10 @@
+BEGIN
+{
+	printf("Watching for machine shutdowns");
+}
+
+kprobe:native_machine_shutdown, kprobe:crash_nmi_callback, kprobe:mach_reboot_fixups, kprobe:machine_power_off, 
+kprobe:machine_shutdown, kprobe:machine_emergency_restart, kprobe:machine_restart, kprobe:machine_halt {
+	@[cpu] = stack;
+	exit();
+}

@@ -1,0 +1,41 @@
+apiVersion: apps/v1
+kind: DaemonSet
+metadata:
+  name: bpftrace
+spec:
+  selector:
+    matchLabels:
+      name: bpftrace
+  template:
+    metadata:
+      labels:
+        name: bpftrace
+    spec:
+      hostPID: true
+      hostIPC: true
+      hostNetwork: true
+      containers:
+      - name: bpftrace
+        image: gcr.io/arroyod-162523/bpftrace:cos-69-10895-123-0
+
+        # Replace this with the bpftrace program you want to run
+        command: ["tail", "-f", "/dev/null"]
+        resources:
+          requests:
+            memory: "100Mi"
+            cpu: "600m"
+        securityContext:
+          privileged: true
+        volumeMounts:
+        - name: host-sys
+          mountPath: /sys
+        - name: dev-console
+          mountPath: /dev/console
+      volumes:
+      - name: host-sys
+        hostPath:
+          path: /sys
+      # Allows logging to serial console
+      - name: dev-console
+        hostPath:
+          path: /dev/console
