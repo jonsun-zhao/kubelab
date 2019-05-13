@@ -24,4 +24,10 @@
 .vscode
 
 # Ansible
-inventory.yaml
+inventory.yml
+*.retry
+set-ip.sh
+upload_vms.sh
+
+# Mac
+.DS_Store

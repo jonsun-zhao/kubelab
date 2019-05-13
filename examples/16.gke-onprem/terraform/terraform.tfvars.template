@@ -20,12 +20,22 @@ vcenter_admin_username = "CHANGEME"
 
 vcenter_admin_password = "CHANGEME"
 
-admin_ws_admin_username = "CHANGEME"
+nsvm_admin_username = "CHANGEME"
 
-admin_ws_admin_password = "CHANGEME"
+nsvm_admin_password = "CHANGEME"
 
-ova_admin_ws = "CHANGEME"
+ova_nsvm = "CHANGEME"
 
 ova_vcsa = "CHANGEME"
 
 ova_f5 = "CHANGEME"
+
+f5_key = "CHANGEME"
+
+gkeonprem_service_account_key_file = "CHANGEME"
+
+gkeonprem_service_account_email = "CHANGEME"
+
+gcp_project = "CHANGEME"
+
+gcp_compute_zone = "CHANGEME"

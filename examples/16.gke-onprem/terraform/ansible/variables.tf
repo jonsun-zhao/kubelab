@@ -1,7 +1,3 @@
-variable "vcenter_public_ip" {
-  type = "string"
-}
-
 variable "vcenter_admin_username" {
   type    = "string"
   default = "administrator@gkeonprem.local"
@@ -21,18 +17,22 @@ variable "esxi_admin_password" {
 
 variable "esxi_ds_name" {
   type    = "string"
-  default = "persistent_ds1"
+  default = "datastore1"
 }
 
 variable "esxi_hostname" {
   type = "string"
 }
 
-variable "admin_ws_admin_username" {
+variable "nsvm_public_ip" {
   type = "string"
 }
 
-variable "admin_ws_admin_password" {
+variable "nsvm_admin_username" {
+  type = "string"
+}
+
+variable "nsvm_admin_password" {
   type = "string"
 }
 
@@ -63,7 +63,7 @@ variable "esxi_gw_ip" {
   type = "string"
 }
 
-variable "ova_admin_ws" {
+variable "ova_nsvm" {
   type = "string"
 }
 
@@ -75,12 +75,18 @@ variable "ova_f5" {
   type = "string"
 }
 
-variable "ova_vcsa_web" {
-  type    = "string"
-  default = "https://storage.googleapis.com/gke-on-prem-lab-ovas/current/vcsa-latest.ova"
+variable "gkeonprem_service_account_key_file" {
+  type = "string"
 }
 
-variable "ova_f5_web" {
-  type    = "string"
-  default = "https://storage.googleapis.com/gke-on-prem-lab-ovas/current/f5-latest.ova"
+variable "gkeonprem_service_account_email" {
+  type = "string"
+}
+
+variable "gcp_project" {
+  type = "string"
+}
+
+variable "gcp_compute_zone" {
+  type = "string"
 }

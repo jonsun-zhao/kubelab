@@ -1,131 +1,13 @@
----
-- name: VM Uploads
-  hosts: localhost
-  gather_facts: false
-  tasks:
-    - name: Create OVA upload script
-      local_action: template dest={{ playbook_dir }}/upload_vms.sh src="upload_vms.sh.j2"
-
-    - name: Create OVA upload json
-      local_action: template dest="{{ playbook_dir }}/admin_ws.json" src="admin_ws_json.j2"
-
-    - name: Create setup-ip script
-      local_action: template dest={{ playbook_dir }}/set-ip.sh src="set-ip.sh.j2"
-
-    - name: Run OVA upload run and then setup-ip script via govc locally
-      local_action: command sh {{ playbook_dir }}/upload_vms.sh
-      register: upload_run
-
-
-
-- name: Admin WS Commands
-  hosts: vcenter
-  gather_facts: false
+- name: Licensing F5
+  hosts: nsvm
+  tags:
+    - config_f5
+  gather_facts: true
   tasks:
     - wait_for:
         port: 22
         host: '{{ inventory_hostname }}'
       delegate_to: localhost
-
-    - name: Download GOVC
-      get_url:
-        url: https://github.com/vmware/govmomi/releases/download/v0.20.0/govc_linux_amd64.gz
-        dest: /home/gkeadmin/govc_linux_amd64.gz
-
-    - name: Unzip govc
-      shell: "gunzip -c /home/gkeadmin/govc_linux_amd64.gz > /usr/local/bin/govc"
-      become: true
-
-    - file:
-        path: /usr/local/bin/govc
-        mode: 0755
-      become: true
-
-    - name: Download F5 OVA
-      get_url:
-        url: https://storage.googleapis.com/gke-on-prem-lab-ovas/current/f5-latest.ova
-        dest: /tmp/f5-latest.ova
-
-    - name: Download Vcenter OVA
-      get_url:
-        url: https://storage.googleapis.com/gke-on-prem-lab-ovas/current/vcsa-latest.ova
-        dest: /tmp/vcsa-latest.ova
-
-    - name: Upload VCenter JSON
-      template:
-        src: vcsa.json
-        dest: /tmp/vcsa.json
-        mode: 0777
-
-    - name: Upload F5 JSON
-      template:
-        src: f5.json
-        dest: /tmp/f5.json
-        mode: 0777
-
-    - name: Upload Vcenter OVA
-      shell: govc import.ova -k -ds='{{ esxi_ds_name }}' -pool='*/Resources' -options='/tmp/vcsa.json' /tmp/vcsa-latest.ova
-      environment:
-        GOVC_USERNAME: '{{ esxi_username }}'
-        GOVC_PASSWORD: '{{ esxi_password }}'
-        GOVC_URL: '{{ esxi_public_ip }}'
-        GOVC_INSECURE: 1
-        GOVC_VM: 'Admin WS'
-        GOVC_GUEST_LOGIN: '{{ govc_guest_login }}'
-      tags:
-        - debug
-
-    - name: Wait for Vcenter to come alive
-      uri:
-        url: "https://vcenter/vsphere-client/?csp"
-        status_code: 200
-        validate_certs: False
-      register: result
-      until: result.status == 200
-      retries: 120
-      delay: 5
-      tags:
-        - debug
-
-    - name: Upload F5 OVA
-      shell: govc import.ova -k -ds='{{ esxi_ds_name }}' -pool='*/Resources' -options='/tmp/f5.json' /tmp/f5-latest.ova
-      environment:
-        GOVC_USERNAME: '{{ esxi_username }}'
-        GOVC_PASSWORD: '{{ esxi_password }}'
-        GOVC_URL: '{{ esxi_public_ip }}'
-        GOVC_INSECURE: 1
-        GOVC_VM: 'Admin WS'
-        GOVC_GUEST_LOGIN: '{{ govc_guest_login }}'
-      tags:
-        - debug
-
-    - name: Create Cluster Add
-      template:
-        src: cluster_add.sh.j2
-        dest: /home/gkeadmin/cluster_add.sh
-        mode: 0777
-      tags:
-        - debug
-
-#    - name: Create F5 License script
-#      template:
-#        src: f5.sh.j2
-#        dest: /home/gkeadmin/f5.sh
-#        mode: 0777
-#      tags:
-#        - debug
-
-    - name: Run cluster add
-      command: sh /home/gkeadmin/cluster_add.sh
-      become: true
-      tags:
-        - debug
-
-#    - name: Run f5 license
-#      command: sh /home/gkeadmin/f5.sh
-#      become: true
-#      tags:
-#        - debug
 
     - name: Wait for F5 to come alive and get token
       uri:
@@ -191,18 +73,6 @@
       tags:
         - f5license
 
-#    - name: f5 key
-#      debug:
-#        msg: '{{ f5_key }}'
-#      tags:
-#        - debug
-#
-#    - name: print token
-#      debug:
-#        msg: '{{ token.json.token.token }}'
-#      tags:
-#        - debug
-#
     - name: initial eula
       debug:
         msg: '{{ eula }}'
@@ -266,8 +136,6 @@
         validate_certs: no
       tags:
         - f5license
-
-
 
 #    - name: Create f5 admin partition
 #      uri:

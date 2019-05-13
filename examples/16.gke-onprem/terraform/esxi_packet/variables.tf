@@ -35,3 +35,19 @@ variable "esxi_admin_username" {
 variable "esxi_admin_password" {
   description = "esxi admin password"
 }
+
+variable "gkeonprem_service_account_key_file" {
+  type = "string"
+}
+
+variable "gkeonprem_service_account_email" {
+  type = "string"
+}
+
+variable "gcp_project" {
+  type = "string"
+}
+
+variable "gcp_compute_zone" {
+  type = "string"
+}

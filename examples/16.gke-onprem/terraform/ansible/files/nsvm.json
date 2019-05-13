@@ -4,11 +4,11 @@
   "IPProtocol": "IPv4",
   "InjectOvfEnv": true,
   "MarkAsTemplate": false,
-  "Name": "Admin WS",
+  "Name": "NSVM",
   "PropertyMapping": [
     {
       "Key": "gwip",
-      "Value": "{{ esxi_gw_ip }}"
+      "Value": "139.178.88.9"
     }
   ],
   "NetworkMapping": [

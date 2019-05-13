@@ -39,7 +39,7 @@ variable "esxi_admin_password" {
 
 variable "esxi_ds_name" {
   type    = "string"
-  default = "persistent_ds1"
+  default = "datastore1"
 }
 
 variable "vcenter_admin_username" {
@@ -51,15 +51,15 @@ variable "vcenter_admin_password" {
   type = "string"
 }
 
-variable "admin_ws_admin_username" {
+variable "nsvm_admin_username" {
   type = "string"
 }
 
-variable "admin_ws_admin_password" {
+variable "nsvm_admin_password" {
   type = "string"
 }
 
-variable "ova_admin_ws" {
+variable "ova_nsvm" {
   type = "string"
 }
 
@@ -89,4 +89,20 @@ variable "f5_pass" {
 variable "f5_key" {
   type    = "string"
   default = ""
+}
+
+variable "gkeonprem_service_account_key_file" {
+  type = "string"
+}
+
+variable "gkeonprem_service_account_email" {
+  type = "string"
+}
+
+variable "gcp_project" {
+  type = "string"
+}
+
+variable "gcp_compute_zone" {
+  type = "string"
 }

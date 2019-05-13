@@ -1,17 +1,14 @@
 #!/bin/bash
 
-wget https://github.com/vmware/govmomi/releases/download/v0.20.0/govc_linux_amd64.gz -O /tmp/govc_linux_amd64.gz
+# wget https://github.com/vmware/govmomi/releases/download/v0.20.0/govc_linux_amd64.gz -O /tmp/govc_linux_amd64.gz
 
-gzip -c /tmp/govc_linux_amd64.gz > /tmp/govc
+# gzip -c /tmp/govc_linux_amd64.gz > /usr/local/bin/govc
 
-mv /tmp/govc /usr/local/bin/govc
-
-chmod 0755 /usr/local/bin/govc
-
+# chmod 0755 /usr/local/bin/govc
 
 GATEWAY='{{ esxi_gw_ip }}'
 
-PW='{{ admin_ws_admin_password }}'
+PW='{{ nsvm_admin_password }}'
 
 LAST=$(echo $GATEWAY | cut -d . -f 4)
 

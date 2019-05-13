@@ -29,7 +29,7 @@ resource "packet_volume" "datastore" {
 resource "packet_device" "esxi" {
   hostname                = "${var.esxi_hostname}"
   plan                    = "${var.packet_device_plan}"
-  facility                = "${var.packet_region}"
+  facilities              = ["${var.packet_region}"]
   operating_system        = "${data.packet_operating_system.esxi.id}"
   billing_cycle           = "hourly"
   project_id              = "${var.packet_project_id}"

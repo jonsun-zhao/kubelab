@@ -1,0 +1,186 @@
+---
+- name: import nsvm
+  hosts: localhost
+  tags:
+    - import_nsvm
+  gather_facts: false
+  tasks:
+    - name: create temp dir
+      tempfile:
+        state: directory
+        suffix: .build
+      register: build_dir
+
+    - debug:
+        var: build_dir.path
+
+    - name: create ova upload script
+      local_action:
+        module: template
+        src: upload_vms.sh.j2
+        dest: '{{ build_dir.path }}/upload_vms.sh'
+
+    - name: create ova option file
+      local_action:
+        module: template
+        src: nsvm_json.j2
+        dest: '{{ build_dir.path }}/nsvm.json'
+
+    - name: prepare set-ip script
+      local_action:
+        module: template
+        src: set-ip.sh.j2
+        dest: '{{ build_dir.path }}/set-ip.sh'
+
+    - name: import and pre-config nsvm
+      local_action: command sh {{ build_dir.path }}/upload_vms.sh
+      run_once: true
+
+- name: configure nsvm
+  hosts: nsvm
+  tags:
+    - config_nsvm
+  gather_facts: true
+  tasks:
+    - wait_for:
+        port: 22
+        host: '{{ inventory_hostname }}'
+      delegate_to: localhost
+
+    - name: setup govc
+      become: true
+      become_user: root
+      shell: wget -qO- https://github.com/vmware/govmomi/releases/download/v0.20.0/govc_linux_amd64.gz | gzip - -d > /usr/local/bin/govc
+      args:
+        creates: /usr/local/bin/govc
+
+    - name: set govc premission
+      become: true
+      become_user: root
+      file:
+        path: /usr/local/bin/govc
+        mode: 0755
+
+    - name: allow 'sudo' group to have passwordless sudo
+      become: yes
+      become_user: root
+      lineinfile:
+        dest: /etc/sudoers
+        state: present
+        regexp: '^%sudo'
+        line: '%sudo ALL=(ALL) NOPASSWD: ALL'
+        validate: 'visudo -cf %s'
+
+    - name: copy gke-onprem service account key file to nsvm
+      copy:
+        src: '{{ gkeonprem_service_account_key_file }}'
+        dest: '{{ ansible_env.HOME }}/release-reader-key.json'
+        mode: 0600
+
+    - name: setup gcloud project
+      command: gcloud config set project {{ gcp_project }}
+      args:
+        chdir: '{{ ansible_env.HOME }}'
+
+    - name: setup gcloud compute zone
+      command: gcloud config set compute/zone {{ gcp_compute_zone }}
+      args:
+        chdir: '{{ ansible_env.HOME }}'
+
+    - name: create build script dir
+      file:
+        path: '{{ ansible_env.HOME }}/buildscripts'
+        state: directory
+
+    - name: download and extract build scripts
+      unarchive:
+        src: https://storage.googleapis.com/gke-on-prem-lab-ovas/other/internalbuildscripts1.tar.gz
+        dest: '{{ ansible_env.HOME }}/buildscripts'
+        remote_src: yes
+
+    - name: activate gke-onprem service account
+      become: yes
+      become_user: root
+      command: gcloud auth activate-service-account {{ gkeonprem_service_account_email }} --key-file=release-reader-key.json
+      args:
+        chdir: '{{ ansible_env.HOME }}'
+
+    - name: link the gke-onprem service account key file into buildscripts dir
+      file:
+        src: '{{ ansible_env.HOME }}/release-reader-key.json'
+        dest: '{{ ansible_env.HOME }}/buildscripts/release-reader-key.json'
+        state: link
+
+    # - name: Download F5 OVA
+    #   get_url:
+    #     url: https://storage.googleapis.com/gke-on-prem-lab-ovas/current/f5-latest.ova
+    #     dest: '{{ ansible_env.HOME }}'
+
+    # - name: Download vCenter ISO
+    #   get_url:
+    #     url: https://storage.googleapis.com/gke-on-prem-lab-ovas/other/VMware-VCSA-all-6.7.0-10244745.iso
+    #     dest: '{{ ansible_env.HOME }}'
+
+
+#     - name: Upload VCenter JSON
+#       template:
+#         src: vcsa.json
+#         dest: /tmp/vcsa.json
+#         mode: 0777
+
+#     - name: Upload F5 JSON
+#       template:
+#         src: f5.json
+#         dest: /tmp/f5.json
+#         mode: 0777
+
+#     - name: Upload Vcenter OVA
+#       shell: govc import.ova -k -ds='{{ esxi_ds_name }}' -pool='*/Resources' -options='/tmp/vcsa.json' /tmp/vcsa-latest.ova
+#       environment:
+#         GOVC_USERNAME: '{{ esxi_username }}'
+#         GOVC_PASSWORD: '{{ esxi_password }}'
+#         GOVC_URL: '{{ esxi_public_ip }}'
+#         GOVC_INSECURE: 1
+#         # GOVC_VM: 'Admin WS'
+#         GOVC_GUEST_LOGIN: '{{ govc_guest_login }}'
+#       tags:
+#         - debug
+
+#     - name: Wait for Vcenter to come alive
+#       uri:
+#         url: "https://vcenter/vsphere-client/?csp"
+#         status_code: 200
+#         validate_certs: False
+#       register: result
+#       until: result.status == 200
+#       retries: 120
+#       delay: 5
+#       tags:
+#         - debug
+
+#     - name: Upload F5 OVA
+#       shell: govc import.ova -k -ds='{{ esxi_ds_name }}' -pool='*/Resources' -options='/tmp/f5.json' /tmp/f5-latest.ova
+#       environment:
+#         GOVC_USERNAME: '{{ esxi_username }}'
+#         GOVC_PASSWORD: '{{ esxi_password }}'
+#         GOVC_URL: '{{ esxi_public_ip }}'
+#         GOVC_INSECURE: 1
+#         # GOVC_VM: 'Admin WS'
+#         GOVC_GUEST_LOGIN: '{{ govc_guest_login }}'
+#       tags:
+#         - debug
+
+#     - name: Create Cluster Add
+#       template:
+#         src: cluster_add.sh.j2
+#         dest: /home/gkeadmin/cluster_add.sh
+#         mode: 0777
+#       tags:
+#         - debug
+
+#     - name: Run cluster add
+#       command: sh /home/gkeadmin/cluster_add.sh
+#       become: true
+#       tags:
+#         - debug
+

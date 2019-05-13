@@ -6,6 +6,16 @@
     "InjectOvfEnv": true,
     "MarkAsTemplate": false,
     "Name": "F5 BIG-IP LTM",
+    "PropertyMapping": [
+        {
+            "Key": "net.mgmt.addr",
+            "Value": "172.16.10.4/24"
+        },
+        {
+            "Key": "net.mgmt.gw",
+            "Value": "172.16.10.1"
+        }
+    ],
     "NetworkMapping": [
         {
             "Name": "internal management",

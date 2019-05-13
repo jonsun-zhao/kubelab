@@ -22,7 +22,6 @@
 
 ## Deployment
 
-
 ### Prepare Terraform variables (`terraform.tfvar`)
 
 ```sh
@@ -48,11 +47,11 @@ cp terraform.tfvars.template terraform.tfvars
 
   vcenter_admin_password = "YOUR_VCENTER_ADMIN_PASSWORD"
 
-  admin_ws_admin_username = "gkeadmin"
+  nsvm_admin_username = "gkeadmin"
 
-  admin_ws_admin_password = "YOUR_ADMIN_WS_ADMIN_PASSWORD"
+  nsvm_admin_password = "YOUR_NSVM_ADMIN_PASSWORD"
 
-  ova_admin_ws = "http://storage.googleapis.com/nmiu-play_tools/admin-ws-1.ova"
+  ova_nsvm = "http://storage.googleapis.com/nmiu-play_tools/admin-ws-1.ova"
 
   ova_vcsa = "http://storage.googleapis.com/nmiu-play_tools/vcsa-2.ova"
 
@@ -70,8 +69,8 @@ terraform apply
 ### Run Ansible after terraform succesfully provision packet environment to setup the Admin Workstation, vCenter Appliance, and the F5 BIG-IP Appliance
 
 ```sh
-cd admin_ws_ansible/file
-ansible-playbook main.yaml -i inventory.yaml
+cd ansible/file
+ansible-playbook nsvm.yml -i inventory.yml
 ```
 
 ## Tear down
