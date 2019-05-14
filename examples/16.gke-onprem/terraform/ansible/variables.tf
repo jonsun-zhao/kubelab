@@ -63,14 +63,6 @@ variable "esxi_gw_ip" {
   type = "string"
 }
 
-variable "ova_nsvm" {
-  type = "string"
-}
-
-variable "ova_vcsa" {
-  type = "string"
-}
-
 variable "ova_f5" {
   type = "string"
 }
@@ -88,5 +80,17 @@ variable "gcp_project" {
 }
 
 variable "gcp_compute_zone" {
+  type = "string"
+}
+
+variable "govc" {
+  type = "string"
+}
+
+variable "buildscripts" {
+  type = "string"
+}
+
+variable "vcenter_iso" {
   type = "string"
 }

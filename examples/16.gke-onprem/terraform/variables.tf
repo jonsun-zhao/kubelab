@@ -1,28 +1,17 @@
 variable "packet_auth_token" {
-  description = "packet api key"
-  type        = "string"
+  type = "string"
 }
 
 variable "packet_project_id" {
-  description = "packet project id"
-  type        = "string"
+  type = "string"
 }
 
 variable "packet_region" {
-  description = "packet region for server and storage"
-  type        = "string"
-  default     = "sjc1"
+  type = "string"
 }
 
 variable "packet_device_plan" {
-  description = "packet machine type"
-  type        = "string"
-  default     = "c2.medium.x86"
-}
-
-variable "packet_storage_plan" {
-  type    = "string"
-  default = "storage_1"
+  type = "string"
 }
 
 variable "esxi_hostname" {
@@ -38,13 +27,11 @@ variable "esxi_admin_password" {
 }
 
 variable "esxi_ds_name" {
-  type    = "string"
-  default = "datastore1"
+  type = "string"
 }
 
 variable "vcenter_admin_username" {
-  type    = "string"
-  default = "administrator@gkeonprem.local"
+  type = "string"
 }
 
 variable "vcenter_admin_password" {
@@ -59,36 +46,24 @@ variable "nsvm_admin_password" {
   type = "string"
 }
 
-variable "ova_nsvm" {
-  type = "string"
-}
-
-variable "ova_vcsa" {
-  type = "string"
-}
-
 variable "ova_f5" {
   type = "string"
 }
 
 variable "f5_addr" {
-  type    = "string"
-  default = "172.16.10.4"
+  type = "string"
 }
 
 variable "f5_user" {
-  type    = "string"
-  default = "admin"
+  type = "string"
 }
 
 variable "f5_pass" {
-  type    = "string"
-  default = "gk30npr3m!"
+  type = "string"
 }
 
 variable "f5_key" {
-  type    = "string"
-  default = ""
+  type = "string"
 }
 
 variable "gkeonprem_service_account_key_file" {
@@ -104,5 +79,17 @@ variable "gcp_project" {
 }
 
 variable "gcp_compute_zone" {
+  type = "string"
+}
+
+variable "govc" {
+  type = "string"
+}
+
+variable "buildscripts" {
+  type = "string"
+}
+
+variable "vcenter_iso" {
   type = "string"
 }

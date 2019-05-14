@@ -1,8 +1,8 @@
 ---
-- name: import nsvm
+- name: perpare nsvm
   hosts: localhost
   tags:
-    - import_nsvm
+    - prepare_nsvm
   gather_facts: false
   tasks:
     - name: create temp dir
@@ -14,43 +14,39 @@
     - debug:
         var: build_dir.path
 
-    - name: create ova upload script
+    - name: prepare the govc guest.start script
       local_action:
         module: template
-        src: upload_vms.sh.j2
-        dest: '{{ build_dir.path }}/upload_vms.sh'
+        src: nsvm.sh.j2
+        dest: '{{ build_dir.path }}/nsvm.sh'
 
-    - name: create ova option file
+    - name: prepare run-set-ip script
       local_action:
         module: template
-        src: nsvm_json.j2
-        dest: '{{ build_dir.path }}/nsvm.json'
+        src: run-set-ip.sh.j2
+        dest: '{{ build_dir.path }}/run-set-ip.sh'
 
-    - name: prepare set-ip script
-      local_action:
-        module: template
-        src: set-ip.sh.j2
-        dest: '{{ build_dir.path }}/set-ip.sh'
-
-    - name: import and pre-config nsvm
-      local_action: command sh {{ build_dir.path }}/upload_vms.sh
-      run_once: true
+    - name: run govc guest.start to set ip nsvm's ip
+      local_action: command sh {{ build_dir.path }}/nsvm.sh
 
 - name: configure nsvm
   hosts: nsvm
   tags:
     - config_nsvm
-  gather_facts: true
+  gather_facts: no
   tasks:
-    - wait_for:
-        port: 22
-        host: '{{ inventory_hostname }}'
-      delegate_to: localhost
+    - name: wait 300 seconds, but only start checking after 10 seconds
+      wait_for_connection:
+        delay: 10
+        timeout: 300
 
-    - name: setup govc
+    - name: gathering facts
+      setup:
+
+    - name: install govc
       become: true
       become_user: root
-      shell: wget -qO- https://github.com/vmware/govmomi/releases/download/v0.20.0/govc_linux_amd64.gz | gzip - -d > /usr/local/bin/govc
+      shell: wget -qO- {{ govc }} | gzip - -d > /usr/local/bin/govc
       args:
         creates: /usr/local/bin/govc
 
@@ -94,7 +90,7 @@
 
     - name: download and extract build scripts
       unarchive:
-        src: https://storage.googleapis.com/gke-on-prem-lab-ovas/other/internalbuildscripts1.tar.gz
+        src: '{{ buildscripts }}'
         dest: '{{ ansible_env.HOME }}/buildscripts'
         remote_src: yes
 
@@ -111,15 +107,15 @@
         dest: '{{ ansible_env.HOME }}/buildscripts/release-reader-key.json'
         state: link
 
-    # - name: Download F5 OVA
-    #   get_url:
-    #     url: https://storage.googleapis.com/gke-on-prem-lab-ovas/current/f5-latest.ova
-    #     dest: '{{ ansible_env.HOME }}'
+    - name: download f5 ova
+      get_url:
+        url: '{{ ova_f5 }}'
+        dest: '{{ ansible_env.HOME }}'
 
-    # - name: Download vCenter ISO
-    #   get_url:
-    #     url: https://storage.googleapis.com/gke-on-prem-lab-ovas/other/VMware-VCSA-all-6.7.0-10244745.iso
-    #     dest: '{{ ansible_env.HOME }}'
+    - name: download vcenter iso
+      get_url:
+        url: '{{ vcenter_iso }}'
+        dest: '{{ ansible_env.HOME }}'
 
 
 #     - name: Upload VCenter JSON

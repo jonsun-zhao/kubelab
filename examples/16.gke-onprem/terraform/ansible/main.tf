@@ -21,13 +21,16 @@ data "template_file" "inventory_template" {
     esxi_public_ip                     = "${var.esxi_public_ip}"
     esxi_ds_name                       = "${var.esxi_ds_name}"
     govc_guest_login                   = "${var.nsvm_admin_username}:${var.nsvm_admin_password}"
-    ova_nsvm                           = "${var.ova_nsvm}"
-    ova_vcsa                           = "${var.ova_vcsa}"
     ova_f5                             = "${var.ova_f5}"
+    f5_pass                            = "${var.f5_pass}"
+    f5_key                             = "${var.f5_key}"
     gkeonprem_service_account_key_file = "${var.gkeonprem_service_account_key_file}"
     gkeonprem_service_account_email    = "${var.gkeonprem_service_account_email}"
     gcp_project                        = "${var.gcp_project}"
     gcp_compute_zone                   = "${var.gcp_compute_zone}"
+    govc                               = "${var.govc}"
+    buildscripts                       = "${var.buildscripts}"
+    vcenter_iso                        = "${var.vcenter_iso}"
   }
 }
 

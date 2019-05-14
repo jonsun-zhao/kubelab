@@ -2,33 +2,33 @@ packet_auth_token = "CHANGEME"
 
 packet_project_id = "CHANGEME"
 
-packet_region = "CHANGEME"
+packet_region = "sjc1"
 
-packet_device_plan = "CHANGEME"
-
-packet_storage_plan = "CHANGEME"
+packet_device_plan = "c2.medium.x86"
 
 esxi_hostname = "CHANGEME"
 
-esxi_admin_username = "CHANGEME"
+esxi_admin_username = "gkeadmin"
 
 esxi_admin_password = "CHANGEME"
 
-esxi_ds_name = "CHANGEME"
+esxi_ds_name = "datastore1"
 
-vcenter_admin_username = "CHANGEME"
+vcenter_admin_username = "administrator@gkeonprem.local"
 
 vcenter_admin_password = "CHANGEME"
 
-nsvm_admin_username = "CHANGEME"
+nsvm_admin_username = "gkeadmin"
 
 nsvm_admin_password = "CHANGEME"
 
-ova_nsvm = "CHANGEME"
+ova_f5 = "https://storage.googleapis.com/gke-on-prem-lab-ovas/current/f5-latest.ova"
 
-ova_vcsa = "CHANGEME"
+f5_addr = "172.16.10.4"
 
-ova_f5 = "CHANGEME"
+f5_user = "admin"
+
+f5_pass = "CHANGEME"
 
 f5_key = "CHANGEME"
 
@@ -39,3 +39,9 @@ gkeonprem_service_account_email = "CHANGEME"
 gcp_project = "CHANGEME"
 
 gcp_compute_zone = "CHANGEME"
+
+govc = "https://github.com/vmware/govmomi/releases/download/v0.20.0/govc_linux_amd64.gz"
+
+buildscripts = "https://storage.googleapis.com/gke-on-prem-lab-ovas/other/internalbuildscripts1.tar.gz"
+
+vcenter_iso = "https://storage.googleapis.com/gke-on-prem-lab-ovas/other/VMware-VCSA-all-6.7.0-10244745.iso"

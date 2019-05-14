@@ -28,7 +28,6 @@
         - f5license
         - f5partition
         - debug
-        - initialsetup
 
     - name: Activate license
       uri:
@@ -137,36 +136,40 @@
       tags:
         - f5license
 
-#    - name: Create f5 admin partition
-#      uri:
-#        url: https://{{ f5_addr }}/mgmt/tm/sys/folder
-#        method: POST
-#        headers:
-#          X-F5-Auth-Token: '{{ token.json.token.token }}'
-#        body_format: json
-#        body:
-#          subPath: '/'
-#          fullPath: '/admin-cluster'
-#          name: 'admin-cluster'
-#        return_content: yes
-#        validate_certs: no
-#      tags:
-#        - f5license
-#        - f5partition
-#
-#    - name: Create f5 user partition
-#      uri:
-#        url: https://{{ f5_addr }}/mgmt/tm/sys/folder
-#        method: POST
-#        headers:
-#          X-F5-Auth-Token: '{{ token.json.token.token }}'
-#        body_format: json
-#        body:
-#          subPath: '/'
-#          fullPath: '/user-cluster1'
-#          name: 'user-cluster1'
-#        return_content: yes
-#        validate_certs: no
-#      tags:
-#        - f5license
-#        - f5partition
+    - name: pause to allow the license to be loaded
+      pause:
+      minutes: 2
+
+    - name: Create f5 admin partition
+      uri:
+        url: https://{{ f5_addr }}/mgmt/tm/sys/folder
+        method: POST
+        headers:
+          X-F5-Auth-Token: '{{ token.json.token.token }}'
+        body_format: json
+        body:
+          subPath: '/'
+          fullPath: '/admin-cluster'
+          name: 'admin-cluster'
+        return_content: yes
+        validate_certs: no
+      tags:
+        - f5license
+        - f5partition
+
+    - name: Create f5 user partition
+      uri:
+        url: https://{{ f5_addr }}/mgmt/tm/sys/folder
+        method: POST
+        headers:
+          X-F5-Auth-Token: '{{ token.json.token.token }}'
+        body_format: json
+        body:
+          subPath: '/'
+          fullPath: '/user-cluster1'
+          name: 'user-cluster1'
+        return_content: yes
+        validate_certs: no
+      tags:
+        - f5license
+        - f5partition

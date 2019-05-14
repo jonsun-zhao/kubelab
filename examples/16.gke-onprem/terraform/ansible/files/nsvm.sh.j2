@@ -1,0 +1,16 @@
+#!/bin/bash
+
+set -e
+
+export GOVC_USERNAME='{{ esxi_username }}'
+export GOVC_PASSWORD='{{ esxi_password }}'
+export GOVC_URL='{{ esxi_public_ip }}'
+export GOVC_INSECURE=1
+export GOVC_VM='netservicesvm-latest'
+export GOVC_GUEST_LOGIN='{{ govc_guest_login }}'
+
+script='run-set-ip.sh'
+
+### UPLOAD AND RUN SET-IP SCRIPT ###
+govc guest.upload {{ build_dir.path }}/$script /home/gkeadmin/$script
+govc guest.start /bin/sh /home/gkeadmin/$script
