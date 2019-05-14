@@ -4,10 +4,10 @@
     - config_f5
   gather_facts: true
   tasks:
-    - wait_for:
-        port: 22
-        host: '{{ inventory_hostname }}'
-      delegate_to: localhost
+    - name: wait 300 seconds, but only start checking after 10 seconds
+      wait_for_connection:
+        delay: 10
+        timeout: 300
 
     - name: Wait for F5 to come alive and get token
       uri:
@@ -138,7 +138,7 @@
 
     - name: pause to allow the license to be loaded
       pause:
-      minutes: 2
+        minutes: 2
 
     - name: Create f5 admin partition
       uri:
