@@ -20,13 +20,13 @@
         src: nsvm.sh.j2
         dest: '{{ build_dir.path }}/nsvm.sh'
 
-    - name: prepare run-set-ip script
+    - name: prepare run-set-ip.sh
       local_action:
         module: template
         src: run-set-ip.sh.j2
         dest: '{{ build_dir.path }}/run-set-ip.sh'
 
-    - name: run govc guest.start to set ip nsvm's ip
+    - name: use govc to run set-ip.sh on nsvm
       local_action: command sh {{ build_dir.path }}/nsvm.sh
 
 - name: configure nsvm
@@ -35,6 +35,7 @@
     - config_nsvm
   gather_facts: no
   tasks:
+    # [START] wait for nsvm to be reachable from ssh
     - name: wait 300 seconds, but only start checking after 10 seconds
       wait_for_connection:
         delay: 10
@@ -42,31 +43,81 @@
 
     - name: gathering facts
       setup:
+      tags:
+        - test
+    # [END]
 
+    # [START] upgrade the packages and reboot
+    - name: upgrade all packages to the latest version
+      become: yes
+      apt:
+        update_cache: yes
+        upgrade: yes
+      register: upgrade_result
+
+    - name: reboot immediately if there was a change.
+      become: yes
+      shell: "sleep 5 && reboot"
+      async: 1
+      poll: 0
+      when: upgrade_result is changed
+
+    - name: wait for the reboot to complete if there was a change.
+      wait_for_connection:
+        connect_timeout: 20
+        sleep: 5
+        delay: 5
+        timeout: 300
+      when: upgrade_result is changed
+    # [END]
+
+    # [START] install tools
     - name: install govc
-      become: true
-      become_user: root
-      shell: wget -qO- {{ govc }} | gzip - -d > /usr/local/bin/govc
+      become: yes
+      shell: |
+        wget -qO- {{ govc }} | gzip - -d > /usr/local/bin/govc
+        chmod +x /usr/local/bin/govc
       args:
         creates: /usr/local/bin/govc
 
-    - name: set govc premission
-      become: true
-      become_user: root
-      file:
-        path: /usr/local/bin/govc
-        mode: 0755
-
-    - name: allow 'sudo' group to have passwordless sudo
+    - name: install patched kubectl
       become: yes
-      become_user: root
-      lineinfile:
-        dest: /etc/sudoers
-        state: present
-        regexp: '^%sudo'
-        line: '%sudo ALL=(ALL) NOPASSWD: ALL'
-        validate: 'visudo -cf %s'
+      shell: |
+        gsutil cp gs://nmiu-play_tools/kubectl-114-linux /usr/local/bin/k-dev
+        chmod +x /usr/local/bin/k-dev
+      args:
+        creates: /usr/local/bin/k-dev
+      tags:
+        - test
 
+    - name: install packages
+      become: yes
+      apt:
+        name: ['git','jq','bash-completion']
+      tags:
+        - test
+
+    - name: install yq
+      become: yes
+      get_url:
+        url: 'https://github.com/mikefarah/yq/releases/download/2.3.0/yq_linux_amd64'
+        dest: '/usr/local/bin/yq'
+        mode: 0755
+      tags:
+        - test
+    # [END]
+
+    # - name: allow 'sudo' group to have passwordless sudo
+    #   become: yes
+    #   become_user: root
+    #   lineinfile:
+    #     dest: /etc/sudoers
+    #     state: present
+    #     regexp: '^%sudo'
+    #     line: '%sudo ALL=(ALL) NOPASSWD: ALL'
+    #     validate: 'visudo -cf %s'
+
+    # [START] setup gcloud
     - name: copy gke-onprem service account key file to nsvm
       copy:
         src: '{{ gkeonprem_service_account_key_file }}'
@@ -74,16 +125,26 @@
         mode: 0600
 
     - name: setup gcloud project
+      become: yes
       command: gcloud config set project {{ gcp_project }}
       args:
         chdir: '{{ ansible_env.HOME }}'
 
     - name: setup gcloud compute zone
+      become: yes
       command: gcloud config set compute/zone {{ gcp_compute_zone }}
       args:
         chdir: '{{ ansible_env.HOME }}'
 
-    - name: create build script dir
+    - name: activate gke-onprem service account
+      become: yes
+      command: gcloud auth activate-service-account {{ gkeonprem_service_account_email }} --key-file=release-reader-key.json
+      args:
+        chdir: '{{ ansible_env.HOME }}'
+    # [END]
+
+    # [START] prepare GKE-OP deployment scripts and files
+    - name: create buildscripts dir
       file:
         path: '{{ ansible_env.HOME }}/buildscripts'
         state: directory
@@ -93,13 +154,6 @@
         src: '{{ buildscripts }}'
         dest: '{{ ansible_env.HOME }}/buildscripts'
         remote_src: yes
-
-    - name: activate gke-onprem service account
-      become: yes
-      become_user: root
-      command: gcloud auth activate-service-account {{ gkeonprem_service_account_email }} --key-file=release-reader-key.json
-      args:
-        chdir: '{{ ansible_env.HOME }}'
 
     - name: link the gke-onprem service account key file into buildscripts dir
       file:
@@ -117,66 +171,9 @@
         url: '{{ vcenter_iso }}'
         dest: '{{ ansible_env.HOME }}'
 
-
-#     - name: Upload VCenter JSON
-#       template:
-#         src: vcsa.json
-#         dest: /tmp/vcsa.json
-#         mode: 0777
-
-#     - name: Upload F5 JSON
-#       template:
-#         src: f5.json
-#         dest: /tmp/f5.json
-#         mode: 0777
-
-#     - name: Upload Vcenter OVA
-#       shell: govc import.ova -k -ds='{{ esxi_ds_name }}' -pool='*/Resources' -options='/tmp/vcsa.json' /tmp/vcsa-latest.ova
-#       environment:
-#         GOVC_USERNAME: '{{ esxi_username }}'
-#         GOVC_PASSWORD: '{{ esxi_password }}'
-#         GOVC_URL: '{{ esxi_public_ip }}'
-#         GOVC_INSECURE: 1
-#         # GOVC_VM: 'Admin WS'
-#         GOVC_GUEST_LOGIN: '{{ govc_guest_login }}'
-#       tags:
-#         - debug
-
-#     - name: Wait for Vcenter to come alive
-#       uri:
-#         url: "https://vcenter/vsphere-client/?csp"
-#         status_code: 200
-#         validate_certs: False
-#       register: result
-#       until: result.status == 200
-#       retries: 120
-#       delay: 5
-#       tags:
-#         - debug
-
-#     - name: Upload F5 OVA
-#       shell: govc import.ova -k -ds='{{ esxi_ds_name }}' -pool='*/Resources' -options='/tmp/f5.json' /tmp/f5-latest.ova
-#       environment:
-#         GOVC_USERNAME: '{{ esxi_username }}'
-#         GOVC_PASSWORD: '{{ esxi_password }}'
-#         GOVC_URL: '{{ esxi_public_ip }}'
-#         GOVC_INSECURE: 1
-#         # GOVC_VM: 'Admin WS'
-#         GOVC_GUEST_LOGIN: '{{ govc_guest_login }}'
-#       tags:
-#         - debug
-
-#     - name: Create Cluster Add
-#       template:
-#         src: cluster_add.sh.j2
-#         dest: /home/gkeadmin/cluster_add.sh
-#         mode: 0777
-#       tags:
-#         - debug
-
-#     - name: Run cluster add
-#       command: sh /home/gkeadmin/cluster_add.sh
-#       become: true
-#       tags:
-#         - debug
-
+    - name: upload the vmdk creation script
+      template:
+        src: create-vmdk.sh.j2
+        dest: '{{ ansible_env.HOME }}/create-vmdk.sh'
+        mode: 0755
+    # [END]

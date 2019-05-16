@@ -4,11 +4,6 @@
     - config_f5
   gather_facts: true
   tasks:
-    - name: wait 300 seconds, but only start checking after 10 seconds
-      wait_for_connection:
-        delay: 10
-        timeout: 300
-
     - name: Wait for F5 to come alive and get token
       uri:
         url: https://{{ f5_addr }}/mgmt/shared/authn/login
