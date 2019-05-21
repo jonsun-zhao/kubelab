@@ -31,6 +31,7 @@ data "template_file" "inventory_template" {
     govc                               = "${var.govc}"
     buildscripts                       = "${var.buildscripts}"
     vcenter_iso                        = "${var.vcenter_iso}"
+    gke_op_version                     = "${var.gke_op_version}"
   }
 }
 

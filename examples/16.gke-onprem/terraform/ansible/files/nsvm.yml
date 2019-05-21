@@ -87,15 +87,11 @@
         chmod +x /usr/local/bin/k-dev
       args:
         creates: /usr/local/bin/k-dev
-      tags:
-        - test
 
     - name: install packages
       become: yes
       apt:
         name: ['git','jq','bash-completion']
-      tags:
-        - test
 
     - name: install yq
       become: yes
@@ -103,8 +99,6 @@
         url: 'https://github.com/mikefarah/yq/releases/download/2.3.0/yq_linux_amd64'
         dest: '/usr/local/bin/yq'
         mode: 0755
-      tags:
-        - test
     # [END]
 
     # - name: allow 'sudo' group to have passwordless sudo
@@ -176,4 +170,14 @@
         src: create-vmdk.sh.j2
         dest: '{{ ansible_env.HOME }}/create-vmdk.sh'
         mode: 0755
+    # [END]
+
+    # [START]
+    - name: run deploy scripts
+      become: yes
+      shell: 'echo {{ gke_op_version }} | sh deployall.sh'
+      args:
+        chdir: '{{ ansible_env.HOME }}/buildscripts'
+      tags:
+        - test
     # [END]

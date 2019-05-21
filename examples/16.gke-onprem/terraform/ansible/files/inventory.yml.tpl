@@ -33,3 +33,4 @@ ova_f5=${ova_f5}
 govc=${govc}
 buildscripts=${buildscripts}
 vcenter_iso=${vcenter_iso}
+gke_op_version=${gke_op_version}

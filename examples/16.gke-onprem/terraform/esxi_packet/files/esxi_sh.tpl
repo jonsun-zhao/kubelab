@@ -60,3 +60,8 @@ nsvm=/vmfs/volumes/datastore1/netservices-base
 mkdir $nsvm
 wget -qO- http://storage.googleapis.com/gke-on-prem-lab-ovas/current/netservicesvm-latest.tar.gz | tar zxf - -C $nsvm
 vim-cmd solo/registervm $nsvm/netservicesvm-3.vmx
+
+# boot nsvm
+# vsphere will pause the boot and ask the question if the vm is moved or coped
+# the question is dismissed automatically after 4 minutes (https://kb.vmware.com/s/article/2113542)
+vim-cmd vmsvc/power.on 1

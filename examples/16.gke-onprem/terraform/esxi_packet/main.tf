@@ -51,6 +51,7 @@ resource "local_file" "esxi_sh" {
     type        = "ssh"
     user        = "root"
     private_key = "${file("~/.ssh/id_rsa")}"
+    timeout     = "10m"
   }
 
   # run bootstrap script on esxi

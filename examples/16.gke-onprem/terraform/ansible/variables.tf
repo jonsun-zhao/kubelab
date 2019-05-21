@@ -94,3 +94,7 @@ variable "buildscripts" {
 variable "vcenter_iso" {
   type = "string"
 }
+
+variable "gke_op_version" {
+  type = "string"
+}

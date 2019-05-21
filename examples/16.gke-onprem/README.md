@@ -30,25 +30,14 @@ terraform plan
 terraform apply
 ```
 
-### Power on `netservicesvm-latest`
-
-* power on `netservicesvm-latest` via ESXi GUI
-
-### Configure `netservicesvm-latest`
+### Configure `nsvm`
 
 ```sh
 cd ansible/file
 ansible-playbook -i inventory.yml nsvm.yml
 ```
 
-### Run build scripts
-
-```sh
-# run this at `netservicesvm-latest`
-cd ~/buildscripts; echo beta-1.3.1 | sudo sh deployall.sh
-```
-
-When the `deployall.sh` is finished, switch back to `local machine` and run the follow ansible playbook to activate the F5 appliance.
+### activate the F5 appliance
 
 ```sh
 cd ansible/file
@@ -64,5 +53,5 @@ Follow the `Install GKE On-Prem` section in the Lab Guide
 ### Terraform destroy
 
 ```sh
-terraform destroy
+TF_WARN_OUTPUT_ERRORS=1 terraform destroy
 ```

@@ -45,3 +45,5 @@ govc = "https://github.com/vmware/govmomi/releases/download/v0.20.0/govc_linux_a
 buildscripts = "https://storage.googleapis.com/gke-on-prem-lab-ovas/other/internalbuildscripts1.tar.gz"
 
 vcenter_iso = "https://storage.googleapis.com/gke-on-prem-lab-ovas/other/VMware-VCSA-all-6.7.0-10244745.iso"
+
+gke_op_version = "beta-1.3.1"
