@@ -3,5 +3,4 @@
   for ($i = 0; $i <= 1000000; $i++) {
     $x += sqrt($x);
   }
-  echo "OK!";
-?>
+  echo "Just crank up some load.";

@@ -53,4 +53,22 @@ spec:
           - name: https
             containerPort: 443
             protocol: TCP
+        livenessProbe:
+          httpGet:
+            path: /liveness
+            port: 80
+            scheme: HTTP
+          initialDelaySeconds: 10
+          timeoutSeconds: 5
+          successThreshold: 1
+          failureThreshold: 5
+        readinessProbe:
+          httpGet:
+            path: /readiness
+            port: 80
+            scheme: HTTP
+          initialDelaySeconds: 10
+          timeoutSeconds: 5
+          successThreshold: 1
+          failureThreshold: 5
       # [END app_container]
