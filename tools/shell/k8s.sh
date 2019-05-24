@@ -634,6 +634,76 @@ kpods() {
   done
 }
 
+# get node by name
+# lists the pods running on it as well
+knode() {
+  if [ -n "$ZSH_VERSION" ]; then
+    FUNCNAME=${funcstack[1]}
+    setopt sh_word_split
+  fi
+
+  if [ "$#" -lt 1 ]; then
+    echo "Usage: $FUNCNAME NODE_NAME"
+    return 1
+  fi
+
+  if [ ! -f $NODES_JSON ] || [ ! -f $PODS_JSON ]; then
+    kdump "nodes"
+    kdump "pods"
+    echo
+  fi
+
+  node_name=$1
+  set -- $(kraw $NODES_JSON $node_name | jq -r '
+    [
+      .metadata.name, .spec.podCIDR,
+      (select(.status.addresses)
+        | .status.addresses
+        | map(select(.type != "Hostname").address)
+        | sort
+        | join("/")
+      )
+    ] | join(" ")
+  ')
+  pod_cidr=$2
+  node_ip=$3
+
+  echo "NODE: [$node_name] (podCIDR: $pod_cidr) ($node_ip)"
+  echo "--------------------------"
+
+  local pods=($(cat $PODS_JSON | jq -r --arg NODENAME "$node_name" '
+        .items[]
+          | select(.spec.nodeName == $NODENAME)
+          | [ .metadata.name, .metadata.namespace, (select(.status.podIP) | .status.podIP) ]
+          | join("|")
+      ' | sort))
+
+  for p in ${pods[@]}; do
+    set -- $(
+      IFS=\|
+      echo $p
+    )
+    local pod_name=$1
+    local namespace=$2
+    local pod_ip=$3
+
+    # check if pod ip is empty
+    if [ -n "$pod_id" ]; then
+      # check if pod ip is in the pod cidr
+      if (! grepcidr "${pod_cidr}" <(echo "${pod_ip}") >/dev/null); then
+        # mark the pod unless the pod is using host network
+        if [ "$pod_ip" != "$node_ip" ]; then
+          pod_ip="[x] ${pod_ip}"
+        fi
+      fi
+    fi
+
+    echo "$pod_ip ($namespace:$pod_name)"
+  done
+
+  echo
+}
+
 # get nodes and their pods
 knodes() {
   if [ -n "$ZSH_VERSION" ]; then
@@ -649,63 +719,10 @@ knodes() {
     echo
   fi
 
-  local nodes=($(cat $NODES_JSON | jq -r '
-      .items[]
-      | [
-          .metadata.name, .spec.podCIDR,
-          (select(.status.addresses)
-            | .status.addresses
-            | map(select(.type != "Hostname").address)
-            | sort
-            | join("/")
-          )
-        ]
-      | join("|")
-    ' | sort))
+  local nodes=($(cat $NODES_JSON | jq -r '.items[] | .metadata.name' | sort))
 
-  for n in ${nodes[@]}; do
-    set -- $(
-      IFS=\|
-      echo $n
-    )
-    local node_name=$1
-    local pod_cidr=$2
-    local node_ip=$3
-
-    echo "NODE: [$node_ip] (podCIDR: $pod_cidr) ($node_name)"
-    echo "--------------------------"
-
-    local pods=($(cat $PODS_JSON | jq -r --arg NODENAME "$node_name" '
-        .items[]
-          | select(.spec.nodeName == $NODENAME)
-          | [ .metadata.name, .metadata.namespace, (select(.status.podIP) | .status.podIP) ]
-          | join("|")
-      ' | sort))
-
-    for p in ${pods[@]}; do
-      set -- $(
-        IFS=\|
-        echo $p
-      )
-      local pod_name=$1
-      local namespace=$2
-      local pod_ip=$3
-
-      # check if pod ip is empty
-      if [ -n "$pod_id" ]; then
-        # check if pod ip is in the pod cidr
-        if (! grepcidr "${pod_cidr}" <(echo "${pod_ip}") >/dev/null); then
-          # mark the pod unless the pod is using host network
-          if [ "$pod_ip" != "$node_ip" ]; then
-            pod_ip="[x] ${pod_ip}"
-          fi
-        fi
-      fi
-
-      echo "$pod_ip ($namespace:$pod_name)"
-    done
-
-    echo
+  for no in ${nodes[@]}; do
+    knode $n
   done
 }
 
@@ -861,6 +878,21 @@ kcontainer_nic() {
   nic=$(gssh $node -- "grep ${iflink} /sys/class/net/*/ifindex | cut -d/ -f5")
   echo "node: $node"
   echo "nic: $nic"
+}
+
+knode_usage() {
+  [ -n "$ZSH_VERSION" ] && FUNCNAME=${funcstack[1]}
+
+  if [ "$#" -lt 1 ]; then
+    echo "Usage: $FUNCNAME NODE_NAME"
+    return 1
+  fi
+
+  node=$1
+  echo "Node: [${node}]"
+  echo "--------------------------"
+  k describe node $node | grep Allocated -A 5 | grep -ve Event -ve Allocated -ve percent -ve -- | sed -e 's/^[[:space:]]*//'
+  echo
 }
 
 # =====================

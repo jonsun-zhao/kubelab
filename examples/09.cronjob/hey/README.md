@@ -112,7 +112,10 @@ You may change the hey parameters in the `hey-secret` and/or `hey-config` to sui
 * Option 2
 
   ```sh
-  kubectl create configmap hey-config --from-literal=requests=200 --from-literal=concurrent_requests=20 -o yaml --dry-run | kubectl replace -f -
+  kubectl create configmap hey-config --from-literal=requests=200 \
+  --from-literal=concurrent_requests=20 \
+  --from-literal=custom_header="Metadata-Flavor:Google" \
+  -o yaml --dry-run | kubectl replace -f -
   ```
 
 ### Change other hey parameters
