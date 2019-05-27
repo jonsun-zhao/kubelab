@@ -1,3 +1,47 @@
+#########
+# ServiceEntry to allow access to HTTPS googleapis
+#########
+---
+apiVersion: networking.istio.io/v1alpha3
+kind: ServiceEntry
+metadata:
+  name: googleapis.com
+  namespace: istio-workload
+spec:
+  hosts:
+    - www.googleapis.com
+    - oauth2.googleapis.com
+  ports:
+    - name: https
+      number: 443
+      protocol: TLS
+  resolution: DNS
+  location: MESH_EXTERNAL
+
+#########
+# DestinationRule to allow TCP egress to cloud sql instances on 3307
+#########
+---
+# Add the CloudSQL's external IP to the mesh
+apiVersion: networking.istio.io/v1alpha3
+kind: ServiceEntry
+metadata:
+  name: mysql-cloud-sql-instance
+  namespace: istio-workload
+spec:
+  hosts:
+    - cloudsql.external
+  addresses:
+    - CLOUDSQL_INSTANCE_IP/32
+  ports:
+    - name: tcp
+      number: 3307 # at the moment, Google Cloud SQL always available on port 3307
+      protocol: tcp # enable TCP traffic
+  location: MESH_EXTERNAL
+
+#########
+# Client pod
+#########
 ---
 apiVersion: v1
 kind: Pod

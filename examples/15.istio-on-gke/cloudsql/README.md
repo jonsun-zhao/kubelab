@@ -22,8 +22,6 @@ Tests the `cloud_sql_proxy` functionality in a Istio mesh
   --scopes default,cloud-platform,cloud-source-repos,service-control
 ```
 
-## Deploy
-
 ```sh
 cat << EOF | kubectl apply -f -
 ---
@@ -43,5 +41,10 @@ kubectl -n istio-workload create secret generic cloudsql-instance-credentials --
 ## Examples
 
 * [standalone-all](standalone-all.yaml)
+  * `kubectl apply -f standalone-all.yaml`
+
 * [sidecar-mysql](sidecar-mysql.yaml)
+  * `kubectl apply -f sidecar-mysql.yaml`
+
 * [sidecar-postgres](sidecar-postgres.yaml)
+  * `kubectl apply -f sidecar-postgres.yaml`

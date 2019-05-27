@@ -32,8 +32,8 @@ spec:
   hosts:
     - cloudsql.external
   addresses:
-    - x.x.x.x/32
-    - y.y.y.y/32
+    - CLOUDSQL_MYSQL_INSTANCE_IP/32
+    - CLOUDSQL_PSQL_INSTANCE_IP/32
   ports:
     - name: tcp
       number: 3307 # at the moment, Google Cloud SQL always available on port 3307
@@ -67,7 +67,7 @@ spec:
 #       mode: DISABLE
 
 #########
-# Create a expose the standalone CloudSQL proxy pod
+# Create and expose the standalone CloudSQL proxy pod
 #########
 ---
 apiVersion: v1
@@ -87,7 +87,7 @@ spec:
         [
           "/cloud_sql_proxy",
           "--dir=/cloudsql",
-          "-instances=[CLOUDSQL_INSTANCE]=tcp:0.0.0.0:3306,[CLOUDSQL_INSTANCE]=tcp:0.0.0.0:5432",
+          "-instances=[CLOUDSQL_MYSQL_INSTANCE]=tcp:0.0.0.0:3306,[CLOUDSQL_PSQL_INSTANCE]=tcp:0.0.0.0:5432",
           "-credential_file=/secrets/cloudsql/cloudsqlclient.json",
         ]
       volumeMounts:
@@ -134,7 +134,7 @@ spec:
   type: ClusterIP
 
 #########
-# Client
+# Client Pod
 #########
 ---
 apiVersion: v1
@@ -157,4 +157,4 @@ spec:
       securityContext:
         capabilities:
           add:
-            - NET_ADMIN # need inspect iptables rules
+            - NET_ADMIN # needed to inspect the iptables rules in the container
