@@ -2,6 +2,7 @@
 
 ## Prerequisites
 
+* Gain access to the v2 lab guide
 * Install [govc](https://github.com/vmware/govmomi/tree/master/govc)
 * Install [jq](https://stedolan.github.io/jq/download/)
 * Install [ansible](https://docs.ansible.com/ansible/latest/installation_guide/intro_installation.html)
@@ -11,6 +12,7 @@
   * `id_rsa.pub`
 * Create a **SSH key**, with the content of your `id_rsa.pub`, in your `packet.com` profile
 * Create a **API Key** in your `packet.com` profile
+* Get trial licenses from F5 by registering a free trial account (details covered in the lab guide)
 
 ## Deployment
 
@@ -22,7 +24,7 @@ cp terraform.tfvars.template terraform.tfvars
 
 *change the `terraform.tfvars` to suit your needs*
 
-### Terraform apply
+### Deploy ESXi
 
 ```sh
 terraform init
@@ -30,14 +32,14 @@ terraform plan
 terraform apply
 ```
 
-### Configure `nsvm`
+### Configure `nsvm` and deploy the rest of the infrastructure VMs
 
 ```sh
 cd ansible/file
 ansible-playbook -i inventory.yml nsvm.yml
 ```
 
-### activate the F5 appliance
+### Activate the F5 appliance
 
 ```sh
 cd ansible/file
@@ -46,7 +48,7 @@ ansible-playbook -i inventory.yml f5.yml
 
 ### Install GKE On-Prem
 
-Follow the `Install GKE On-Prem` section in the Lab Guide
+Follow the `Install GKE On-Prem` section in the lab guide
 
 ## Tear down
 
