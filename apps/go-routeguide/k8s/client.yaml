@@ -1,0 +1,20 @@
+---
+apiVersion: batch/v1beta1
+kind: CronJob
+metadata:
+  name: routeguide-client
+spec:
+  schedule: "*/1 * * * *"
+  jobTemplate:
+    spec:
+      template:
+        spec:
+          containers:
+          - name: routeguide-client
+            image: gcr.io/nmiu-play/go-routeguide:latest
+            command:
+            - /client
+            args:
+            - --server_addr
+            - routeguide-svc:10000
+          restartPolicy: OnFailure
