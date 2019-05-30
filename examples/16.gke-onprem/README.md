@@ -32,6 +32,11 @@ terraform plan
 terraform apply
 ```
 
+#### Note down the IPs returned from `terraform apply`
+
+* ESXi public IP
+* NetServiceVM public IP
+
 ### Configure `nsvm` and deploy the rest of the infrastructure VMs
 
 ```sh
