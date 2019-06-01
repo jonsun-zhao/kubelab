@@ -1,3 +1,3 @@
 <?php
+echo "host => " . gethostname() . "\n";
 // echo phpinfo();
-echo "host => " . gethostname();

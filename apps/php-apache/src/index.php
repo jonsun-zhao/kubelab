@@ -1,6 +1,4 @@
-
 <?php
-
 $request = $_SERVER['REDIRECT_URL'];
 
 switch ($request) {
@@ -14,12 +12,13 @@ switch ($request) {
         require __DIR__ . '/views/load.php';
         break;
     case '/liveness' :
-        echo "I am alive!";
+        echo "I am alive\n";
         break;
     case '/readiness' :
-        echo "I am ready!";
+        echo "I am ready\n";
         break;
     default:
-        echo "404";
+        http_response_code(404);
+        echo "Not Found\n";
         break;
 }
