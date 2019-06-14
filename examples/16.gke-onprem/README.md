@@ -6,6 +6,7 @@
 * Install [govc](https://github.com/vmware/govmomi/tree/master/govc)
 * Install [jq](https://stedolan.github.io/jq/download/)
 * Install [ansible](https://docs.ansible.com/ansible/latest/installation_guide/intro_installation.html)
+* Install [sshpass](https://stackoverflow.com/questions/42835626/to-use-the-ssh-connection-type-with-passwords-you-must-install-the-sshpass-pr)
 * Request a [packet.com](https://www.packet.com) account
 * Make sure your **SSH key-pair** are located in `~/.ssh` and named as follow
   * `id_rsa`
