@@ -1,6 +1,8 @@
-# Build the Packet Lab with Terraform
+# GKE-OP-on-Packet deployment automation
 
 ## Prerequisites
+
+> The following should all be done from you workstation
 
 * Gain access to the v2 lab guide
 * Install [govc](https://github.com/vmware/govmomi/tree/master/govc)
@@ -23,7 +25,10 @@
 cp terraform.tfvars.template terraform.tfvars
 ```
 
-*change the `terraform.tfvars` to suit your needs*
+* change the `terraform.tfvars` to suit your needs
+* [sample `terraform.tfvars`](https://paste.googleplex.com/4809404681551872)
+  * **update the `CHANGEME` variables only**
+
 
 ### Deploy ESXi
 
