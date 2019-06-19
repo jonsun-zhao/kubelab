@@ -33,10 +33,13 @@ import (
 	"io/ioutil"
 	"log"
 	"math"
-	"net"
+	"net/http"
+	"strings"
 	"sync"
 	"time"
 
+	"golang.org/x/net/http2"
+	"golang.org/x/net/http2/h2c"
 	"google.golang.org/grpc"
 
 	"google.golang.org/grpc/credentials"
@@ -222,12 +225,17 @@ func newServer() *routeGuideServer {
 	return s
 }
 
+func isGrpcRequest(r *http.Request) bool {
+	return r.ProtoMajor == 2 && strings.HasPrefix(r.Header.Get("Content-Type"), "application/grpc")
+}
+
+func hchandler(w http.ResponseWriter, r *http.Request) {
+	fmt.Fprint(w, "ok")
+}
+
 func main() {
 	flag.Parse()
-	lis, err := net.Listen("tcp", fmt.Sprintf("0.0.0.0:%d", *port))
-	if err != nil {
-		log.Fatalf("failed to listen: %v", err)
-	}
+
 	var opts []grpc.ServerOption
 	if *tls {
 		if *certFile == "" {
@@ -240,11 +248,33 @@ func main() {
 		if err != nil {
 			log.Fatalf("Failed to generate credentials %v", err)
 		}
-		opts = []grpc.ServerOption{grpc.Creds(creds)}
+		opts = []grpc.ServerOption{
+			grpc.Creds(creds),
+			grpc.MaxConcurrentStreams(10),
+		}
 	}
 	grpcServer := grpc.NewServer(opts...)
+
 	pb.RegisterRouteGuideServer(grpcServer, newServer())
-	grpcServer.Serve(lis)
+
+	http.HandleFunc("/", hchandler)
+	http.HandleFunc("/_ah/health", hchandler)
+
+	muxHandler := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if isGrpcRequest(r) {
+			grpcServer.ServeHTTP(w, r)
+			return
+		}
+		http.DefaultServeMux.ServeHTTP(w, r)
+	})
+	log.Printf("Starting gRPC server on port %v", *port)
+
+	ep := fmt.Sprintf("0.0.0.0:%d", *port)
+
+	if *tls {
+		log.Fatal(http.ListenAndServeTLS(ep, *certFile, *keyFile, h2c.NewHandler(muxHandler, &http2.Server{})))
+	}
+	log.Fatal(http.ListenAndServe(ep, h2c.NewHandler(muxHandler, &http2.Server{})))
 }
 
 // exampleData is a copy of testdata/route_guide_db.json. It's to avoid

@@ -1,0 +1,6 @@
+bases:
+- ../../go-routeguide
+resources:
+- ingress.yaml
+patches:
+- patch.yaml

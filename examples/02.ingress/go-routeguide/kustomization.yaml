@@ -1,0 +1,6 @@
+bases:
+- ../../../apps/go-routeguide/k8s
+resources:
+- ingress.yaml
+patches:
+- patch.yaml

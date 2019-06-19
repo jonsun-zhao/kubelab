@@ -15,6 +15,7 @@ spec:
             command:
             - /client
             args:
-            - --server_addr
-            - routeguide-svc:10000
+            - --server_addr=routeguide-svc:10000
+            - --ca_file=/ca.pem
+            - --tls
           restartPolicy: OnFailure

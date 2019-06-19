@@ -8,6 +8,7 @@ spec:
   - name: grpc-routeguide
     port: 10000
     targetPort: 10000
+    protocol: TCP
   selector:
     app: routeguide
 
@@ -28,10 +29,21 @@ spec:
       labels:
         app: routeguide
     spec:
+      affinity:
+        podAntiAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+          - labelSelector:
+              matchExpressions:
+              - key: app
+                operator: In
+                values:
+                - routeguide
+            topologyKey: "kubernetes.io/hostname"
       containers:
+      # [START app_container]
       - name: routeguide
         image: gcr.io/nmiu-play/go-routeguide:latest
-        imagePullPolicy: IfNotPresent
+        imagePullPolicy: Always
         ports:
         - name: grpc-routeguide
           containerPort: 10000
@@ -43,3 +55,29 @@ spec:
           limits:
             cpu: 300m
             memory: 300Mi
+        livenessProbe:
+          httpGet:
+            path: /_ah/health
+            port: 10000
+            scheme: HTTPS
+          initialDelaySeconds: 10
+          timeoutSeconds: 5
+          successThreshold: 1
+          failureThreshold: 5
+        readinessProbe:
+          httpGet:
+            path: /_ah/health
+            port: 10000
+            scheme: HTTPS
+          initialDelaySeconds: 10
+          timeoutSeconds: 5
+          successThreshold: 1
+          failureThreshold: 5
+        command: 
+        - "/server"
+        args: 
+        - "--cert_file=/server1.pem"
+        - "--key_file=/server1.key"
+        - "--port=10000"
+        - "--tls"
+        # [END app_container]
