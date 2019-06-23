@@ -164,20 +164,33 @@
       get_url:
         url: '{{ vcenter_iso }}'
         dest: '{{ ansible_env.HOME }}'
-
-    - name: upload the vmdk creation script
-      template:
-        src: create-vmdk.sh.j2
-        dest: '{{ ansible_env.HOME }}/create-vmdk.sh'
-        mode: 0755
     # [END]
 
-    # [START]
-    - name: run deploy scripts
+    # [START] run deploy script
+    - name: run deploy script
       become: yes
       shell: 'echo {{ gke_op_version }} | sh deployall.sh'
       args:
         chdir: '{{ ansible_env.HOME }}/buildscripts'
+      tags:
+        - run_deploy_script
+    # [END]
+
+    # [START] post deploy
+    - name: create data folder on vsphere datastore
+      command: govc datastore.mkdir -dc="GKE On-Prem" -ds="{{ esxi_ds_name }}" gke-on-prem/
+      environment:
+        GOVC_URL: 'https://172.16.10.2/sdk' # vCenter's IP
+        GOVC_USERNAME: '{{ vcenter_admin_username }}'
+        GOVC_PASSWORD: '{{ vcenter_admin_password }}'
+        GOVC_INSECURE: true
+
+    # need to manually scp this from nsvm to adminws
+    - name: admin workstation configuration script
+      template:
+        src: adminws.sh.j2
+        dest: '{{ ansible_env.HOME }}/adminws.sh'
+        mode: 0755
       tags:
         - test
     # [END]

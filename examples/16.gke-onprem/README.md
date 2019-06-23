@@ -4,7 +4,7 @@
 
 > The following should all be done from you workstation
 
-* Gain access to the v2 lab guide
+* Gain access to the v3 lab guide
 * Install [govc](https://github.com/vmware/govmomi/tree/master/govc)
 * Install [jq](https://stedolan.github.io/jq/download/)
 * Install [ansible](https://docs.ansible.com/ansible/latest/installation_guide/intro_installation.html)
@@ -29,13 +29,12 @@ cp terraform.tfvars.template terraform.tfvars
 * [sample `terraform.tfvars`](https://paste.googleplex.com/4809404681551872)
   * **update the `CHANGEME` variables only**
 
-
 ### Deploy ESXi
 
 ```sh
 terraform init
 terraform plan
-terraform apply
+terraform apply -auto-approve -input=false
 ```
 
 #### Note down the IPs returned from `terraform apply`
