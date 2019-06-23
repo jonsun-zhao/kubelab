@@ -1,0 +1,10 @@
+#!/bin/bash
+
+# setup gcloud (so we can do docker pull from gcr.io/gke-on-prem-release)
+gcloud config set project {{ gcp_project }}
+gcloud config set compute/zone {{ gcp_compute_zone }}
+gcloud auth activate-service-account {{ gkeonprem_service_account_email }} --key-file=/home/ubuntu/release-reader-key.json
+gcloud auth configure-docker --quiet
+
+# fetch the vsphere CA cert
+openssl s_client -showcerts -verify 5 -connect 172.16.10.2:443 < /dev/null | awk '/BEGIN/,/END/{ if(/BEGIN/){a++}; out="vspherecert.pem"; print >out}'
