@@ -17,7 +17,7 @@
 ## Run the app locally
 
 ```sh
-docker run -d -p 8000:8000 -p 10443:10443 --name my-go-web go-web:local
+docker run --rm -d -p 8000:8000 -p 10443:10443 --name my-go-web go-web:local
 ```
 
 ## Clean up

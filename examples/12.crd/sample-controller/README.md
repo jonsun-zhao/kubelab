@@ -2,20 +2,36 @@
 
 Upstream: [simple controller example](https://github.com/kubernetes/sample-controller)
 
-The example deploys a `example-controller` deployment which is watching `Foo` resources as defined with a CustomResourceDefinition (CRD), and create/update/remove a test `example-foo` deployment.
+## Purpose
 
-## Installation
+An example of how to build a kube-like controller with a single type.
 
-* Install the controller
+- We are going to deploys a `example-controller` which implements the API resource `Foo` in K8s.
+- API resource `Foo`, as well as its API group `samplecontroller.k8s.io`, are created as CustomResourceDefinition (CRD)
+- When `Foo` is available in K8s, we can create/update/remove API objects from `Foo`, which subsequently creates functional `go-web` application.
+
+## Deploy
+
+- Install the controller
 
 ```sh
-cd /path/to/kubelab/apps/sample-controller
-kubectl apply -f app.yaml
+kustomize build . | kubectl apply -f -
 ```
 
-* Deploy CRD and test
+- Create CRD
 
 ```sh
 kubectl apply -f crd.yaml
-kubectl apply -f example-foo.yaml
+```
+
+- Create Foo
+
+```sh
+kubectl apply -f foo.yaml
+```
+
+## Teardown
+
+```sh
+kustomize build . | kubectl delete -f -
 ```

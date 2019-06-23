@@ -12,9 +12,18 @@ It is loosely based upon the work of kube-lego and has borrowed some wisdom from
 
 **cert-manager** is a nice and easy example to show how `CRD` is used.
 
-## Installation
+## Prerequisites
 
-* [prerequisites](../README.md)
+* Install helm/tiller
+  * [helm](https://docs.helm.sh/using_helm/)
+  * `tiller`
+
+  ```sh
+  kubectl apply -f tiller.yaml
+  helm init --service-account tiller
+  ```
+
+## Installation
 
 ```sh
 helm install \

@@ -1,5 +1,7 @@
 # App: sample-controller
 
+> [source and doc](https://github.com/neoseele/sample-controller)
+
 ## Build the image
 
 * build with Cloud Builder
@@ -14,9 +16,14 @@
   make build-local
   ```
 
-## Clean up
+## Deploy in K8s
 
 ```sh
-docker stop my-go-web && docker rm my-go-web
-docker rmi go-web:local
+kubectl apply -f k8s/controller.yaml
+```
+
+## Run demo
+
+```sh
+kubectl apply -f k8s/app.yaml
 ```

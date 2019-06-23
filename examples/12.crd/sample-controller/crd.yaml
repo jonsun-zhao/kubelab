@@ -9,3 +9,16 @@ spec:
     kind: Foo
     plural: foos
   scope: Namespaced
+  validation:
+    openAPIV3Schema:
+      type: object
+      properties:
+        spec:
+          type: object
+          properties:
+            deploymentName:
+              type: string
+            serviceName:
+              type: string
+            replicas:
+              type: integer
