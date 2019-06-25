@@ -136,8 +136,11 @@ func main() {
 	router.HandleFunc("/health", probes.Health).Methods("GET")
 	router.HandleFunc("/liveness", probes.Liveness).Methods("GET")
 	router.HandleFunc("/readiness", probes.Readiness).Methods("GET")
-	router.HandleFunc("/ping", func(w http.ResponseWriter, r *http.Request) {
-		probes.Ping(w, r, backend)
+	router.HandleFunc("/ping-backend", func(w http.ResponseWriter, r *http.Request) {
+		probes.PingBackend(w, r, backend)
+	}).Methods("GET")
+	router.HandleFunc("/ping-backend-with-db", func(w http.ResponseWriter, r *http.Request) {
+		probes.PingBackendWithDB(w, r, backend)
 	}).Methods("GET")
 
 	// kubedump

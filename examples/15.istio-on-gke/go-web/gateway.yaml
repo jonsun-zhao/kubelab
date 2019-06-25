@@ -29,7 +29,7 @@ spec:
     - uri:
         exact: /
     - uri:
-        exact: /ping
+        prefix: /ping-backend
     - uri:
         prefix: /people
     - uri:

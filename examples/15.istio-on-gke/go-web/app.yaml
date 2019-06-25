@@ -239,8 +239,10 @@ metadata:
   namespace: istio-workload
 spec:
   ports:
-  - port: 27017
-    name: mongo
+  - name: mongo
+    protocol: TCP
+    port: 27017
+    targetPort: 27017
   selector:
     app: mongodb
 
@@ -264,5 +266,7 @@ spec:
         image: gcr.io/nmiu-play/mongodb:latest
         imagePullPolicy: IfNotPresent
         ports:
-        - containerPort: 27017
+        - name: mongo
+          protocol: TCP
+          containerPort: 27017
       # [END app_container]

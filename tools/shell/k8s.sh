@@ -28,6 +28,10 @@ else
   alias base64_decode="base64 -D"
 fi
 
+# =====================
+#  Variables
+# =====================
+
 export NODES_JSON="nodes.json"
 export PODS_JSON="pods.json"
 export SERVICES_JSON="services.json"
@@ -95,7 +99,7 @@ kdump_all() {
 
   [ -d $dir ] || mkdir $dir
 
-  $cmd cluster-info dump --all-namespaces --output-directory=$dir
+  $cmd cluster-info dump --all-resources --output-directory=$dir
   echo -e "\n** output directory:  ${dir} **"
 }
 
@@ -521,57 +525,119 @@ kcreate_kubedns_debug_pod() {
   ')
 }
 
+# jq node details
+jq_node() {
+  jq -r '
+    [
+      .metadata.name, .spec.podCIDR,
+      (select(.status.addresses)
+        | .status.addresses
+        | map(select(.type != "Hostname").address)
+        | sort
+        | join("/")
+      )
+    ] | join(" ")
+  '
+}
+
+# jq pod details
+jq_pod() {
+  jq -r '
+    (
+      [
+        "name=[" + .metadata.name + "]",
+        "namespace=[" + .metadata.namespace + "]",
+        "uid=[" + .metadata.uid + "]",
+        "nodeName=[" + (.spec.nodeName|tostring) + "]",
+        "podIP=[" + (.status.podIP|tostring) + "]",
+        "status=[" + (.status.phase|tostring) + "]"
+      ] | join(" ")
+    ),
+    (
+      .status.containerStatuses[] | [
+        "#container: name=[" + .name + "]",
+        "image=[" + .image + "]",
+        .containerID
+      ] | join(" ")
+    )
+  '
+}
+
+# jq service details
+jq_service() {
+  jq -r '
+    (
+      [
+        "name=[" + .metadata.name + "]",
+        "namespace=[" + .metadata.namespace + "]",
+        "type=[" + .spec.type + "]",
+        "clusterIP=[" + (.spec.clusterIP|tostring) + "]",
+        "loadBalancerIP=[" + (.spec.loadBalancerIP|tostring) + "]",
+        "externalTrafficPolicy=[" + (.spec.externalTrafficPolicy|tostring) + "]"
+      ] | join(" ")
+    ),
+    (
+      .spec.ports[] | [
+        "#port: name=[" + (.name|tostring) + "]",
+        "protocol=[" + (.protocol|tostring) + "]",
+        "port=[" + (.port|tostring) + "]",
+        "nodePort=[" + (.nodePort|tostring) + "]",
+        "targetPort=[" + (.targetPort|tostring) + "]"
+      ] | join(" ")
+    )
+  '
+}
+
+# jq endpoint details
+jq_endpoint() {
+  jq -r '
+    .subsets[]
+    | (.addresses[] | [.ip, .targetRef.name, .nodeName] | join("|"))
+  '
+}
+
+jq_raw() {
+  jq -r '
+    (
+      select(.items?)
+      | .items[]
+      | [
+          "name=[" + .metadata.name + "]",
+          "namespace=[" + .metadata.namespace + "]",
+          "uid=[" + .metadata.uid + "]"
+        ]
+      | @tsv
+    ),
+    (
+      select(.items?|not)
+    )
+  '
+}
+
 # =========================
 #  Cluster Dump Helpers
 # =========================
 
-klist() {
-  [ -n "$ZSH_VERSION" ] && FUNCNAME=${funcstack[1]}
+# kraws() {
+#   [ -n "$ZSH_VERSION" ] && FUNCNAME=${funcstack[1]}
 
-  if [ "$#" -lt 1 ]; then
-    echo "Usage: $FUNCNAME FILE"
-    return 1
-  fi
+#   ( (( $# )) && cat "$@" || cat ) | jq -r '
+#     (
+#       select(.items?)
+#       | .items[]
+#       | [
+#           "name=[" + .metadata.name + "]",
+#           "namespace=[" + .metadata.namespace + "]",
+#           "uid=[" + .metadata.uid + "]"
+#         ]
+#       | @tsv
+#     ),
+#     (
+#       select(.items?|not)
+#     )
+#   '
+# }
 
-  local f=$1
-  if [ ! -f $f ]; then
-    echo "$f does not exist"
-    return 1
-  fi
-
-  cat $f | jq -r '
-    .items[]
-    |  [
-        "name=[" + .metadata.name + "]",
-        "namespace=[" + .metadata.namespace + "]",
-        "uid=[" + .metadata.uid + "]"
-      ]
-    | @tsv
-  '
-}
-
-kraw() {
-  [ -n "$ZSH_VERSION" ] && FUNCNAME=${funcstack[1]}
-
-  if [ "$#" -lt 2 ]; then
-    echo "Usage: $FUNCNAME FILE OBJECT_NAME"
-    return 1
-  fi
-
-  local f=$1
-  local n=$2
-
-  if [ ! -f $f ]; then
-    echo "$f does not exist"
-    return 1
-  fi
-
-  cat $f | jq -r --arg NAME "$n" '
-    .items[]
-    | select(.metadata.name == $NAME)
-    | .
-  '
-}
 
 # get pod by name
 kpod() {
@@ -590,26 +656,9 @@ kpod() {
   pod=$1
   namespace=${2:-default}
 
-  cat $PODS_JSON | jq -r --arg POD "$pod" --arg NS "$namespace" '
-    .items[]
-    | select(.metadata.name == $POD and .metadata.namespace == $NS)
-    | (
-        [
-          "name=[" + .metadata.name + "]",
-          "namespace=[" + .metadata.namespace + "]",
-          "uid=[" + .metadata.uid + "]",
-          "nodeName=[" + (.spec.nodeName|tostring) + "]",
-          "podIP=[" + (.status.podIP|tostring) + "]",
-          "status=[" + (.status.phase|tostring) + "]"
-        ] | join(" ")
-      ),
-      (
-        .status.containerStatuses[] | [
-          "#container: name=[" + .name + "]",
-          .containerID
-        ] | join(" ")
-      )
-  ' | sed 's#://#=#g'
+  cat $PODS_JSON | jq -r '
+    .items[] | select(.metadata.name == "'$pod'" and .metadata.namespace == "'$namespace'")
+  ' | jq_pod | sed 's#://#=#g'
 }
 
 # get pods
@@ -654,26 +703,18 @@ knode() {
   fi
 
   node_name=$1
-  set -- $(kraw $NODES_JSON $node_name | jq -r '
-    [
-      .metadata.name, .spec.podCIDR,
-      (select(.status.addresses)
-        | .status.addresses
-        | map(select(.type != "Hostname").address)
-        | sort
-        | join("/")
-      )
-    ] | join(" ")
-  ')
+  set -- $(cat $NODES_JSON | jq -r '
+    .items[] | select(.metadata.name == "'$node_name'")
+  ' | jq_node)
   pod_cidr=$2
   node_ip=$3
 
   echo "NODE: [$node_name] (podCIDR: $pod_cidr) ($node_ip)"
   echo "--------------------------"
 
-  local pods=($(cat $PODS_JSON | jq -r --arg NODENAME "$node_name" '
+  local pods=($(cat $PODS_JSON | jq -r '
         .items[]
-          | select(.spec.nodeName == $NODENAME)
+          | select(.spec.nodeName == "'$node_name'")
           | [ .metadata.name, .metadata.namespace, (select(.status.podIP) | .status.podIP) ]
           | join("|")
       ' | sort))
@@ -721,7 +762,7 @@ knodes() {
 
   local nodes=($(cat $NODES_JSON | jq -r '.items[] | .metadata.name' | sort))
 
-  for no in ${nodes[@]}; do
+  for n in ${nodes[@]}; do
     knode $n
   done
 }
@@ -751,36 +792,14 @@ kservice() {
   service=$1
   namespace=${2:-default}
 
-  cat $SERVICES_JSON | jq -r --arg SVC "$service" --arg NS "$namespace" '
-    .items[]
-    | select(.metadata.name == $SVC and .metadata.namespace == $NS)
-    | (
-        [
-          "name=[" + .metadata.name + "]",
-          "namespace=[" + .metadata.namespace + "]",
-          "type=[" + .spec.type + "]",
-          "clusterIP=[" + (.spec.clusterIP|tostring) + "]",
-          "loadBalancerIP=[" + (.spec.loadBalancerIP|tostring) + "]",
-          "externalTrafficPolicy=[" + (.spec.externalTrafficPolicy|tostring) + "]"
-        ] | join(" ")
-      ),
-      (
-        .spec.ports[] | [
-          "#port: name=[" + (.name|tostring) + "]",
-          "protocol=[" + (.protocol|tostring) + "]",
-          "port=[" + (.port|tostring) + "]",
-          "nodePort=[" + (.nodePort|tostring) + "]",
-          "targetPort=[" + (.targetPort|tostring) + "]"
-        ] | join(" ")
-      )
-  '
+  cat $SERVICES_JSON | jq -r '
+    .items[] | select(.metadata.name == "'$service'" and .metadata.namespace == "'$namespace'")
+  ' | jq_service
 
-  endpoints=($(cat $ENDPOINTS_JSON | jq -r --arg SVC "$service" --arg NS "$namespace" '
-      .items[]
-        | select(.metadata.name == $SVC and .metadata.namespace == $NS)
-        | .subsets[]
-        | (.addresses[] | [.ip, .targetRef.name, .nodeName] | join("|"))
-      ')
+  endpoints=($(cat $ENDPOINTS_JSON | jq -r '
+        .items[] | select(.metadata.name == "'$service'" and .metadata.namespace == "'$namespace'")
+      ' | jq_endpoint
+      )
   )
 
   # echo $endpoints
@@ -808,9 +827,9 @@ kservice() {
       return
     fi
 
-    pod_ip=$(cat $PODS_JSON | jq -r --arg POD "$pod" --arg NS "$namespace" '
+    pod_ip=$(cat $PODS_JSON | jq -r '
       .items[]
-        | select(.metadata.name == $POD and .metadata.namespace == $NS)
+        | select(.metadata.name == "'$pod'" and .metadata.namespace == "'$namespace'")
         | (.status.podIP|tostring)
     ')
 
