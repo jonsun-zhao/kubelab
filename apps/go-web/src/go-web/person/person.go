@@ -33,7 +33,7 @@ func Init(session *mgo.Session) {
 		mongoSession = session
 	} else {
 		people = append(people, Person{ID: "1", Firstname: "John", Lastname: "Doe", Address: &Address{City: "City X", State: "State X"}})
-		people = append(people, Person{ID: "2", Firstname: "Koko", Lastname: "Doe", Address: &Address{City: "City Z", State: "State Y"}})
+		// people = append(people, Person{ID: "2", Firstname: "Koko", Lastname: "Doe", Address: &Address{City: "City Z", State: "State Y"}})
 	}
 }
 
@@ -97,6 +97,7 @@ func Get(w http.ResponseWriter, r *http.Request) {
 }
 
 // Create a person object
+// example: curl -d '{"id":"100", "firstname":"foo", "lastname":"bar"}' -H "Content-Type: application/json" -X POST http://backend:8000/people/100
 func Create(w http.ResponseWriter, r *http.Request) {
 	params := mux.Vars(r)
 	var p Person
@@ -122,6 +123,7 @@ func Create(w http.ResponseWriter, r *http.Request) {
 }
 
 // Delete a person object
+// example: curl -X DELETE http://backend:8000/people/100
 func Delete(w http.ResponseWriter, r *http.Request) {
 	params := mux.Vars(r)
 
@@ -149,6 +151,7 @@ func Delete(w http.ResponseWriter, r *http.Request) {
 }
 
 // Update a person object
+// example: curl -d '{"lastname":"brad"}' -X PUT http://backend:8000/people/100
 func Update(w http.ResponseWriter, r *http.Request) {
 	params := mux.Vars(r)
 	var p Person

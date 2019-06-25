@@ -27,3 +27,18 @@ spec:
     - destination:
         host: backend
         subset: v1
+
+---
+apiVersion: networking.istio.io/v1alpha3
+kind: VirtualService
+metadata:
+  name: mongodb
+  namespace: istio-workload
+spec:
+  hosts:
+  - mongodb
+  http:
+  - route:
+    - destination:
+        host: mongodb
+        subset: v1

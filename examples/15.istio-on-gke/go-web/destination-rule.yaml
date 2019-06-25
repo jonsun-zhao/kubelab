@@ -32,3 +32,19 @@ spec:
   - name: v2
     labels:
       version: v2
+
+---
+apiVersion: networking.istio.io/v1alpha3
+kind: DestinationRule
+metadata:
+  name: mongodb
+  namespace: istio-workload
+spec:
+  host: mongodb
+  trafficPolicy:
+    tls:
+      mode: ISTIO_MUTUAL
+  subsets:
+  - name: v1
+    labels:
+      version: v1
