@@ -22,7 +22,8 @@ EOF
 ## Deploy bookinfo
 
 ```sh
-cd /path/to/istio-1.0.5
+export VERSION=1.1.7
+cd /path/to/istio-$VERSION
 kubectl -n bookinfo apply -f samples/bookinfo/platform/kube/bookinfo.yaml
 kubectl -n bookinfo apply -f samples/bookinfo/networking/bookinfo-gateway.yaml
 ```

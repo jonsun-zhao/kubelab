@@ -83,7 +83,7 @@
     - name: install patched kubectl
       become: yes
       shell: |
-        gsutil cp gs://nmiu-play_tools/kubectl-114-linux /usr/local/bin/k-dev
+        gsutil cp gs://nmiu-play_tools/kubectl-116-linux /usr/local/bin/k-dev
         chmod +x /usr/local/bin/k-dev
       args:
         creates: /usr/local/bin/k-dev

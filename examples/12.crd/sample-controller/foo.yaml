@@ -5,5 +5,5 @@ metadata:
   name: example-foo
 spec:
   deploymentName: foo-dep
-  replicas: 1
+  replicas: 2
   serviceName: foo-svc

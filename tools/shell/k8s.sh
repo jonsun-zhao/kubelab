@@ -614,30 +614,29 @@ jq_raw() {
   '
 }
 
+jq_raw_name() {
+  [ -n "$ZSH_VERSION" ] && FUNCNAME=${funcstack[1]}
+  
+  if [ "$#" -lt 1 ]; then
+    echo "Usage: $FUNCNAME NAME"
+    return 1
+  fi
+
+  jq -r '
+    (
+      select(.items?)
+      | .items[]
+      | select(.metadata.name == "'${1}'")
+    ),
+    (
+      select(.items?|not)
+    )
+  '
+}
+
 # =========================
 #  Cluster Dump Helpers
 # =========================
-
-# kraws() {
-#   [ -n "$ZSH_VERSION" ] && FUNCNAME=${funcstack[1]}
-
-#   ( (( $# )) && cat "$@" || cat ) | jq -r '
-#     (
-#       select(.items?)
-#       | .items[]
-#       | [
-#           "name=[" + .metadata.name + "]",
-#           "namespace=[" + .metadata.namespace + "]",
-#           "uid=[" + .metadata.uid + "]"
-#         ]
-#       | @tsv
-#     ),
-#     (
-#       select(.items?|not)
-#     )
-#   '
-# }
-
 
 # get pod by name
 kpod() {
