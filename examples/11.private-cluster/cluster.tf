@@ -200,7 +200,7 @@ variable "network" {
 
 variable "subnetwork" {
   description = "This will be set by the networking module call from the main vpc. The name or self_link of the Google Compute Engine subnetwork in which the cluster's instances are launched"
-  default     = "gke-subnet"
+  default     = "gke-clusters"
 }
 
 variable "monitoring_service" {

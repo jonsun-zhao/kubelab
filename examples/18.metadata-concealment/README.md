@@ -44,15 +44,11 @@ gcloud beta container clusters create asuka \
 --machine-type=n1-standard-2 \
 --num-nodes=2 \
 --image-type=COS \
---cluster-version=1.11 \
+--cluster-version=1.12 \
 --tags=ssh \
 --preemptible \
 --enable-ip-alias \
 --create-subnetwork "" \
---enable-autoscaling \
---min-nodes=1 \
---max-nodes=3 \
---enable-stackdriver-kubernetes \
 --workload-metadata-from-node=SECURE \
 --service-account=gke-node-sa@nmiu-play.iam.gserviceaccount.com \
 --metadata disable-legacy-endpoints=true

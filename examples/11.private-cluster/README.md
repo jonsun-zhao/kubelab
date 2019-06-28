@@ -24,10 +24,11 @@
   gcloud beta container clusters create asuka \
     --private-cluster \
     --enable-ip-alias \
-    --master-ipv4-cidr 172.16.0.32/28 \
-    --subnetwork gke-subnet \
-    --services-secondary-range-name asuka-services \
-    --cluster-secondary-range-name asuka-pods \
+    --master-ipv4-cidr=172.16.0.32/28 \
+    --network=default \
+    --subnetwork=gke-subnet \
+    --services-secondary-range-name=asuka-services \
+    --cluster-secondary-range-name=asuka-pods \
     --machine-type=n1-standard-2 \
     --cluster-version=1.10 \
     --tags=ssh,no-ip \
@@ -39,7 +40,7 @@
     --enable-autorepair \
     --enable-autoupgrade \
     --preemptible \
-    --scopes default,cloud-platform,cloud-source-repos,service-control
+    --scopes=default,cloud-platform,cloud-source-repos,service-control
   ```
 
 * Teardown
@@ -59,9 +60,10 @@ gcloud beta container clusters create asuka \
   --private-cluster \
   --enable-ip-alias \
   --master-ipv4-cidr 172.16.0.16/28 \
-  --create-subnetwork "" \
+  --network=default \
+  --create-subnetwork="" \
   --machine-type=n1-standard-2 \
-  --cluster-version=1.10 \
+  --cluster-version=1.12 \
   --tags=ssh,no-ip \
   --num-nodes=3 \
   --min-nodes=1 \
@@ -71,7 +73,7 @@ gcloud beta container clusters create asuka \
   --enable-autorepair \
   --enable-autoupgrade \
   --preemptible \
-  --scopes default,cloud-platform,cloud-source-repos,service-control
+  --scopes=default,cloud-platform,cloud-source-repos,service-control
 ```
 
 * Teardown
