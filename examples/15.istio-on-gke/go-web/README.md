@@ -19,7 +19,7 @@ export GATEWAY_URL=$(kubectl -n istio-system get service istio-ingressgateway -o
 * Check the app
 
 ```sh
-curl -s http://$GATEWAY_URL/ping
+curl -s http://$GATEWAY_URL/ping-backend
 
 Reaching backend: http://backend:8000
 
@@ -49,7 +49,7 @@ kubectl apply -f vs-backend-v1-v2.yaml
 ```
 
 ```sh
-for i in `seq 1 5`; do curl -s http://$GATEWAY_URL/ping | grep -A1 Version ; sleep 1; echo; done
+for i in `seq 1 5`; do curl -s http://$GATEWAY_URL/ping-backend | grep -A1 Version ; sleep 1; echo; done
 Version: v1
 Hostname: backend-v1-f857c7c8-sfgfw
 
@@ -71,7 +71,7 @@ Hostname: backend-v2-67cc94b87b-g6gsq
 * Test without the header
 
   ```sh
-  curl -w "@curl-format.txt" http://$GATEWAY_URL/ping
+  curl -w "@curl-format.txt" http://$GATEWAY_URL/ping-backend
 
   Reaching backend: http://backend:8000
 
@@ -106,7 +106,7 @@ Hostname: backend-v2-67cc94b87b-g6gsq
 * Test with the header
 
   ```sh
-  curl -H "foo: bar" -w "@curl-format.txt" http://$GATEWAY_URL/ping
+  curl -H "foo: bar" -w "@curl-format.txt" http://$GATEWAY_URL/ping-backend
 
   Reaching backend: http://backend:8000
 
@@ -150,7 +150,7 @@ Hostname: backend-v2-67cc94b87b-g6gsq
 * Test without the header
 
   ```sh
-  curl -s http://$GATEWAY_URL/ping
+  curl -s http://$GATEWAY_URL/ping-backend
 
   Reaching backend: http://backend:8000
 
@@ -176,7 +176,7 @@ Hostname: backend-v2-67cc94b87b-g6gsq
 * Test with the header
 
   ```sh
-  curl -H "foo: bar" -s http://$GATEWAY_URL/ping
+  curl -H "foo: bar" -s http://$GATEWAY_URL/ping-backend
 
   Reaching backend: http://backend:8000
 

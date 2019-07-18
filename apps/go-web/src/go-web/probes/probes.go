@@ -45,6 +45,9 @@ func PingBackend(w http.ResponseWriter, r *http.Request, beURL *string) {
 		req.Header.Add("foo", foo)
 	}
 
+	req.Header.Add("X-APP-API_SIGNATURE", "SsxfLRHirn+GwGbuJieoqPFfRgnSF0ebJ2sXqZCyQ2w=;")
+	req.Header.Add("X-APP-API_TIMESTAMP", "1563425167;")
+
 	resp, err := c.Do(req)
 	if err != nil {
 		log.Printf("The HTTP request failed with error %s\n", err)
