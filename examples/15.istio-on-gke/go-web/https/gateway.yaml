@@ -26,16 +26,28 @@ spec:
       privateKey: /etc/istio/ingressgateway-certs/tls.key
       caCertificates: /etc/istio/ingressgateway-ca-certs/tls.crt
 ---  
-apiVersion: extensions/v1beta1
-kind: Ingress
+apiVersion: networking.istio.io/v1alpha3
+kind: VirtualService
 metadata:
   name: go-web
   namespace: istio-workload
 spec:
-  rules:
-    - host: asuka.example.com
-      http:
-        paths:
-          - backend:
-              serviceName: frontend
-              servicePort: 8000
+  hosts:
+  - "asuka.example.com"
+  gateways:
+  - go-web-gateway
+  http:
+  - match:
+    - uri:
+        exact: /
+    - uri:
+        prefix: /ping-backend
+    - uri:
+        prefix: /people
+    - uri:
+        prefix: /stress
+    route:
+    - destination:
+        host: frontend
+        port:
+          number: 8000
