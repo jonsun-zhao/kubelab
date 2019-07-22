@@ -1,0 +1,41 @@
+# only applicable to istio <= 1.0
+apiVersion: networking.istio.io/v1alpha3
+kind: Gateway
+metadata:
+  name: go-web-gateway
+  namespace: istio-workload
+spec:
+  selector:
+    istio: ingressgateway # use istio default controller
+  servers:
+  - port:
+      number: 80
+      name: http
+      protocol: HTTP
+    hosts:
+    - "*"
+  - hosts:
+    - "*.example.com"
+    port:
+      name: https
+      number: 443
+      protocol: HTTPS
+    tls:
+      mode: SIMPLE
+      serverCertificate: /etc/istio/ingressgateway-certs/tls.crt
+      privateKey: /etc/istio/ingressgateway-certs/tls.key
+      caCertificates: /etc/istio/ingressgateway-ca-certs/tls.crt
+---  
+apiVersion: extensions/v1beta1
+kind: Ingress
+metadata:
+  name: go-web
+  namespace: istio-workload
+spec:
+  rules:
+    - host: asuka.example.com
+      http:
+        paths:
+          - backend:
+              serviceName: frontend
+              servicePort: 8000

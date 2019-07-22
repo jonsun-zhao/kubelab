@@ -10,6 +10,8 @@
 make apply
 ```
 
+## Verify
+
 * Retrieve the IngressGateway IP
 
 ```sh
