@@ -44,4 +44,15 @@ Rails.application.configure do
   #
   # # Set log level
   config.log_level = :debug
+
+  # Stackdriver shared parameters
+  config.google_cloud.project_id = "nmiu-play"
+  config.google_cloud.keyfile    = "/Users/nmiu/creds/nmiu-play/service_account_keys/my-cluster-admin@nmiu-play.iam.gserviceaccount.com.json"
+  config.google_cloud.use_trace  = true
+
+  # Library specific configurations
+  config.google_cloud.error_reporting.project_id = "nmiu-play"
+  config.google_cloud.logging.log_name = "my-rails"
+  config.google_cloud.trace.capture_stack = true
+  # config.google_cloud.trace.span_id_generator = Proc.new { 0 }
 end

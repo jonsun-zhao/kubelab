@@ -1,0 +1,38 @@
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  name: my-gpu-dep
+  labels:
+    deployment: gpu-pod
+spec:
+  replicas: 10
+  selector:
+    matchLabels:
+      app: gpu-pod
+  template:
+    metadata:
+      labels:
+        app: gpu-pod
+    spec:
+      affinity:
+        podAntiAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+          - labelSelector:
+              matchExpressions:
+              - key: app
+                operator: In
+                values:
+                - gpu-pod
+            topologyKey: "kubernetes.io/hostname"
+      containers:
+      - name: my-gpu-container
+        image: nvidia/cuda:10.0-runtime-ubuntu18.04
+        command: 
+        - /bin/sh
+        - -c
+        - while t:; do /usr/local/nvidia/bin/nvidia-smi; sleep 30; done
+        resources:
+          limits:
+            nvidia.com/gpu: 1
+      nodeSelector:
+        cloud.google.com/gke-accelerator: nvidia-tesla-k80

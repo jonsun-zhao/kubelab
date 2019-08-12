@@ -1,10 +1,43 @@
+require 'net/http'
+
 class PostsController < ApplicationController
   before_action :set_post, only: [:show, :edit, :update, :destroy]
 
   # GET /posts
   # GET /posts.json
   def index
+
+    trace_id = nil
+    span_id = nil
+
+    logger.warn "*** BEGIN RAW REQUEST HEADERS ***"
+    # request.env.select { |k,v| k.match("^HTTP.*") }.each do |header|
+    request.env.each do |k, v|
+      if k.match("^HTTP.*")
+        logger.warn "#{k.split('_',2)[1]}: #{v}"
+      end
+      # logger.warn k
+      if k == 'google.cloud.trace_context'
+        logger.warn v
+        
+        trace_id = v.trace_id
+        span_id = v.span_id
+      end
+    end
+    logger.warn "*** END RAW REQUEST HEADERS ***"
+
     @posts = Post.all
+
+    # rest call to comments
+    link = URI.parse("http://localhost:3000/comments.json")
+    request = Net::HTTP::Get.new(link.path)
+    request['X-Cloud-Trace-Context'] = "#{trace_id}/#{span_id};o=1"
+
+    response = Net::HTTP.start(link.host, link.port) {|http|
+      http.read_timeout = 5 #Default is 60 seconds
+      http.request(request)
+    }
+    @comments = JSON.parse(response.body)
   end
 
   # GET /posts/1

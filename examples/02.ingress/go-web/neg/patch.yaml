@@ -3,7 +3,7 @@ kind: Service
 metadata:
   annotations:
     cloud.google.com/neg: '{"ingress": true}'
-  name: go-web-svc
+  name: go-web
 spec:
   type: ClusterIP
   externalTrafficPolicy: 

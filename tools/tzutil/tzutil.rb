@@ -11,7 +11,7 @@ class Time
       # self.in_time_zone(zone).strftime("%Y-%m-%dT%H:%M:%SZ")
       self.in_time_zone(zone).to_formatted_s(:iso8601)
     else
-      self.in_time_zone(zone).strftime("%A, %Y-%m-%d %H:%M:%S %Z %z")
+      self.in_time_zone(zone).strftime("%A, %Y-%m-%d %H:%M %Z %z")
       # self.in_time_zone(zone).to_formatted_s(:rfc822)
     end
   end

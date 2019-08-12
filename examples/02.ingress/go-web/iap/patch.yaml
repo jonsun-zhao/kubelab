@@ -2,7 +2,7 @@
 kind: Service
 apiVersion: v1
 metadata:
-  name: go-web-svc
+  name: go-web
   annotations:
     beta.cloud.google.com/backend-config:
       '{"ports": {"http":"backend-config-http"}}'
@@ -37,7 +37,7 @@ spec:
     http:
       paths:
       - backend:
-          serviceName: go-web-svc
+          serviceName: go-web
           servicePort: 8000
         path: /*
 

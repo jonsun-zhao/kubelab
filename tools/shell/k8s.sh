@@ -913,6 +913,29 @@ knode_usage() {
   echo
 }
 
+knodes_iptables-save() {
+  [ -n "$ZSH_VERSION" ] && FUNCNAME=${funcstack[1]}
+
+  if [ "$#" -gt 1 ]; then
+    echo "Usage: $FUNCNAME [NODE_NAME]"
+    return 1
+  fi
+
+  node=$1
+  epoch=$(date +%s)
+
+  if [ -n "$node" ]; then
+    echo "> dumping iptables rules from ${node}"
+    gssh $h -- sudo iptables-save > ${node}.${epoch}
+  else
+    for h in `kubectl get nodes -o json | jq -r '.items[]|.metadata.name'`; 
+    do 
+      echo "> dumping iptables rules from ${h}"
+      gssh $h -- sudo iptables-save > ${h}.${epoch}
+    done
+  fi
+}
+
 # =====================
 #  istio Helpers
 # =====================

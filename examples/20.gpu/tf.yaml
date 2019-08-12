@@ -1,0 +1,38 @@
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  name: tensor-deployment
+  labels:
+    deployment: tensor-pod
+spec:
+  replicas: 400
+  selector:
+    matchLabels:
+      app: tensor-pod
+  template:
+    metadata:
+      labels:
+        app: tensor-pod
+    spec:
+      affinity:
+        podAntiAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+          - labelSelector:
+              matchExpressions:
+              - key: app
+                operator: In
+                values:
+                - tensor-pod
+            topologyKey: "kubernetes.io/hostname"
+      containers:
+      - name: tensor-container
+        image: tensorflow/tensorflow:latest-gpu
+        command: 
+        - python
+        - -c
+        - "exec (\"import tensorflow as tf\\nimport time\\ntf.enable_eager_execution()\\nwhile True:\\n  print(tf.reduce_sum(tf.random_normal([1000, 1000])))\\n  time.sleep(30)\\n\")"
+        resources:
+          limits:
+            nvidia.com/gpu: 1
+      nodeSelector:
+        cloud.google.com/gke-accelerator: nvidia-tesla-k80

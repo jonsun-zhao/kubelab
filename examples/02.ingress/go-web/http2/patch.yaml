@@ -17,7 +17,7 @@ spec:
     http:
       paths:
       - backend:
-          serviceName: go-web-svc
+          serviceName: go-web
           servicePort: 10443
         path: /*
 
@@ -27,6 +27,6 @@ kind: Service
 metadata:
   annotations:
     cloud.google.com/app-protocols: '{"https":"HTTP2"}'
-  name: go-web-svc
+  name: go-web
 spec:
   externalTrafficPolicy: Local

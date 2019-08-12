@@ -2,7 +2,7 @@
 kind: Service
 apiVersion: v1
 metadata:
-  name: go-web-svc
+  name: go-web
 spec:
   externalTrafficPolicy: Cluster
   # type: LoadBalancer
