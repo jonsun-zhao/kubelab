@@ -13,7 +13,7 @@
 ### Create a new cluster
 
 ```sh
-gcloud beta container clusters create rei \
+gcloud beta container clusters create ikari \
     --machine-type=n1-standard-2 \
     --num-nodes=2 \
     --image-type=COS \
@@ -101,7 +101,7 @@ It can take up to 30 minutes for cached tokens to expire. You can check whether 
 gcloud auth list
 ```
 
-The cached tokens have exprired ff the output of that command no longer includes `gke-test-sa@nmiu-play.iam.gserviceaccount.com`.
+The cached tokens have exprired if the output of that command no longer includes `gke-test-sa@nmiu-play.iam.gserviceaccount.com`.
 
 Disable Workload Identity in the cluster:
 

@@ -926,7 +926,7 @@ knodes_iptables-save() {
 
   if [ -n "$node" ]; then
     echo "> dumping iptables rules from ${node}"
-    gssh $h -- sudo iptables-save > ${node}.${epoch}
+    gssh $node -- sudo iptables-save > ${node}.${epoch}
   else
     for h in `kubectl get nodes -o json | jq -r '.items[]|.metadata.name'`; 
     do 
