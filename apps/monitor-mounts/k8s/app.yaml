@@ -1,0 +1,129 @@
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: monitor-mounts-script
+  namespace: default
+data:
+  monitor-mounts.py: |
+    #!/usr/bin/python
+
+    import os
+    import re
+    import time
+
+    from prometheus_client import start_http_server
+    from prometheus_client import Gauge
+
+    #MOUNTINFO_FILE = './proc_1_mountinfo.sample'
+    MOUNTINFO_FILE = '/proc/1/mountinfo'
+    DEBUG = False
+    LABEL_POD_UUID = False
+    POD_UUID_UNSPEC = '00000000-0000-0000-0000-000000000000'
+    HTTP_PORT = 8000
+    SLEEP_SEC = 20
+
+    g_mounts = Gauge( 'mounts', 'Number of mounts', [ 'fstype', 'pod_uuid' ] )
+    pod_volume_re = re.compile(r"^.*/pods/([^/]+)/(.*)$")
+
+    def pod_uuid_volume( mountpoint ):
+      # /var/lib/kubelet/pods/d268cb78-afb0-11e9-8f3e-42010a80007f/volumes/kubernetes.io~secret/gke-metadata-server-token-t6gzj rw -> ( d268cb78-afb0-11e9-8f3e-42010a80007f, volumes/kubernetes.io~secret/gke-metadata-server-token-t6gzj )
+      match = pod_volume_re.match( mountpoint )
+      if not match:
+        return ( POD_UUID_UNSPEC, 'unspec' )
+      return ( match.group(1), match.group(2) )
+
+    def main_loop( mountinfo_file ):
+      while True:
+      # $ cat /proc/self/mountinfo
+      # 19 0 254:0 / / ro,relatime shared:1 - ext2 /dev/root ro
+      # 33 27 0:28 / /sys/fs/cgroup/blkio rw,nosuid,nodev,noexec,relatime shared:15 - cgroup cgroup rw,blkio
+      # 298 90 8:1 /var/lib/docker/overlay2 /var/lib/docker/overlay2 rw,nosuid,nodev,relatime - ext4 /dev/sda1 rw,commit=30,data=ordered
+      # 262 323 0:47 / /home/kubernetes/containerized_mounter/rootfs/var/lib/kubelet/pods/d268cb78-afb0-11e9-8f3e-42010a80007f/volumes/kubernetes.io~secret/gke-metadata-server-token-t6gzj rw,relatime shared:142 - tmpfs tmpfs rw
+      # 263 82 0:47 / /var/lib/kubelet/pods/d268cb78-afb0-11e9-8f3e-42010a80007f/volumes/kubernetes.io~secret/gke-metadata-server-token-t6gzj rw,relatime shared:142 - tmpfs tmpfs rw
+        mounts_by_pod = {}
+        mounts = {}
+        total_mounts = 0
+
+        with open( mountinfo_file ) as proc_self_mountinfo:
+          for mountinfo_entry_line in proc_self_mountinfo.readlines():
+            mountinfo_entry = mountinfo_entry_line.split()
+            mountpoint = mountinfo_entry[ 4 ]
+            fstype = mountinfo_entry[ 8 ]
+            device = mountinfo_entry[ 9 ]
+            ( pod_uuid, pod_volume ) = pod_uuid_volume( mountpoint )
+            if DEBUG:
+              print mountinfo_entry_line
+              print "device=%s,mountpoint=%s,pod_uuid=%s,pod_volume=%s,fstype=%s" % ( device, mountpoint, pod_uuid, pod_volume, fstype )
+
+            if not pod_uuid in mounts_by_pod:
+              mounts_by_pod[ pod_uuid ] = {}
+            if not fstype in mounts_by_pod[ pod_uuid ]:
+              mounts_by_pod[ pod_uuid ][ fstype ] = 0
+            mounts_by_pod[ pod_uuid ][ fstype ] += 1
+
+            if not fstype in mounts:
+              mounts[ fstype ] = 0
+            mounts[ fstype ] += 1
+            
+            total_mounts += 1
+
+        g_mounts.labels( fstype = '_total', pod_uuid = POD_UUID_UNSPEC ).set( total_mounts );
+        if LABEL_POD_UUID:
+          for pod_uuid, fstypes in mounts_by_pod.items():
+            for fstype, count in fstypes.items():
+              g_mounts.labels( fstype = fstype, pod_uuid = pod_uuid ).set( count );
+        else:
+          for fstype, count in mounts.items():
+            g_mounts.labels( fstype = fstype, pod_uuid = POD_UUID_UNSPEC ).set( count );
+
+        time.sleep( SLEEP_SEC )
+
+    print "Starting HTTP server on port %s" % HTTP_PORT
+    start_http_server( HTTP_PORT )
+    main_loop( MOUNTINFO_FILE )
+
+---
+apiVersion: extensions/v1beta1
+kind: DaemonSet
+metadata:
+  name: ds-monitor-mounts
+  labels:
+    app: ds-monitor-mounts
+spec:
+  template:
+    metadata:
+      labels:
+        name: ds-monitor-mounts
+    spec:
+      hostPID: true
+      # serviceAccount: hammer
+      containers:
+        - name: ds-monitor-mounts-monitor
+          image: python:2.7
+          command: ['bash', '-c', 'pip install prometheus_client && python /scripts/monitor-mounts.py']
+          volumeMounts:
+            - mountPath: /scripts
+              name: scripts-volume
+        - name: prom-to-sd
+          command:
+          - /monitor
+          - --source=monitor-mounts:http://localhost:8000?metricsPrefix=custom.googleapis.com&whitelisted=mounts
+          - --pod-id=$(POD_NAME)
+          - --namespace-id=$(POD_NAMESPACE)
+          env:
+          - name: POD_NAME
+            valueFrom:
+              fieldRef:
+                apiVersion: v1
+                fieldPath: metadata.name
+          - name: POD_NAMESPACE
+            valueFrom:
+              fieldRef:
+                apiVersion: v1
+                fieldPath: metadata.namespace
+          image: k8s.gcr.io/prometheus-to-sd:v0.5.0
+      volumes:
+        - name: scripts-volume
+          configMap:
+            name: monitor-mounts-script
