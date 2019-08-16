@@ -2,7 +2,7 @@
 kind: Deployment
 apiVersion: extensions/v1beta1
 metadata:
-  name: php-apache-dep
+  name: nginx-dep
 spec:
   replicas: 1
   template:
@@ -13,10 +13,10 @@ spec:
            claimName: rwo-pvc
       containers:
       # [START app_container]
-      - name: php-apache
+      - name: nginx
         volumeMounts:
           - name: data
-            mountPath: /var/www/html/
+            mountPath: /usr/share/nginx/html
       # [END app_container]
       initContainers:
       - name: init-index

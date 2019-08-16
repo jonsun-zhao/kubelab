@@ -1,7 +1,6 @@
 bases:
-- ../../../apps/php-apache/k8s
+- ../../../apps/nginx/k8s
 resources:
-- ../ingress.yaml
 - storage.yaml
 patches:
 - patch.yaml
