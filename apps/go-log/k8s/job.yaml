@@ -14,5 +14,8 @@ spec:
         image: gcr.io/nmiu-play/go-log
         env:
         - name: COUNT
-          value: "1000"
+          value: "100"
+        args:
+          - "-logtostderr"
+          - "-v=2"
       restartPolicy: Never
