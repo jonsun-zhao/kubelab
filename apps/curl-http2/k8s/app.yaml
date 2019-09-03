@@ -1,0 +1,33 @@
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  labels:
+    app: curl
+  name: curl
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: curl
+  template:
+    metadata:
+      labels:
+        app: curl
+    spec:
+      # [START app_container]
+      containers:
+      - image: gcr.io/nmiu-play/curl-http2
+        imagePullPolicy: Always
+        name: curl
+        resources:
+          limits:
+            cpu: 200m
+            memory: 128Mi
+          requests:
+            cpu: 200m
+            memory: 128Mi
+        command:
+          - /bin/sh
+          - -c
+          - while :; do sleep 10; done
+      # [END app_container]

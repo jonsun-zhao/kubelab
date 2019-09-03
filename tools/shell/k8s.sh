@@ -8,6 +8,8 @@ alias ki="k -n istio-system"
 alias kx="k exec"
 alias kw="k -o wide"
 alias ksw="ks -o wide"
+alias kj="k -o json"
+alias ksj="ks -o json"
 alias kiwl="k -n istio-workload"
 
 alias kpod_res='k -o custom-columns="NAME:.metadata.name,\
@@ -21,6 +23,9 @@ alias gno="g --no-user-output-enabled"
 alias gcontainer="g container"
 alias gdefault="gactivate default"
 alias gcustomer="gactivate customer"
+
+alias ccurl="k run curl --generator=run-pod/v1 -it --rm --image=gcr.io/nmiu-play/curl-http2 -- sh"
+alias chammer="k run hammer --generator=run-pod/v1 -it --rm --image=gcr.io/nmiu-play/hammer -- bash"
 
 if [[ "$(uname)" == "Linux" ]]; then
   alias base64_decode="base64 -d"
