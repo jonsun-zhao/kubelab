@@ -17,9 +17,13 @@ spec:
         command: 
         - /bin/sh
         - -c
-        - while :; do nvidia-smi --query-gpu=gpu_name,gpu_bus_id,vbios_version --format=csv; sleep 30; done
+        - while :; do nvidia-smi --query-gpu=gpu_name,gpu_bus_id,vbios_version --format=csv,noheader; sleep 30; done
         resources:
+          requests:
+            nvidia.com/gpu: "1"
           limits:
             nvidia.com/gpu: "1"
       nodeSelector:
         cloud.google.com/gke-accelerator: nvidia-tesla-k80 # or nvidia-tesla-p100 or nvidia-tesla-p4 or nvidia-tesla-v100 or nvidia-tesla-t4
+      tolerations:
+        - operator: Exists
