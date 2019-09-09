@@ -1,38 +1,25 @@
 apiVersion: extensions/v1beta1
-kind: Deployment
+kind: DaemonSet
 metadata:
-  name: my-gpu-dep
-  labels:
-    deployment: gpu-pod
+  name: gpu-probe
 spec:
-  replicas: 10
   selector:
     matchLabels:
-      app: gpu-pod
+      app: gpu-probe
   template:
     metadata:
       labels:
-        app: gpu-pod
+        app: gpu-probe
     spec:
-      affinity:
-        podAntiAffinity:
-          requiredDuringSchedulingIgnoredDuringExecution:
-          - labelSelector:
-              matchExpressions:
-              - key: app
-                operator: In
-                values:
-                - gpu-pod
-            topologyKey: "kubernetes.io/hostname"
       containers:
-      - name: my-gpu-container
+      - name: gpu-probe
         image: nvidia/cuda:10.0-runtime-ubuntu18.04
         command: 
         - /bin/sh
         - -c
-        - while :; do /usr/local/nvidia/bin/nvidia-smi; sleep 30; done
+        - while :; do nvidia-smi --query-gpu=gpu_name,gpu_bus_id,vbios_version --format=csv; sleep 30; done
         resources:
           limits:
-            nvidia.com/gpu: 1
+            nvidia.com/gpu: "1"
       nodeSelector:
-        cloud.google.com/gke-accelerator: nvidia-tesla-k80
+        cloud.google.com/gke-accelerator: nvidia-tesla-k80 # or nvidia-tesla-p100 or nvidia-tesla-p4 or nvidia-tesla-v100 or nvidia-tesla-t4
