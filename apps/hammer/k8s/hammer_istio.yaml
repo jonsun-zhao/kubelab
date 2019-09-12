@@ -1,0 +1,28 @@
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  labels:
+    app: hammer
+  name: hammer
+  namespace: istio-workload
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: hammer
+  template:
+    metadata:
+      labels:
+        app: hammer
+    spec:
+      containers:
+      - image: gcr.io/nmiu-play/hammer
+        imagePullPolicy: Always
+        name: hammer
+        resources:
+          limits:
+            cpu: "1"
+            memory: 128Mi
+          requests:
+            cpu: 200m
+            memory: 128Mi

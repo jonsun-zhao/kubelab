@@ -24,8 +24,8 @@ alias gcontainer="g container"
 alias gdefault="gactivate default"
 alias gcustomer="gactivate customer"
 
-alias ccurl="k run curl --generator=run-pod/v1 -it --rm --image=gcr.io/nmiu-play/curl-http2 -- sh"
-alias chammer="k run hammer --generator=run-pod/v1 -it --rm --image=gcr.io/nmiu-play/hammer -- bash"
+alias kcurl="kdebug -i gcr.io/nmiu-play/curl-http2"
+alias khammer="kdebug -i gcr.io/nmiu-play/hammer -s bash"
 
 if [[ "$(uname)" == "Linux" ]]; then
   alias base64_decode="base64 -d"
@@ -530,6 +530,35 @@ kcreate_kubedns_debug_pod() {
   ')
 }
 
+kdebug() {
+  [ -n "$ZSH_VERSION" ] && FUNCNAME=${funcstack[1]}
+
+  local usage="Usage: $FUNCNAME -i image [-n namespace] [-s shell]"
+
+  while getopts ":n:i:s:" arg; do
+    case $arg in
+    n) local ns=${OPTARG} ;;
+    i) local image=${OPTARG} ;;
+    s) local shel=${OPTARG} ;;
+    *)
+      echo $usage >&2
+      return 1
+      ;;
+    esac
+  done
+  shift $((OPTIND-1))
+
+  if [ -z "${image}" ]; then
+    echo "$usage"
+    return 1
+  fi
+
+  ns=${ns:-default}
+  shel=${shel:-sh}
+
+  kubectl run debug -it --generator=run-pod/v1 --rm -n $ns --image=${image} -- $shel
+}
+
 # jq node details
 jq_node() {
   jq -r '
@@ -638,6 +667,8 @@ jq_raw_name() {
     )
   '
 }
+
+
 
 # =========================
 #  Cluster Dump Helpers
