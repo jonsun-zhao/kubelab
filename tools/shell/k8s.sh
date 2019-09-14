@@ -576,50 +576,83 @@ jq_node() {
 
 # jq pod details
 jq_pod() {
-  jq -r '
+  local detail='
     (
       [
-        "name=[" + .metadata.name + "]",
-        "namespace=[" + .metadata.namespace + "]",
-        "uid=[" + .metadata.uid + "]",
-        "nodeName=[" + (.spec.nodeName|tostring) + "]",
-        "podIP=[" + (.status.podIP|tostring) + "]",
-        "status=[" + (.status.phase|tostring) + "]"
+        "name=[\(.metadata.name)]",
+        "namespace=[\(.metadata.namespace)]",
+        "uid=[\(.metadata.uid)]",
+        "nodeName=[\(.spec.nodeName)]",
+        "podIP=[\(.status.podIP)]",
+        "status=[\(.status.phase)]"
       ] | join(" ")
     ),
     (
       .status.containerStatuses[] | [
-        "#container: name=[" + .name + "]",
-        "image=[" + .image + "]",
+        "#container: name=[\(.name)]",
+        "image=[\(.image)]",
+        "ready=[\(.ready)]",
         .containerID
       ] | join(" ")
+    ),
+    (
+      select(.status.initContainerStatuses != null) |
+        .status.initContainerStatuses[] | [
+          "#initContainer: name=[\(.name)]",
+          "image=[\(.image)]",
+          "ready=[\(.ready)]",
+          .containerID
+        ] | join(" ")
     )
   '
+  jq -r "
+    (
+      select(.items?)
+      | .items[]
+      | `echo ${detail}`, ( \"\" )
+    ),
+    (
+      select(.items?|not)
+      | `echo ${detail}`
+    )
+  "
 }
 
 # jq service details
 jq_service() {
-  jq -r '
+  local detail='
     (
       [
-        "name=[" + .metadata.name + "]",
-        "namespace=[" + .metadata.namespace + "]",
-        "type=[" + .spec.type + "]",
-        "clusterIP=[" + (.spec.clusterIP|tostring) + "]",
-        "loadBalancerIP=[" + (.spec.loadBalancerIP|tostring) + "]",
-        "externalTrafficPolicy=[" + (.spec.externalTrafficPolicy|tostring) + "]"
+        "name=[\(.metadata.name)]",
+        "namespace=[\(.metadata.namespace)]",
+        "type=[\(.spec.type)]",
+        "clusterIP=[\(.spec.clusterIP)]",
+        "loadBalancerIP=[\(.spec.loadBalancerIP)]",
+        "externalTrafficPolicy=[\(.spec.externalTrafficPolicy)]"
       ] | join(" ")
     ),
     (
       .spec.ports[] | [
-        "#port: name=[" + (.name|tostring) + "]",
-        "protocol=[" + (.protocol|tostring) + "]",
-        "port=[" + (.port|tostring) + "]",
-        "nodePort=[" + (.nodePort|tostring) + "]",
-        "targetPort=[" + (.targetPort|tostring) + "]"
+        "#port: name=[\(.name)]",
+        "protocol=[\(.protocol)]",
+        "port=[\(.port)]",
+        "nodePort=[\(.nodePort)]",
+        "targetPort=[(.targetPort)]"
       ] | join(" ")
     )
   '
+
+  jq -r "
+    (
+      select(.items?)
+      | .items[]
+      | `echo ${detail}` , ( \"\" )
+    ),
+    (
+      select(.items?|not)
+      | `echo ${detail}`
+    )
+  "
 }
 
 # jq endpoint details
@@ -636,9 +669,9 @@ jq_raw() {
       select(.items?)
       | .items[]
       | [
-          "name=[" + .metadata.name + "]",
-          "namespace=[" + .metadata.namespace + "]",
-          "uid=[" + .metadata.uid + "]"
+          "name=[\(.metadata.name)]",
+          "namespace=[\(.metadata.namespace)]",
+          "uid=[\(.metadata.uid)]"
         ]
       | @tsv
     ),
@@ -705,17 +738,7 @@ kpods() {
     echo
   fi
 
-  pods=($(cat $PODS_JSON | jq -r '.items[] | [.metadata.name, .metadata.namespace] | join("|")'))
-
-  for p in ${pods[@]}; do
-    set -- $(echo $p | sed "s/|/ /g")
-    name=$1
-    namespace=$2
-    # echo "$name ($namespace)"
-
-    kpod $name $namespace
-    echo
-  done
+  cat $PODS_JSON | jq_pod
 }
 
 # get node by name
