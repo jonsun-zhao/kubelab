@@ -14,33 +14,14 @@ import (
 
 var dir = "/data"
 
-// GetObjs ...
-func GetObjs(w http.ResponseWriter, r *http.Request) {
-	params := mux.Vars(r)
-	kind := params["kind"]
-
-	files, err := ioutil.ReadDir(dir + "/" + kind + "/")
-	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		log.Print(err)
-		return
-	}
-
-	for _, file := range files {
-		n := strings.TrimSuffix(file.Name(), ".json")
-		fmt.Fprintf(w, "<a href=\"/kubedump/"+kind+"/"+n+"\">"+n+"</a><br/>")
-	}
-}
-
 // GetObj ...
 func GetObj(w http.ResponseWriter, r *http.Request) {
 
 	params := mux.Vars(r)
-	kind := params["kind"]
 	name := params["name"]
 
 	// /data/node/_gke-rei-default-pool-d3692fcf-3svd.json
-	raw, err := ioutil.ReadFile(filepath.Join(dir, kind, name+".json"))
+	raw, err := ioutil.ReadFile(filepath.Join(dir, name+".json"))
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		log.Print(err)

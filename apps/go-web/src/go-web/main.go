@@ -4,17 +4,23 @@ import (
 	"flag"
 	"fmt"
 	"go-web/dns"
+	g "go-web/grpc"
 	"go-web/kubedump"
 	"go-web/person"
 	"go-web/probes"
 	"go-web/stress"
 	"log"
+	"net"
 	"net/http"
 	"net/http/httputil"
 	"os"
 
 	"github.com/gorilla/handlers"
 	"github.com/gorilla/mux"
+	"google.golang.org/grpc"
+	"google.golang.org/grpc/credentials"
+	pb "google.golang.org/grpc/examples/helloworld/helloworld"
+	healthpb "google.golang.org/grpc/health/grpc_health_v1"
 	mgo "gopkg.in/mgo.v2"
 )
 
@@ -58,23 +64,48 @@ func loggingMiddleware(next http.Handler) http.Handler {
 }
 
 // Run both http and https
-func Run(router *mux.Router, addr string, sslAddr string, sslCert string, sslKey string) chan error {
+func Run(router *mux.Router, httpPort string, httpsPort string, grpcPort string, tlsCert string, tlsKey string) chan error {
 	errs := make(chan error)
 
 	// Starting HTTP server
 	go func() {
-		log.Printf("Staring HTTP service on %s ...", addr)
-
-		if err := http.ListenAndServe(addr, router); err != nil {
+		log.Printf("Staring HTTP service on %s ...", httpPort)
+		if err := http.ListenAndServe(":"+httpPort, router); err != nil {
 			errs <- err
 		}
-
 	}()
 
 	// Starting HTTPS server
 	go func() {
-		log.Printf("Staring HTTPS service on %s ...", sslAddr)
-		if err := http.ListenAndServeTLS(sslAddr, sslCert, sslKey, router); err != nil {
+		log.Printf("Staring HTTPS service on %s ...", httpsPort)
+		if err := http.ListenAndServeTLS(":"+httpsPort, tlsCert, tlsKey, router); err != nil {
+			errs <- err
+		}
+	}()
+
+	// Starting grpc server
+	go func() {
+		log.Printf("Staring gRPC service on %s ...", grpcPort)
+		lis, err := net.Listen("tcp", ":"+grpcPort)
+		if err != nil {
+			log.Fatalf("failed to listen: %v", err)
+		}
+
+		var grpcOptions []grpc.ServerOption
+		if tlsCert != "" && tlsKey != "" {
+			creds, err := credentials.NewServerTLSFromFile(tlsCert, tlsKey)
+			if err != nil {
+				log.Fatalf("Invalid TLS credentials: %v\n", err)
+			}
+			log.Printf("Using server certificate %v to construct TLS credentials", tlsCert)
+			log.Printf("Using server key %v to construct TLS credentials", tlsKey)
+			grpcOptions = append(grpcOptions, grpc.Creds(creds))
+		}
+
+		s := grpc.NewServer(grpcOptions...)
+		pb.RegisterGreeterServer(s, &g.GreeterServer{})
+		healthpb.RegisterHealthServer(s, &g.HealthServer{})
+		if err := s.Serve(lis); err != nil {
 			errs <- err
 		}
 	}()
@@ -86,18 +117,13 @@ func Run(router *mux.Router, addr string, sslAddr string, sslCert string, sslKey
 func main() {
 	// set backend if the flag is set
 	backend := flag.String("backend", "", "Specify a backend url to ping")
+	httpPort := flag.String("http-port", "8000", "Specify a http port (default: 8000)")
+	httpsPort := flag.String("https-port", "10443", "Specify a https port (default: 10443")
+	grpcPort := flag.String("grpc-port", "50051", "Specify a grpc port")
+	cert := flag.String("cert", "server.crt", "Specify a TLS cert file")
+	key := flag.String("key", "server.key", "Specify a TLS key file")
+	grpcBeAddr := flag.String("grpc-backend", "127.0.0.1:50051", "Specify a grpc backend address (default: 127.0.0.1:50051)")
 	flag.Parse()
-
-	// set port and sslPort they are specified via env
-	port := "8000"
-	if fromEnv := os.Getenv("PORT"); fromEnv != "" {
-		port = fromEnv
-	}
-
-	sslPort := "10443"
-	if fromEnv := os.Getenv("SSL_PORT"); fromEnv != "" {
-		sslPort = fromEnv
-	}
 
 	// set mongodb connection string if specified via env
 	mongoDbURL := os.Getenv("MONGODB_URL")
@@ -142,14 +168,16 @@ func main() {
 	router.HandleFunc("/ping-backend-with-db", func(w http.ResponseWriter, r *http.Request) {
 		probes.PingBackendWithDB(w, r, backend)
 	}).Methods("GET")
+	router.HandleFunc("/ping-grpc-backend", func(w http.ResponseWriter, r *http.Request) {
+		g.Probe(w, r, *grpcBeAddr, *cert)
+	}).Methods("GET")
 
 	// kubedump
 	router.HandleFunc("/kubedump/", kubedump.GetAll).Methods("GET")
-	router.HandleFunc("/kubedump/{kind}", kubedump.GetObjs).Methods("GET")
-	router.HandleFunc("/kubedump/{kind}/{name}", kubedump.GetObj).Methods("GET")
+	router.HandleFunc("/kubedump/{name}", kubedump.GetObj).Methods("GET")
 
 	// log.Fatal(http.ListenAndServe(":"+port, router))
-	errs := Run(router, ":"+port, ":"+sslPort, "server.crt", "server.key")
+	errs := Run(router, *httpPort, *httpsPort, *grpcPort, *cert, *key)
 
 	// This will run forever until channel receives error
 	select {
