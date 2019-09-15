@@ -9,12 +9,16 @@ spec:
   ports:
   - name: http
     protocol: TCP
-    port: 8000
-    targetPort: 8000
+    port: 80
+    targetPort: 80
   - name: https
     protocol: TCP
-    port: 10443
-    targetPort: 10443
+    port: 443
+    targetPort: 443
+  - name: grpc
+    protocol: TCP
+    port: 50000
+    targetPort: 50000
   type: NodePort
   externalTrafficPolicy: Local # or Cluster
 
@@ -40,6 +44,9 @@ spec:
       - name: go-web
         image: gcr.io/nmiu-play/go-web
         imagePullPolicy: Always
+        args:
+          - -cert=/tls/tls.crt
+          - -key=/tls/tls.key
         env:
         - name: MONGODB_URL
           value: mongodb
@@ -52,15 +59,18 @@ spec:
             memory: 300Mi
         ports:
         - name: http
-          containerPort: 8000
+          containerPort: 80
           protocol: TCP
         - name: https
-          containerPort: 10443
+          containerPort: 443
+          protocol: TCP
+        - name: grpc
+          containerPort: 50000
           protocol: TCP
         livenessProbe:
           httpGet:
             path: /liveness
-            port: 8000
+            port: 80
             scheme: HTTP
           initialDelaySeconds: 10
           timeoutSeconds: 5
@@ -69,7 +79,7 @@ spec:
         readinessProbe:
           httpGet:
             path: /readiness
-            port: 8000
+            port: 80
             scheme: HTTP
           initialDelaySeconds: 10
           timeoutSeconds: 5

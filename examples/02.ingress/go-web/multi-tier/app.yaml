@@ -13,8 +13,8 @@ spec:
   ports:
   - name: http
     protocol: TCP
-    port: 8000
-    targetPort: 8000
+    port: 80
+    targetPort: 80
   type: NodePort
 
 ---
@@ -36,17 +36,17 @@ spec:
         image: gcr.io/nmiu-play/go-web:latest
         imagePullPolicy: Always
         args: 
-        - -backend=backend:8000
-        - -grpc-backend=backend:50051
+        - -backend=backend:80
+        - -grpc-backend=backend:50000
         ports:
         - name: http
-          containerPort: 8000
+          containerPort: 80
           protocol: TCP
         - name: https
-          containerPort: 10443
+          containerPort: 443
           protocol: TCP
         - name: grpc
-          containerPort: 50051
+          containerPort: 50000
           protocol: TCP
         resources:
           limits:
@@ -64,7 +64,7 @@ spec:
             command:
             - /bin/sh
             - -c
-            - curl localhost:8000/liveness
+            - curl localhost:80/liveness
           initialDelaySeconds: 10
           timeoutSeconds: 5
           successThreshold: 1
@@ -78,7 +78,7 @@ spec:
             command:
             - /bin/sh
             - -c
-            - curl localhost:8000/readiness
+            - curl localhost:80/readiness
           initialDelaySeconds: 10
           timeoutSeconds: 5
           successThreshold: 1
@@ -121,12 +121,12 @@ spec:
   ports:
   - name: http
     protocol: TCP
-    port: 8000
-    targetPort: 8000
+    port: 80
+    targetPort: 80
   - name: grpc
     protocol: TCP
-    targetPort: 50051
-    port: 50051
+    targetPort: 50000
+    port: 50000
 
 ---
 apiVersion: extensions/v1beta1
@@ -151,20 +151,20 @@ spec:
           value: "v1"
         ports:
         - name: http
-          containerPort: 8000
+          containerPort: 80
           protocol: TCP
         - name: https
-          containerPort: 10443
+          containerPort: 443
           protocol: TCP
         - name: grpc
-          containerPort: 50051
+          containerPort: 50000
           protocol: TCP
         livenessProbe:
           exec:
             command:
             - /bin/sh
             - -c
-            - curl localhost:8000/liveness
+            - curl localhost:80/liveness
           initialDelaySeconds: 10
           timeoutSeconds: 5
           successThreshold: 1
@@ -174,7 +174,7 @@ spec:
             command:
             - /bin/sh
             - -c
-            - curl localhost:8000/readiness
+            - curl localhost:80/readiness
           initialDelaySeconds: 10
           timeoutSeconds: 5
           successThreshold: 1
@@ -206,20 +206,20 @@ spec:
           value: "v2"
         ports:
         - name: http
-          containerPort: 8000
+          containerPort: 80
           protocol: TCP
         - name: https
-          containerPort: 10443
+          containerPort: 443
           protocol: TCP
         - name: grpc
-          containerPort: 50051
+          containerPort: 50000
           protocol: TCP
         livenessProbe:
           exec:
             command:
             - /bin/sh
             - -c
-            - curl localhost:8000/liveness
+            - curl localhost:80/liveness
           initialDelaySeconds: 10
           timeoutSeconds: 5
           successThreshold: 1
@@ -229,7 +229,7 @@ spec:
             command:
             - /bin/sh
             - -c
-            - curl localhost:8000/readiness
+            - curl localhost:80/readiness
           initialDelaySeconds: 10
           timeoutSeconds: 5
           successThreshold: 1
@@ -291,4 +291,4 @@ metadata:
 spec:
   backend:
     serviceName: frontend
-    servicePort: 8000
+    servicePort: 80

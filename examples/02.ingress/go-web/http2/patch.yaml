@@ -18,7 +18,7 @@ spec:
       paths:
       - backend:
           serviceName: go-web
-          servicePort: 10443
+          servicePort: 443
         path: /*
 
 ---

@@ -25,7 +25,8 @@ alias gdefault="gactivate default"
 alias gcustomer="gactivate customer"
 
 alias kcurl="kdebug -i gcr.io/nmiu-play/curl-http2"
-alias khammer="kdebug -i gcr.io/nmiu-play/hammer -s bash"
+alias kfortio="kdebug -i gcr.io/nmiu-play/fortio"
+alias khammer="kdebug -i gcr.io/nmiu-play/hammer -c bash"
 
 if [[ "$(uname)" == "Linux" ]]; then
   alias base64_decode="base64 -d"
@@ -118,8 +119,8 @@ ka() {
 
 # doesn't work while inspecting customer's project...
 gproject_number() {
-  project_id=${1:-$(gcloud config get-value core/project)}
-  token=${2:-$(gcloud auth print-access-token)}
+  local project_id=${1:-$(gcloud config get-value core/project)}
+  local token=${2:-$(gcloud auth print-access-token)}
   curl -s -H "Authorization: Bearer $token" "https://cloudresourcemanager.googleapis.com/v1beta1/projects/${project_id}" | jq -r ".projectNumber"
 }
 
@@ -246,7 +247,7 @@ kinspect() {
     gno container clusters get-credentials $cluster
   fi
 
-  ctx=$(kubectl config current-context)
+  local ctx=$(kubectl config current-context)
   echo ">> Setting read-only token"
   # kubectl config unset users.$ctx.auth-provider
   kubectl config set users.$ctx.token "iam-$(gcloud auth print-access-token)^$token"
@@ -411,7 +412,7 @@ kpid_by_container_id() {
   fi
 
   # get pid from docker inspect
-  pid=$(gssh $1 -- "sudo docker inspect --format="{{.State.Pid}}" $2 2>/dev/null")
+  local pid=$(gssh $1 -- "sudo docker inspect --format="{{.State.Pid}}" $2 2>/dev/null")
 
   # try crictl if nothing is found in docker
   if [ $? -eq 0 ]; then
@@ -430,8 +431,8 @@ ktoken_by_serviceaccount() {
     return 1
   fi
 
-  sc=$1
-  namespace=${2:-default}
+  local sc=$1
+  local namespace=${2:-default}
   kubectl -n $namespace get secrets -o jsonpath="{.items[?(@.metadata.annotations['kubernetes\.io/service-account\.name']=='$sc')].data.token}" | base64_decode
 }
 
@@ -444,8 +445,8 @@ ktoken_by_secret() {
     return 1
   fi
 
-  secret=$1
-  namespace=${2:-default}
+  local secret=$1
+  local namespace=${2:-default}
 
   kubectl -n $namespace get secret $secret -o jsonpath="{.data.token}" | base64_decode
 }
@@ -519,7 +520,7 @@ kcreate_kubedns_debug_pod() {
     return 1
   fi
 
-  pod=$1
+  local pod=$1
 
   kubectl apply -f <(kubectl get pod -n kube-system ${pod} -o json | jq -e '
     (
@@ -533,15 +534,16 @@ kcreate_kubedns_debug_pod() {
 kdebug() {
   [ -n "$ZSH_VERSION" ] && FUNCNAME=${funcstack[1]}
 
-  local usage="Usage: $FUNCNAME -i image [-n namespace] [-s shell]"
+  local usage="Usage: $FUNCNAME -i image [-n namespace] [-a serviceaccount] [-c command]"
 
-  while getopts ":n:i:s:" arg; do
+  while getopts ":n:i:c:a:" arg; do
     case $arg in
     n) local ns=${OPTARG} ;;
     i) local image=${OPTARG} ;;
-    s) local shel=${OPTARG} ;;
+    c) local command=${OPTARG} ;;
+    a) local sa=${OPTARG} ;;
     *)
-      echo $usage >&2
+      echo $usage
       return 1
       ;;
     esac
@@ -553,10 +555,11 @@ kdebug() {
     return 1
   fi
 
-  ns=${ns:-default}
-  shel=${shel:-sh}
+  local ns=${ns:-default}
+  local sa=${sa:-default}
+  local command=${command:-sh}
 
-  kubectl run debug -it --generator=run-pod/v1 --rm -n $ns --image=${image} -- $shel
+  kubectl run debug-`date +%s` -it --generator=run-pod/v1 --rm -n $ns --image=${image} --serviceaccount=${sa} -- $command
 }
 
 # jq node details
@@ -721,8 +724,8 @@ kpod() {
     echo
   fi
 
-  pod=$1
-  namespace=${2:-default}
+  local pod=$1
+  local namespace=${2:-default}
 
   cat $PODS_JSON | jq -r '
     .items[] | select(.metadata.name == "'$pod'" and .metadata.namespace == "'$namespace'")
@@ -760,12 +763,12 @@ knode() {
     echo
   fi
 
-  node_name=$1
+  local node_name=$1
   set -- $(cat $NODES_JSON | jq -r '
     .items[] | select(.metadata.name == "'$node_name'")
   ' | jq_node)
-  pod_cidr=$2
-  node_ip=$3
+  local pod_cidr=$2
+  local node_ip=$3
 
   echo "NODE: [$node_name] (podCIDR: $pod_cidr) ($node_ip)"
   echo "--------------------------"
@@ -847,14 +850,14 @@ kservice() {
     echo
   fi
 
-  service=$1
-  namespace=${2:-default}
+  local service=$1
+  local namespace=${2:-default}
 
   cat $SERVICES_JSON | jq -r '
     .items[] | select(.metadata.name == "'$service'" and .metadata.namespace == "'$namespace'")
   ' | jq_service
 
-  endpoints=($(cat $ENDPOINTS_JSON | jq -r '
+  local endpoints=($(cat $ENDPOINTS_JSON | jq -r '
         .items[] | select(.metadata.name == "'$service'" and .metadata.namespace == "'$namespace'")
       ' | jq_endpoint
       )
@@ -874,18 +877,18 @@ kservice() {
       echo $e
     )
 
-    ep_ip=$1
-    pod=$2
-    node=$3
+    local ep_ip=$1
+    local pod=$2
+    local node=$3
 
-    ep_str="#endpoint: ip=[${ep_ip}] pod=[${pod}] node=[${node}]"
+    local ep_str="#endpoint: ip=[${ep_ip}] pod=[${pod}] node=[${node}]"
 
     if [ -z $pod ]; then
       echo $ep_str
       return
     fi
 
-    pod_ip=$(cat $PODS_JSON | jq -r '
+    local pod_ip=$(cat $PODS_JSON | jq -r '
       .items[]
         | select(.metadata.name == "'$pod'" and .metadata.namespace == "'$namespace'")
         | (.status.podIP|tostring)
@@ -915,7 +918,7 @@ kservices() {
     echo
   fi
 
-  services=($(cat $SERVICES_JSON | jq -r '.items[] | [.metadata.name, .metadata.namespace] | join("|")'))
+  local services=($(cat $SERVICES_JSON | jq -r '.items[] | [.metadata.name, .metadata.namespace] | join("|")'))
 
   for s in ${services[@]}; do
     set -- $(
@@ -940,9 +943,10 @@ kcontainer_nic() {
     return 1
   fi
 
-  pod=$1
-  namespace=${2:-default}
-  container=$3
+  local pod=$1
+  local namespace=${2:-default}
+  local container=$3
+  local iflink=""
 
   if [ -n "${container}" ]; then
     iflink=$(k -n ${namespace} exec ${pod} -c ${container} -it -- /bin/sh -c 'cat /sys/class/net/eth0/iflink' | tr -d '[:space:]')
@@ -951,8 +955,8 @@ kcontainer_nic() {
   fi
 
   # echo $iflink
-  node=$(k -n ${namespace} get pod ${pod} -o json | jq -r '.spec.nodeName|tostring' | tr -d '[:space:]')
-  nic=$(gssh $node -- "grep ${iflink} /sys/class/net/*/ifindex | cut -d/ -f5")
+  local node=$(k -n ${namespace} get pod ${pod} -o json | jq -r '.spec.nodeName|tostring' | tr -d '[:space:]')
+  local nic=$(gssh $node -- "grep ${iflink} /sys/class/net/*/ifindex | cut -d/ -f5")
   echo "node: $node"
   echo "nic: $nic"
 }
@@ -965,7 +969,7 @@ knode_usage() {
     return 1
   fi
 
-  node=$1
+  local node=$1
   echo "Node: [${node}]"
   echo "--------------------------"
   k describe node $node | grep Allocated -A 5 | grep -ve Event -ve Allocated -ve percent -ve -- | sed -e 's/^[[:space:]]*//'
@@ -980,8 +984,8 @@ knodes_iptables-save() {
     return 1
   fi
 
-  node=$1
-  epoch=$(date +%s)
+  local node=$1
+  local epoch=$(date +%s)
 
   if [ -n "$node" ]; then
     echo "> dumping iptables rules from ${node}"
@@ -1000,25 +1004,78 @@ knodes_iptables-save() {
 # =====================
 
 istio_dump_proxy_config() {
-  if [ -n "$ZSH_VERSION" ]; then
-    FUNCNAME=${funcstack[1]}
-  fi
+  [ -n "$ZSH_VERSION" ] && FUNCNAME=${funcstack[1]}
 
   if [ "$#" -lt 1 ]; then
     echo "Usage: $FUNCNAME POD_NAME [NAMESPACE:-default]"
     return 1
   fi
 
-  pod=$1
-  namespace=${2:-default}
+  local pod=$1
+  local namespace=${2:-default}
 
-  output_dir="${pod}_${namespace}_$(date +%s)"
+  local output_dir="${pod}_${namespace}_$(date +%s)"
   [ -d $output_dir ] || mkdir -p $output_dir
 
-  configs=(cluster listener route endpoint bootstrap)
+  local configs=(cluster listener route endpoint bootstrap)
 
   for i in "${configs[@]}"; do
     echo "> dumping $i to ${output_dir}/${i}.json"
     istioctl proxy-config $i -n ${namespace} ${pod} -o json >${output_dir}/${i}.json
   done
+}
+
+# =====================
+#  helm Helpers
+# =====================
+
+keel_run() {
+  [ -n "$ZSH_VERSION" ] && FUNCNAME=${funcstack[1]}
+
+  local usage="Usage: $FUNCNAME -r release [-n namespace][-a|-d|-v] [-f /path/to/values-xxx.yaml]"
+
+  while getopts ":r:advf:" arg; do
+    case $arg in
+      r) local release=${OPTARG} ;;
+      n) local namespace=${OPTARG} ;;
+      a) local action="apply" ;;
+      d) local action="delete" ;;
+      v) local action="check" ;;
+      f) local mod_file=${OPTARG} ;;
+      *)
+        echo $usage
+        return 1
+        ;;
+    esac
+  done
+  shift $((OPTIND-1))
+
+  local namespace=${namespace:-default}
+
+  if [ ! -f "./Chart.yaml" ]; then
+    echo "`pwd` is not a helm chart directory"
+    return 1
+  fi
+
+  if [ -z "${release}" ]; then
+    echo $usage
+    return 1
+  fi
+
+  local cmd="helm template . --name ${release} --namespace ${namespace}"
+
+  if [ -n "${mod_file}" ]; then
+    cmd="${cmd} -f ${mod_file}"
+  fi
+
+  cmd="${cmd} | sed 's/RELEASE/${release}/g'"
+
+  local yaml="$(eval $cmd)"
+
+  case $action in
+  "check") echo "${yaml}" | kubectl apply --dry-run -f - ;;
+  "apply") echo "${yaml}" | kubectl apply -f - ;;
+  "delete") echo "${yaml}" | kubectl delete -f - ;;
+  *) echo "${yaml}" ;;
+  esac
 }

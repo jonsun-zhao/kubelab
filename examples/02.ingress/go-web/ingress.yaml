@@ -8,4 +8,4 @@ metadata:
 spec:
   backend:
     serviceName: go-web
-    servicePort: 8000
+    servicePort: 80

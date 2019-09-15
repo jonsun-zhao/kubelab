@@ -12,26 +12,26 @@ import (
 // Liveness probe
 func Liveness(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusOK)
-	fmt.Fprintf(w, "Liveness probe hit")
+	fmt.Fprintf(w, "Liveness probe hit\n")
 }
 
 // Readiness probe
 func Readiness(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusOK)
-	fmt.Fprintf(w, "Readiness probe hit")
+	fmt.Fprintf(w, "Readiness probe hit\n")
 }
 
 // Health probe
 func Health(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusOK)
-	fmt.Fprintf(w, "ok")
+	fmt.Fprintf(w, "ok\n")
 }
 
 // PingBackend - probe backend service
 func PingBackend(w http.ResponseWriter, r *http.Request, beURL string) {
 	if beURL == "" {
 		w.WriteHeader(http.StatusOK)
-		fmt.Fprintf(w, "Backend not specified")
+		fmt.Fprintf(w, "Backend not specified\n")
 		return
 	}
 
@@ -67,6 +67,12 @@ func PingBackend(w http.ResponseWriter, r *http.Request, beURL string) {
 
 // PingGRPCBackend - probe grpc backend service
 func PingGRPCBackend(w http.ResponseWriter, grpcBeAddr string, cert string) {
+	if grpcBeAddr == "" {
+		w.WriteHeader(http.StatusOK)
+		fmt.Fprintf(w, "gRPC Backend not specified\n")
+		return
+	}
+
 	results := *g.PingBackend(grpcBeAddr, cert)
 
 	for _, l := range results {

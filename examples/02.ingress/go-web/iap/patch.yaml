@@ -11,12 +11,12 @@ spec:
   ports:
   - name: http
     protocol: TCP
-    port: 8000
-    targetPort: 8000
+    port: 80
+    targetPort: 80
   - name: https
     protocol: TCP
-    port: 10443
-    targetPort: 10443
+    port: 443
+    targetPort: 443
 
 ---
 apiVersion: extensions/v1beta1
@@ -38,6 +38,6 @@ spec:
       paths:
       - backend:
           serviceName: go-web
-          servicePort: 8000
+          servicePort: 80
         path: /*
 

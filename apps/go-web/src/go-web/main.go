@@ -75,13 +75,15 @@ func runServer(router *mux.Router, httpPort string, httpsPort string, grpcPort s
 		}
 	}()
 
-	// Starting HTTPS server
-	go func() {
-		log.Printf("Staring HTTPS service on %s ...", httpsPort)
-		if err := http.ListenAndServeTLS(":"+httpsPort, tlsCert, tlsKey, router); err != nil {
-			errs <- err
-		}
-	}()
+	if tlsCert != "" && tlsKey != "" {
+		// Starting HTTPS server
+		go func() {
+			log.Printf("Staring HTTPS service on %s ...", httpsPort)
+			if err := http.ListenAndServeTLS(":"+httpsPort, tlsCert, tlsKey, router); err != nil {
+				errs <- err
+			}
+		}()
+	}
 
 	// Starting grpc server
 	go func() {
@@ -116,13 +118,13 @@ func runServer(router *mux.Router, httpPort string, httpsPort string, grpcPort s
 // main function to boot up everything
 func main() {
 	// set backend if the flag is set
-	backend := flag.String("backend", "", "Specify a backend url to ping")
-	httpPort := flag.String("http-port", "8000", "Specify a http port (default: 8000)")
-	httpsPort := flag.String("https-port", "10443", "Specify a https port (default: 10443")
-	grpcPort := flag.String("grpc-port", "50051", "Specify a grpc port")
-	cert := flag.String("cert", "server.crt", "Specify a TLS cert file")
-	key := flag.String("key", "server.key", "Specify a TLS key file")
-	grpcBeAddr := flag.String("grpc-backend", "localhost:50051", "Specify a grpc backend address (default: 127.0.0.1:50051)")
+	backend := flag.String("backend", "", "Specify a backend url to ping [localhost:80] (default: none)")
+	httpPort := flag.String("http-port", "80", "Specify a http port (default: 80)")
+	httpsPort := flag.String("https-port", "443", "Specify a https port (default: 443")
+	grpcPort := flag.String("grpc-port", "50000", "Specify a grpc port (default: 50000)")
+	cert := flag.String("cert", "", "Specify a TLS cert file (default: none)")
+	key := flag.String("key", "", "Specify a TLS key file (default: none)")
+	grpcBeAddr := flag.String("grpc-backend", "", "Specify a grpc backend address [localhost:50000] (default: none)")
 	clientOnly := flag.Bool("client-only", false, "Run as client (default: false")
 	flag.Parse()
 
