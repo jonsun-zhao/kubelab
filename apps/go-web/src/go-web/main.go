@@ -63,8 +63,8 @@ func loggingMiddleware(next http.Handler) http.Handler {
 	return handlers.CombinedLoggingHandler(os.Stdout, next)
 }
 
-// Run both http and https
-func Run(router *mux.Router, httpPort string, httpsPort string, grpcPort string, tlsCert string, tlsKey string) chan error {
+// start server
+func runServer(router *mux.Router, httpPort string, httpsPort string, grpcPort string, tlsCert string, tlsKey string) chan error {
 	errs := make(chan error)
 
 	// Starting HTTP server
@@ -122,8 +122,15 @@ func main() {
 	grpcPort := flag.String("grpc-port", "50051", "Specify a grpc port")
 	cert := flag.String("cert", "server.crt", "Specify a TLS cert file")
 	key := flag.String("key", "server.key", "Specify a TLS key file")
-	grpcBeAddr := flag.String("grpc-backend", "127.0.0.1:50051", "Specify a grpc backend address (default: 127.0.0.1:50051)")
+	grpcBeAddr := flag.String("grpc-backend", "localhost:50051", "Specify a grpc backend address (default: 127.0.0.1:50051)")
+	clientOnly := flag.Bool("client-only", false, "Run as client (default: false")
 	flag.Parse()
+
+	// run client
+	if *clientOnly {
+		g.PingBackend(*grpcBeAddr, *cert)
+		os.Exit(0)
+	}
 
 	// set mongodb connection string if specified via env
 	mongoDbURL := os.Getenv("MONGODB_URL")
@@ -163,13 +170,13 @@ func main() {
 	router.HandleFunc("/liveness", probes.Liveness).Methods("GET")
 	router.HandleFunc("/readiness", probes.Readiness).Methods("GET")
 	router.HandleFunc("/ping-backend", func(w http.ResponseWriter, r *http.Request) {
-		probes.PingBackend(w, r, backend)
+		probes.PingBackend(w, r, *backend)
 	}).Methods("GET")
 	router.HandleFunc("/ping-backend-with-db", func(w http.ResponseWriter, r *http.Request) {
-		probes.PingBackendWithDB(w, r, backend)
+		probes.PingBackend(w, r, *backend+"/people")
 	}).Methods("GET")
 	router.HandleFunc("/ping-grpc-backend", func(w http.ResponseWriter, r *http.Request) {
-		g.Probe(w, r, *grpcBeAddr, *cert)
+		probes.PingGRPCBackend(w, *grpcBeAddr, *cert)
 	}).Methods("GET")
 
 	// kubedump
@@ -177,7 +184,7 @@ func main() {
 	router.HandleFunc("/kubedump/{name}", kubedump.GetObj).Methods("GET")
 
 	// log.Fatal(http.ListenAndServe(":"+port, router))
-	errs := Run(router, *httpPort, *httpsPort, *grpcPort, *cert, *key)
+	errs := runServer(router, *httpPort, *httpsPort, *grpcPort, *cert, *key)
 
 	// This will run forever until channel receives error
 	select {

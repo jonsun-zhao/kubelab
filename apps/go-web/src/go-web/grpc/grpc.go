@@ -30,7 +30,6 @@ import (
 	"context"
 	"fmt"
 	"log"
-	"net/http"
 	"os"
 	"strings"
 	"time"
@@ -76,8 +75,8 @@ func (s *HealthServer) Watch(in *healthpb.HealthCheckRequest, srv healthpb.Healt
 	return status.Error(codes.Unimplemented, "Watch is not implemented")
 }
 
-// Probe the specificed grpc server
-func Probe(w http.ResponseWriter, r *http.Request, grpcBeAddr string, cert string) {
+// PingBackend probes the specificed grpc server
+func PingBackend(grpcBeAddr string, cert string) *[]string {
 	// Set up a connection to the server.
 	var conn *grpc.ClientConn
 	var err error
@@ -111,11 +110,14 @@ func Probe(w http.ResponseWriter, r *http.Request, grpcBeAddr string, cert strin
 	timeout := 5 * time.Second
 	repeat := 9
 
+	var results []string
+
 	// Contact the server and print out its response multiple times.
 	ctx, cancel := context.WithTimeout(context.Background(), timeout)
 	defer cancel()
 
-	fmt.Fprintf(w, "== Result ==\n")
+	results = append(results, "== Result ==")
+
 	for i := 0; i < repeat; i++ {
 		var header metadata.MD
 		r, err := c.SayHello(ctx, &pb.HelloRequest{Name: name}, grpc.Header(&header))
@@ -128,7 +130,9 @@ func Probe(w http.ResponseWriter, r *http.Request, grpcBeAddr string, cert strin
 			hostname = header["hostname"][0]
 		}
 		log.Printf("%s from %s", r.Message, hostname)
-		fmt.Fprintf(w, "%s from %s\n", r.Message, hostname)
+		results = append(results, fmt.Sprintf("%s from %s", r.Message, hostname))
 		// [END istio_samples_app_grpc_greeter_client_hostname]
 	}
+
+	return &results
 }

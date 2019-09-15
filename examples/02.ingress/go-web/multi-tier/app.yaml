@@ -35,13 +35,18 @@ spec:
       - name: frontend
         image: gcr.io/nmiu-play/go-web:latest
         imagePullPolicy: Always
-        args: ["-backend", "backend:8000"]
+        args: 
+        - -backend=backend:8000
+        - -grpc-backend=backend:50051
         ports:
         - name: http
           containerPort: 8000
           protocol: TCP
         - name: https
           containerPort: 10443
+          protocol: TCP
+        - name: grpc
+          containerPort: 50051
           protocol: TCP
         resources:
           limits:
@@ -118,6 +123,10 @@ spec:
     protocol: TCP
     port: 8000
     targetPort: 8000
+  - name: grpc
+    protocol: TCP
+    targetPort: 50051
+    port: 50051
 
 ---
 apiVersion: extensions/v1beta1
@@ -146,6 +155,9 @@ spec:
           protocol: TCP
         - name: https
           containerPort: 10443
+          protocol: TCP
+        - name: grpc
+          containerPort: 50051
           protocol: TCP
         livenessProbe:
           exec:
@@ -198,6 +210,9 @@ spec:
           protocol: TCP
         - name: https
           containerPort: 10443
+          protocol: TCP
+        - name: grpc
+          containerPort: 50051
           protocol: TCP
         livenessProbe:
           exec:
