@@ -31,7 +31,6 @@ import (
 	"fmt"
 	"log"
 	"os"
-	"strings"
 	"time"
 
 	"google.golang.org/grpc"
@@ -95,18 +94,8 @@ func PingBackend(grpcBeAddr string, cert string) *[]string {
 	defer conn.Close()
 	c := pb.NewGreeterClient(conn)
 
-	// Determine name to send to server.
+	// send hostname to server.
 	name, _ := os.Hostname()
-	nonFlagArgs := make([]string, 0)
-	for _, arg := range os.Args {
-		if !strings.HasPrefix(arg, "--") {
-			nonFlagArgs = append(nonFlagArgs, arg)
-		}
-	}
-	if len(nonFlagArgs) > 1 {
-		name = nonFlagArgs[1]
-	}
-
 	timeout := 5 * time.Second
 	repeat := 9
 
