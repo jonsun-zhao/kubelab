@@ -2,11 +2,13 @@ package probes
 
 import (
 	"fmt"
+	g "go-web/grpc"
 	"io/ioutil"
 	"log"
 	"net/http"
 
-	g "go-web/grpc"
+	"contrib.go.opencensus.io/exporter/stackdriver/propagation"
+	"go.opencensus.io/plugin/ochttp"
 )
 
 // Liveness probe
@@ -38,8 +40,17 @@ func PingBackend(w http.ResponseWriter, r *http.Request, beURL string) {
 	url := "http://" + beURL
 	fmt.Fprintf(w, "Reaching backend: %s\n\n", url)
 
-	c := &http.Client{}
+	c := &http.Client{
+		Transport: &ochttp.Transport{
+			// Use Google Cloud propagation format.
+			Propagation: &propagation.HTTPFormat{},
+		},
+	}
 	req, err := http.NewRequest("GET", url, nil)
+
+	// propagate trace id to outgoing event
+	req = req.WithContext(r.Context())
+
 	// fetch header foo from the frontend request
 	foo := r.Header.Get("foo")
 	if foo != "" {
@@ -48,8 +59,8 @@ func PingBackend(w http.ResponseWriter, r *http.Request, beURL string) {
 	}
 
 	// temp test
-	req.Header.Add("X-APP-API_SIGNATURE", "SsxfLRHirn+GwGbuJieoqPFfRgnSF0ebJ2sXqZCyQ2w=;")
-	req.Header.Add("X-APP-API_TIMESTAMP", "1563425167;")
+	// req.Header.Add("X-APP-API_SIGNATURE", "SsxfLRHirn+GwGbuJieoqPFfRgnSF0ebJ2sXqZCyQ2w=;")
+	// req.Header.Add("X-APP-API_TIMESTAMP", "1563425167;")
 
 	resp, err := c.Do(req)
 	if err != nil {
@@ -66,14 +77,14 @@ func PingBackend(w http.ResponseWriter, r *http.Request, beURL string) {
 }
 
 // PingGRPCBackend - probe grpc backend service
-func PingGRPCBackend(w http.ResponseWriter, grpcBeAddr string, cert string) {
+func PingGRPCBackend(w http.ResponseWriter, r *http.Request, grpcBeAddr string, cert string) {
 	if grpcBeAddr == "" {
 		w.WriteHeader(http.StatusOK)
 		fmt.Fprintf(w, "gRPC Backend not specified\n")
 		return
 	}
 
-	results := *g.PingBackend(grpcBeAddr, cert)
+	results := *g.PingBackend(r.Context(), grpcBeAddr, cert)
 
 	for _, l := range results {
 		fmt.Fprintf(w, l+"\n")
