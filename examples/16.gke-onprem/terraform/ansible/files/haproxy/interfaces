@@ -1,0 +1,80 @@
+
+auto lo:1
+iface lo:1 inet static
+        address 10.0.11.1/32
+
+auto lo:2
+iface lo:2 inet static
+        address 10.0.11.2/32
+
+auto lo:3
+iface lo:3 inet static
+        address 10.0.11.3/32
+
+auto lo:4
+iface lo:4 inet static
+        address 10.0.11.4/32
+
+auto lo:5
+iface lo:5 inet static
+        address 10.0.11.5/32
+
+auto lo:6
+iface lo:6 inet static
+        address 10.0.11.6/32
+
+auto lo:7
+iface lo:7 inet static
+        address 10.0.11.7/32
+
+auto lo:8
+iface lo:8 inet static
+        address 10.0.11.8/32
+
+auto lo:9
+iface lo:9 inet static
+        address 10.0.11.9/32
+
+auto lo:10
+iface lo:10 inet static
+        address 10.0.11.10/32
+
+auto lo:11
+iface lo:11 inet static
+        address 10.0.11.11/32
+
+auto lo:12
+iface lo:12 inet static
+        address 10.0.11.12/32
+
+auto lo:13
+iface lo:13 inet static
+        address 10.0.11.13/32
+
+auto lo:14
+iface lo:14 inet static
+        address 10.0.11.14/32
+
+auto lo:15
+iface lo:15 inet static
+        address 10.0.11.15/32
+
+auto lo:16
+iface lo:16 inet static
+        address 10.0.11.16/32
+
+auto lo:17
+iface lo:17 inet static
+        address 10.0.11.17/32
+
+auto lo:18
+iface lo:18 inet static
+        address 10.0.11.18/32
+
+auto lo:19
+iface lo:19 inet static
+        address 10.0.11.19/32
+
+auto lo:20
+iface lo:20 inet static
+        address 10.0.11.20/32

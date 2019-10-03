@@ -56,6 +56,13 @@ cd ansible/files
 ansible-playbook -i inventory.yml f5.yml
 ```
 
+### Install and configure HAProxy
+
+```sh
+cd ansible/files
+ansible-playbook -i inventory.yml haproxy.yml
+```
+
 ### Install GKE On-Prem
 
 Follow the `Install GKE On-Prem` section in the lab guide

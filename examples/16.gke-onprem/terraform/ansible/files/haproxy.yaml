@@ -1,0 +1,106 @@
+---
+- name: configure haproxy
+  hosts: nsvm
+  tags:
+    - config_haproxy
+  gather_facts: no
+  tasks:
+    - name: disable dhcp
+      become: yes
+      systemd:
+        name: isc-dhcp-server
+        state: stopped
+        enabled: false
+
+    - name: add 20 lo interfaces
+      become: yes
+      blockinfile:
+        path: /etc/network/interfaces
+        block: "{{ lookup('file', 'haproxy/interfaces') }}"
+        backup: yes
+      register: interfaces
+
+    # [START] upgrade the packages and reboot
+    - name: restart networking to pick up the new lo interfaces
+      become: yes
+      systemd:
+        name: networking
+        state: restarted
+      when: interfaces is changed
+    # [END]
+
+    - name: install haproxy
+      become: yes
+      apt:
+        name: haproxy
+        state: latest
+
+    - name: enable haproxy
+      become: yes
+      systemd:
+        name: haproxy
+        state: started
+        enabled: true
+
+    - name: copy haproxy.cfg to nsvm
+      become: yes
+      copy:
+        src: haproxy/haproxy.cfg
+        dest: /etc/haproxy/haproxy.cfg
+        owner: root
+        group: root
+        mode: '0644'
+        backup: yes
+      register: haproxy_cfg
+
+    - name: restart haproxy
+      become: yes
+      systemd:
+        name: haproxy
+        state: reloaded
+      when: haproxy_cfg is changed
+
+    # [START] copy admin-static.yaml to admin workstation
+    - name: copy admin-static.yaml to nsvm
+      copy:
+        src: haproxy/admin-static.yaml
+        dest: /home/gkeadmin/admin-static.yaml
+        mode: '0644'
+      register: admin_static_yaml
+    
+    - name: scp admin-static.yaml to admin workstation
+      become: yes
+      shell: |
+        scp -i /home/gkeadmin/buildscripts/vsphere_workstation admin-static.yaml ubuntu@172.16.10.5:~/admin-static.yaml
+      when: admin_static_yaml is changed
+    # [END]
+
+    # [START] copy uc1-static.yaml to admin workstation
+    - name: copy uc1-static.yaml to nsvm
+      copy:
+        src: haproxy/uc1-static.yaml
+        dest: /home/gkeadmin/uc1-static.yaml
+        mode: '0644'
+      register: uc1_static_yaml
+    
+    - name: scp uc1-static.yaml to admin workstation
+      become: yes
+      shell: |
+        scp -i /home/gkeadmin/buildscripts/vsphere_workstation uc1-static.yaml ubuntu@172.16.10.5:~/uc1-static.yaml
+      when: uc1_static_yaml is changed
+    # [END]
+
+    # [START] copy manual-lb-cluster-config.yaml to admin workstation
+    - name: copy manual-lb-cluster-config.yaml to nsvm
+      copy:
+        src: haproxy/manual-lb-cluster-config.yaml
+        dest: /home/gkeadmin/manual-lb-cluster-config.yaml
+        mode: '0644'
+      register: manual_lb_cluster_config_yaml
+    
+    - name: scp manual-lb-cluster-config.yaml to admin workstation
+      become: yes
+      shell: |
+        scp -i /home/gkeadmin/buildscripts/vsphere_workstation manual-lb-cluster-config.yaml ubuntu@172.16.10.5:~/manual-lb-cluster-config.yaml
+      when: manual_lb_cluster_config_yaml is changed
+    # [END]

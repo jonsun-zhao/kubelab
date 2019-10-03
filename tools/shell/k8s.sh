@@ -563,7 +563,9 @@ kdebug() {
   local sa=${sa:-default}
   local command=${command:-sh}
 
-  kubectl run debug-`date +%s` -it --generator=run-pod/v1 --rm -n $ns --image=${image} --serviceaccount=${sa} -- $command
+  cmd="kubectl run debug-`date +%s` -it --generator=run-pod/v1 --rm -n $ns --image=${image} --serviceaccount=${sa} -- $command"
+  echo "(${cmd})"
+  eval $cmd
 }
 
 # jq node details
@@ -644,7 +646,7 @@ jq_service() {
         "protocol=[\(.protocol)]",
         "port=[\(.port)]",
         "nodePort=[\(.nodePort)]",
-        "targetPort=[(.targetPort)]"
+        "targetPort=[\(.targetPort)]"
       ] | join(" ")
     )
   '
