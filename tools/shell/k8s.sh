@@ -362,6 +362,7 @@ glogs() {
   local filter=''
   local output='/tmp/output.json'
 
+  local OPTIND
   while getopts ':s:e:f:o:' opt; do
     case $opt in
     s) start_time=${OPTARG} ;;
@@ -540,6 +541,7 @@ kdebug() {
 
   local usage="Usage: $FUNCNAME -i image [-n namespace] [-a serviceaccount] [-c command]"
 
+  local OPTIND
   while getopts ":n:i:c:a:" arg; do
     case $arg in
     n) local ns=${OPTARG} ;;
@@ -1062,6 +1064,7 @@ keel_run() {
 
   local usage="Usage: $FUNCNAME -r release [-n namespace][-a|-d|-v] [-f /path/to/values-xxx.yaml]"
 
+  local OPTIND
   while getopts ":r:n:advf:" arg; do
     case $arg in
       r) local release=${OPTARG} ;;
