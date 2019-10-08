@@ -46,4 +46,4 @@ buildscripts = "https://storage.googleapis.com/gke-on-prem-lab-ovas/other/intern
 
 vcenter_iso = "https://storage.googleapis.com/gke-on-prem-lab-ovas/other/VMware-VCSA-all-6.7.0-10244745.iso"
 
-gke_op_version = "1.0.10"
+gke_op_version = "1.1.0-gke.6"

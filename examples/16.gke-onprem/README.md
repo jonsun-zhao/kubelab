@@ -45,15 +45,22 @@ terraform apply -auto-approve -input=false
 ### Configure `nsvm` and deploy the rest of the infrastructure VMs
 
 ```sh
-cd ansible/file
+cd ansible/files
 ansible-playbook -i inventory.yml nsvm.yml
 ```
 
 ### Activate the F5 appliance
 
 ```sh
-cd ansible/file
+cd ansible/files
 ansible-playbook -i inventory.yml f5.yml
+```
+
+### Install and configure HAProxy
+
+```sh
+cd ansible/files
+ansible-playbook -i inventory.yml haproxy.yml
 ```
 
 ### Install GKE On-Prem

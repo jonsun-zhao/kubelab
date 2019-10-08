@@ -1,4 +1,3 @@
-#### CREATE CLUSTER ADD FOR GOVC COMMAND
 data "template_file" "inventory_template" {
   template = "${file("${path.module}/files/inventory.yml.tpl")}"
 
@@ -22,8 +21,6 @@ data "template_file" "inventory_template" {
     esxi_ds_name                       = "${var.esxi_ds_name}"
     govc_guest_login                   = "${var.nsvm_admin_username}:${var.nsvm_admin_password}"
     ova_f5                             = "${var.ova_f5}"
-    f5_pass                            = "${var.f5_pass}"
-    f5_key                             = "${var.f5_key}"
     gkeonprem_service_account_key_file = "${var.gkeonprem_service_account_key_file}"
     gkeonprem_service_account_email    = "${var.gkeonprem_service_account_email}"
     gcp_project                        = "${var.gcp_project}"
@@ -38,4 +35,22 @@ data "template_file" "inventory_template" {
 resource "local_file" "inventory_file" {
   content  = "${data.template_file.inventory_template.rendered}"
   filename = "${path.module}/files/inventory.yml"
+}
+
+data "template_file" "manual_lb_cluster_config_template" {
+  template = "${file("${path.module}/files/haproxy/manual-lb-cluster-config.yaml.tpl")}"
+
+  vars = {
+    vcenter_username                   = "${var.vcenter_admin_username}"
+    vcenter_password                   = "${var.vcenter_admin_password}"
+    f5_user                            = "${var.f5_user}"
+    f5_pass                            = "${var.f5_pass}"
+    gcp_project                        = "${var.gcp_project}"
+    gke_op_version                     = "${var.gke_op_version}"
+  }
+}
+
+resource "local_file" "manual_lb_cluster_config_file" {
+  content  = "${data.template_file.manual_lb_cluster_config_template.rendered}"
+  filename = "${path.module}/files/haproxy/manual-lb-cluster-config.yaml"
 }

@@ -118,10 +118,14 @@ ka() {
 # =====================
 
 # doesn't work while inspecting customer's project...
-gproject_number() {
+gproject() {
   local project_id=${1:-$(gcloud config get-value core/project)}
   local token=${2:-$(gcloud auth print-access-token)}
-  curl -s -H "Authorization: Bearer $token" "https://cloudresourcemanager.googleapis.com/v1beta1/projects/${project_id}" | jq -r ".projectNumber"
+  curl -s -H "Authorization: Bearer $token" "https://cloudresourcemanager.googleapis.com/v1beta1/projects/${project_id}"
+}
+
+gproject_number() {
+  gproject | jq -r ".projectNumber"
 }
 
 # switch between cloud configs
@@ -559,7 +563,9 @@ kdebug() {
   local sa=${sa:-default}
   local command=${command:-sh}
 
-  kubectl run debug-`date +%s` -it --generator=run-pod/v1 --rm -n $ns --image=${image} --serviceaccount=${sa} -- $command
+  cmd="kubectl run debug-`date +%s` -it --generator=run-pod/v1 --rm -n $ns --image=${image} --serviceaccount=${sa} -- $command"
+  echo "(${cmd})"
+  eval $cmd
 }
 
 # jq node details
@@ -640,7 +646,7 @@ jq_service() {
         "protocol=[\(.protocol)]",
         "port=[\(.port)]",
         "nodePort=[\(.nodePort)]",
-        "targetPort=[(.targetPort)]"
+        "targetPort=[\(.targetPort)]"
       ] | join(" ")
     )
   '
@@ -701,6 +707,28 @@ jq_raw_name() {
     (
       select(.items?|not)
     )
+  '
+}
+
+jq_flat() {
+  jq -j '
+    [
+      [
+        paths(scalars)
+        | map(
+          if type == "number"
+          then "[" + tostring + "]"
+          else "." + .
+          end
+        ) | join("")
+      ],
+      [
+        .. | select(scalars) | @json
+      ]
+    ]
+    | transpose
+    | map(join(" = ") + "\n")
+    | join("") 
   '
 }
 
@@ -1034,7 +1062,7 @@ keel_run() {
 
   local usage="Usage: $FUNCNAME -r release [-n namespace][-a|-d|-v] [-f /path/to/values-xxx.yaml]"
 
-  while getopts ":r:advf:" arg; do
+  while getopts ":r:n:advf:" arg; do
     case $arg in
       r) local release=${OPTARG} ;;
       n) local namespace=${OPTARG} ;;
@@ -1068,7 +1096,8 @@ keel_run() {
     cmd="${cmd} -f ${mod_file}"
   fi
 
-  cmd="${cmd} | sed 's/RELEASE/${release}/g'"
+  cmd="${cmd} ${@} | sed 's/RELEASE/${release}/g'"
+  # echo "cmd: ${cmd}"
 
   local yaml="$(eval $cmd)"
 

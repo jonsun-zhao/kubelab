@@ -28,6 +28,7 @@ inventory.yml
 *.retry
 set-ip.sh
 upload_vms.sh
+*-cluster-config.yaml
 
 # Mac
 .DS_Store

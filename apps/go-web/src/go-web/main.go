@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"flag"
 	"fmt"
 	"go-web/dns"
@@ -14,6 +15,7 @@ import (
 	"net/http"
 	"net/http/httputil"
 	"os"
+	"time"
 
 	"github.com/gorilla/handlers"
 	"github.com/gorilla/mux"
@@ -22,6 +24,13 @@ import (
 	pb "google.golang.org/grpc/examples/helloworld/helloworld"
 	healthpb "google.golang.org/grpc/health/grpc_health_v1"
 	mgo "gopkg.in/mgo.v2"
+
+	"contrib.go.opencensus.io/exporter/stackdriver"
+	"contrib.go.opencensus.io/exporter/stackdriver/propagation"
+	"go.opencensus.io/plugin/ocgrpc"
+	"go.opencensus.io/plugin/ochttp"
+	"go.opencensus.io/stats/view"
+	"go.opencensus.io/trace"
 )
 
 // Index ...
@@ -70,7 +79,10 @@ func runServer(router *mux.Router, httpPort string, httpsPort string, grpcPort s
 	// Starting HTTP server
 	go func() {
 		log.Printf("Staring HTTP service on %s ...", httpPort)
-		if err := http.ListenAndServe(":"+httpPort, router); err != nil {
+		if err := http.ListenAndServe(":"+httpPort, &ochttp.Handler{
+			Handler:     router,
+			Propagation: &propagation.HTTPFormat{},
+		}); err != nil {
 			errs <- err
 		}
 	}()
@@ -79,7 +91,10 @@ func runServer(router *mux.Router, httpPort string, httpsPort string, grpcPort s
 		// Starting HTTPS server
 		go func() {
 			log.Printf("Staring HTTPS service on %s ...", httpsPort)
-			if err := http.ListenAndServeTLS(":"+httpsPort, tlsCert, tlsKey, router); err != nil {
+			if err := http.ListenAndServeTLS(":"+httpsPort, tlsCert, tlsKey, &ochttp.Handler{
+				Handler:     router,
+				Propagation: &propagation.HTTPFormat{},
+			}); err != nil {
 				errs <- err
 			}
 		}()
@@ -94,6 +109,8 @@ func runServer(router *mux.Router, httpPort string, httpsPort string, grpcPort s
 		}
 
 		var grpcOptions []grpc.ServerOption
+		grpcOptions = append(grpcOptions, grpc.StatsHandler(&ocgrpc.ServerHandler{}))
+
 		if tlsCert != "" && tlsKey != "" {
 			creds, err := credentials.NewServerTLSFromFile(tlsCert, tlsKey)
 			if err != nil {
@@ -115,8 +132,43 @@ func runServer(router *mux.Router, httpPort string, httpsPort string, grpcPort s
 	return errs
 }
 
+func initStats(exporter *stackdriver.Exporter) {
+	view.SetReportingPeriod(60 * time.Second)
+	view.RegisterExporter(exporter)
+	if err := view.Register(ocgrpc.DefaultServerViews...); err != nil {
+		log.Printf("Error registering default server views")
+	} else {
+		log.Printf("Registered default server views")
+	}
+}
+
+func initStackdriverTracing() {
+	for i := 1; i <= 3; i++ {
+		exporter, err := stackdriver.NewExporter(stackdriver.Options{
+			// ProjectID: "nmiu-play",
+		})
+		if err != nil {
+			log.Printf("failed to initialize Stackdriver exporter: %+v", err)
+		} else {
+			trace.RegisterExporter(exporter)
+			trace.ApplyConfig(trace.Config{DefaultSampler: trace.AlwaysSample()})
+			log.Printf("registered Stackdriver tracing")
+
+			// Register the views to collect server stats.
+			initStats(exporter)
+			return
+		}
+		d := time.Second * 10 * time.Duration(i)
+		log.Printf("sleeping %v to retry initializing Stackdriver exporter", d)
+		time.Sleep(d)
+	}
+	log.Printf("could not initialize Stackdriver exporter after retrying, giving up")
+}
+
 // main function to boot up everything
 func main() {
+	go initStackdriverTracing()
+
 	// set backend if the flag is set
 	backend := flag.String("backend", "", "Specify a backend url to ping [localhost:80] (default: none)")
 	httpPort := flag.String("http-port", "80", "Specify a http port (default: 80)")
@@ -130,7 +182,7 @@ func main() {
 
 	// run client
 	if *clientOnly {
-		g.PingBackend(*grpcBeAddr, *cert)
+		g.PingBackend(context.Background(), *grpcBeAddr, *cert)
 		os.Exit(0)
 	}
 
@@ -176,9 +228,10 @@ func main() {
 	}).Methods("GET")
 	router.HandleFunc("/ping-backend-with-db", func(w http.ResponseWriter, r *http.Request) {
 		probes.PingBackend(w, r, *backend+"/people")
+		probes.PingGRPCBackend(w, r, *grpcBeAddr, *cert)
 	}).Methods("GET")
 	router.HandleFunc("/ping-grpc-backend", func(w http.ResponseWriter, r *http.Request) {
-		probes.PingGRPCBackend(w, *grpcBeAddr, *cert)
+		probes.PingGRPCBackend(w, r, *grpcBeAddr, *cert)
 	}).Methods("GET")
 
 	// kubedump

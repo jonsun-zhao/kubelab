@@ -33,6 +33,7 @@ import (
 	"os"
 	"time"
 
+	"go.opencensus.io/plugin/ocgrpc"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/credentials"
@@ -75,18 +76,18 @@ func (s *HealthServer) Watch(in *healthpb.HealthCheckRequest, srv healthpb.Healt
 }
 
 // PingBackend probes the specificed grpc server
-func PingBackend(grpcBeAddr string, cert string) *[]string {
+func PingBackend(ctx context.Context, grpcBeAddr string, cert string) *[]string {
 	// Set up a connection to the server.
 	var conn *grpc.ClientConn
 	var err error
 	if cert == "" {
-		conn, err = grpc.Dial(grpcBeAddr, grpc.WithInsecure())
+		conn, err = grpc.Dial(grpcBeAddr, grpc.WithInsecure(), grpc.WithStatsHandler(&ocgrpc.ClientHandler{}))
 	} else {
 		tc, err := credentials.NewClientTLSFromFile(cert, "")
 		if err != nil {
 			log.Fatalf("Failed to generate credentials %v", err)
 		}
-		conn, err = grpc.Dial(grpcBeAddr, grpc.WithTransportCredentials(tc))
+		conn, err = grpc.Dial(grpcBeAddr, grpc.WithTransportCredentials(tc), grpc.WithStatsHandler(&ocgrpc.ClientHandler{}))
 	}
 	if err != nil {
 		log.Fatalf("did not connect: %v", err)
@@ -102,7 +103,7 @@ func PingBackend(grpcBeAddr string, cert string) *[]string {
 	var results []string
 
 	// Contact the server and print out its response multiple times.
-	ctx, cancel := context.WithTimeout(context.Background(), timeout)
+	ctx, cancel := context.WithTimeout(ctx, timeout)
 	defer cancel()
 
 	results = append(results, "== Result ==")

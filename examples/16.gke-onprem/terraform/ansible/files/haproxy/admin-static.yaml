@@ -1,0 +1,27 @@
+hostconfig:
+  dns: 8.8.8.8 # IPv4 address of DNS server used by nodes
+  tod: 192.138.210.214 # IPv4 address of the NTP server used by the nodes
+blocks:
+  - netmask: 255.255.255.0
+    gateway: 172.16.20.1
+    ips:
+    - ip: 172.16.20.201
+      hostname: host-1
+    - ip: 172.16.20.202
+      hostname: host-2
+    - ip: 172.16.20.203
+      hostname: host-3
+    - ip: 172.16.20.204
+      hostname: host-4
+    - ip: 172.16.20.205
+      hostname: host-5
+    - ip: 172.16.20.206
+      hostname: host-6
+    - ip: 172.16.20.207
+      hostname: host-7
+    - ip: 172.16.20.208
+      hostname: host-8
+    - ip: 172.16.20.209
+      hostname: host-9
+    - ip: 172.16.20.210
+      hostname: host-10
