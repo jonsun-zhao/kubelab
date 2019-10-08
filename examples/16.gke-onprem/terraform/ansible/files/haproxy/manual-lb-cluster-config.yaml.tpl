@@ -141,7 +141,7 @@ usercluster:
   #   certpath: ""
   #   keypath: ""
 # Which load balancer mode to use "Manual" or "Integrated"
-lbmode: Integrated
+lbmode: Manual
 # Specify which GCP project to connect your GKE clusters to
 gkeconnect:
   projectid: "${gcp_project}"
