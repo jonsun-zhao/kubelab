@@ -63,6 +63,13 @@ cd ansible/files
 ansible-playbook -i inventory.yml haproxy.yml
 ```
 
+### Install and configure Squid
+
+```sh
+cd ansible/files
+ansible-playbook -i inventory.yml squid.yml
+```
+
 ### Install GKE On-Prem
 
 Follow the `Install GKE On-Prem` section in the lab guide

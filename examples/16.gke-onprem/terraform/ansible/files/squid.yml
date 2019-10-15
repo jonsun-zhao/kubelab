@@ -1,0 +1,72 @@
+---
+- name: configure squid
+  hosts: nsvm
+  tags:
+    - config_squid
+  gather_facts: no
+  tasks:
+    - name: install squid
+      become: yes
+      apt:
+        name: squid
+        state: latest
+
+    - name: enable squid
+      become: yes
+      systemd:
+        name: squid
+        state: started
+        enabled: true
+
+    - name: copy nicelist to nsvm
+      become: yes
+      copy:
+        src: squid/nicelist.txt
+        dest: /etc/squid/nicelist.txt
+        owner: root
+        group: root
+        mode: '0644'
+        backup: yes
+      register: nicelist
+
+    - name: squid mod 1
+      become: yes
+      blockinfile:
+        path: /etc/squid/squid.conf
+        block: |
+          acl SSL_ports port 5000
+          acl SSL_ports port 6443
+          acl SSL_ports port 8443
+        insertafter: "acl SSL_ports port 443"
+        marker: "# {mark} ANSIBLE MANAGED BLOCK 1"
+        # backup: yes
+      register: squid1
+    
+    - name: squid mod 2
+      become: yes
+      blockinfile:
+        path: /etc/squid/squid.conf
+        block: |
+          http_access allow localhost manager
+          http_access deny manager
+          acl nicelist dstdomain "/etc/squid/nicelist.txt"
+          http_access allow nicelist
+          acl localnet dst 10.0.0.0/8             # RFC 1918 local private network (LAN)
+          acl localnet dst 100.64.0.0/10          # RFC 6598 shared address space (CGN)
+          acl localnet dst 169.254.0.0/16         # RFC 3927 link-local (directly plugged) machines
+          acl localnet dst 172.16.0.0/12          # RFC 1918 local private network (LAN)
+          acl localnet dst 192.168.0.0/16         # RFC 1918 local private network (LAN
+          http_access allow localnet
+        insertbefore: "http_access deny all"
+        marker: "# {mark} ANSIBLE MANAGED BLOCK 2"
+        # backup: yes
+      register: squid2
+
+    - name: restart squid
+      become: yes
+      systemd:
+        name: squid
+        state: reloaded
+      when: (nicelist is changed) or (squid1 is changed) or (squid2 is changed)
+
+    # todo: iptables
