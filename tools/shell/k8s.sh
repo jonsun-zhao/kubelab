@@ -5,6 +5,8 @@
 alias k="kubectl"
 alias ks="k -n kube-system"
 alias ki="k -n istio-system"
+alias kg="k -n gke-system"
+alias kns="k -n knative-serving"
 alias kx="k exec"
 alias kw="k -o wide"
 alias ksw="ks -o wide"
@@ -1037,12 +1039,13 @@ istio_dump_proxy_config() {
   [ -n "$ZSH_VERSION" ] && FUNCNAME=${funcstack[1]}
 
   if [ "$#" -lt 1 ]; then
-    echo "Usage: $FUNCNAME POD_NAME [NAMESPACE:-default]"
+    echo "Usage: $FUNCNAME POD_NAME [NAMESPACE:-default] [ISTIOCTL_CMD:-istioctl]"
     return 1
   fi
 
   local pod=$1
   local namespace=${2:-default}
+  local cmd=${3:-istioctl}
 
   local output_dir="${pod}_${namespace}_$(date +%s)"
   [ -d $output_dir ] || mkdir -p $output_dir
@@ -1051,7 +1054,7 @@ istio_dump_proxy_config() {
 
   for i in "${configs[@]}"; do
     echo "> dumping $i to ${output_dir}/${i}.json"
-    istioctl proxy-config $i -n ${namespace} ${pod} -o json >${output_dir}/${i}.json
+    $cmd proxy-config $i -n ${namespace} ${pod} -o json >${output_dir}/${i}.json
   done
 }
 

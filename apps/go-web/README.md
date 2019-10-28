@@ -1,5 +1,7 @@
 # App: go-web
 
+> Deprecated by [tiddle](https://github.com/neoseele/tiddles)
+
 ## Build the image
 
 * build with Cloud Builder
