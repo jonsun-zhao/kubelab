@@ -1,0 +1,326 @@
+## frontend
+---
+apiVersion: apps/v1beta2
+kind: Deployment
+metadata:
+  name: {{ template "tiddles.frontend" . }}
+  namespace: {{ .Release.Namespace }}
+  labels:
+    app: {{ template "tiddles.name" . }}
+    chart: {{ template "tiddles.chart" . }}
+    release: {{ .Release.Name }}
+    heritage: {{ .Release.Service }}
+    tier: frontend
+spec:
+  replicas: {{ .Values.frontend.replicaCount }}
+  selector:
+    matchLabels:
+      app: {{ template "tiddles.name" . }}
+      release: {{ .Release.Name }}
+      tier: frontend
+      version: v1
+  template:
+    metadata:
+      labels:
+        app: {{ template "tiddles.name" . }}
+        release: {{ .Release.Name }}
+        tier: frontend
+        version: v1
+    spec:
+      containers:
+        - name: {{ .Chart.Name }}
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          args:
+            - /tiddles
+            {{- if .Values.backend.tls.enabled }}
+            - --cert=/tls/tls.crt
+            - --key=/tls/tls.key
+            {{- end }}
+            {{- if .Values.stackdriver.trace.enabled }}
+            - --trace
+            {{- end }}
+            - --backend={{ template "tiddles.backend" . }}:80
+            - --grpc-backend={{ template "tiddles.backend" . }}:50000
+          ports:
+            - name: http
+              containerPort: 80
+              protocol: TCP
+            - name: https
+              containerPort: 443
+              protocol: TCP
+            - name: grpc
+              containerPort: 50000
+              protocol: TCP
+          livenessProbe:
+            exec: # (https://github.com/istio/istio/issues/2628)
+              command:
+                - /bin/sh
+                - -c
+                - curl localhost:80/liveness
+          readinessProbe:
+            exec:
+              command:
+                - /bin/sh
+                - -c
+                - curl localhost:80/readiness
+          resources:
+{{ toYaml .Values.resources | indent 12 }}
+          volumeMounts:
+            {{- if .Values.backend.tls.enabled }}
+            - name: tls
+              mountPath: /tls
+            {{- end }}
+      volumes:
+        {{- if .Values.backend.tls.enabled }}
+        - name: tls
+          secret:
+            secretName: {{ template "tiddles.backendTLSSecretName" . }}
+        {{- end }}
+    {{- with .Values.nodeSelector }}
+      nodeSelector:
+{{ toYaml . | indent 8 }}
+    {{- end }}
+    {{- with .Values.affinity }}
+      affinity:
+{{ toYaml . | indent 8 }}
+    {{- end }}
+    {{- with .Values.tolerations }}
+      tolerations:
+{{ toYaml . | indent 8 }}
+    {{- end }}
+
+## backend - v1
+---
+apiVersion: apps/v1beta2
+kind: Deployment
+metadata:
+  name: {{ template "tiddles.backend" . }}
+  namespace: {{ .Release.Namespace }}
+  labels:
+    app: {{ template "tiddles.name" . }}
+    chart: {{ template "tiddles.chart" . }}
+    release: {{ .Release.Name }}
+    heritage: {{ .Release.Service }}
+    tier: backend
+spec:
+  replicas: {{ .Values.backend.replicaCount }}
+  selector:
+    matchLabels:
+      app: {{ template "tiddles.name" . }}
+      release: {{ .Release.Name }}
+      tier: backend
+      version: v1
+  template:
+    metadata:
+      labels:
+        app: {{ template "tiddles.name" . }}
+        release: {{ .Release.Name }}
+        tier: backend
+        version: v1
+    spec:
+      containers:
+        - name: {{ .Chart.Name }}
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          args:
+            - /tiddles
+            {{- if .Values.backend.tls.enabled }}
+            - --cert=/tls/tls.crt
+            - --key=/tls/tls.key
+            {{- end }}
+            {{- if .Values.stackdriver.trace.enabled }}
+            - --trace
+            {{- end }}
+          ports:
+            - name: http
+              containerPort: 80
+              protocol: TCP
+            - name: https
+              containerPort: 443
+              protocol: TCP
+            - name: grpc
+              containerPort: 50000
+              protocol: TCP
+          livenessProbe:
+            exec: # (https://github.com/istio/istio/issues/2628)
+              command:
+                - /bin/sh
+                - -c
+                - curl localhost:80/liveness
+          readinessProbe:
+            exec:
+              command:
+                - /bin/sh
+                - -c
+                - curl localhost:80/readiness
+          resources:
+{{ toYaml .Values.resources | indent 12 }}
+          volumeMounts:
+            {{- if .Values.backend.tls.enabled }}
+            - name: tls
+              mountPath: /tls
+            {{- end }}
+      volumes:
+        {{- if .Values.backend.tls.enabled }}
+        - name: tls
+          secret:
+            secretName: {{ template "tiddles.backendTLSSecretName" . }}
+        {{- end }}
+    {{- with .Values.nodeSelector }}
+      nodeSelector:
+{{ toYaml . | indent 8 }}
+    {{- end }}
+    {{- with .Values.affinity }}
+      affinity:
+{{ toYaml . | indent 8 }}
+    {{- end }}
+    {{- with .Values.tolerations }}
+      tolerations:
+{{ toYaml . | indent 8 }}
+    {{- end }}
+
+## backend - v2
+---
+apiVersion: apps/v1beta2
+kind: Deployment
+metadata:
+  name: {{ template "tiddles.backend" . }}-v2
+  namespace: {{ .Release.Namespace }}
+  labels:
+    app: {{ template "tiddles.name" . }}
+    chart: {{ template "tiddles.chart" . }}
+    release: {{ .Release.Name }}
+    heritage: {{ .Release.Service }}
+    tier: backend
+spec:
+  replicas: {{ .Values.backend.replicaCount }}
+  selector:
+    matchLabels:
+      app: {{ template "tiddles.name" . }}
+      release: {{ .Release.Name }}
+      tier: backend
+      version: v2
+  template:
+    metadata:
+      labels:
+        app: {{ template "tiddles.name" . }}
+        release: {{ .Release.Name }}
+        tier: backend
+        version: v2
+    spec:
+      initContainers:
+      - name: wait-for-db
+        image: busybox
+        command: ['sh', '-c', 'until nc -w 2 -z {{ template "tiddles.mongodb" . }} 27017; do sleep 2; done']
+      containers:
+        - name: {{ .Chart.Name }}
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          command:
+            - /tiddles
+            {{- if .Values.backend.tls.enabled }}
+            - --cert=/tls/tls.crt
+            - --key=/tls/tls.key
+            {{- end }}
+            {{- if .Values.stackdriver.trace.enabled }}
+            - --trace
+            {{- end }}
+          env:
+            - name: MONGODB_URL
+              value: {{ template "tiddles.mongodb" . }}
+            - name: VERSION
+              value: v2
+          ports:
+            - name: http
+              containerPort: 80
+              protocol: TCP
+            - name: https
+              containerPort: 443
+              protocol: TCP
+            - name: grpc
+              containerPort: 50000
+              protocol: TCP
+          livenessProbe:
+            exec: # (https://github.com/istio/istio/issues/2628)
+              command:
+                - /bin/sh
+                - -c
+                - curl localhost:80/liveness
+          readinessProbe:
+            exec:
+              command:
+                - /bin/sh
+                - -c
+                - curl localhost:80/readiness
+          resources:
+{{ toYaml .Values.resources | indent 12 }}
+          volumeMounts:
+            {{- if .Values.backend.tls.enabled }}
+            - name: tls
+              mountPath: /tls
+            {{- end }}
+      volumes:
+        {{- if .Values.backend.tls.enabled }}
+        - name: tls
+          secret:
+            secretName: {{ template "tiddles.backendTLSSecretName" . }}
+        {{- end }}
+    {{- with .Values.nodeSelector }}
+      nodeSelector:
+{{ toYaml . | indent 8 }}
+    {{- end }}
+    {{- with .Values.affinity }}
+      affinity:
+{{ toYaml . | indent 8 }}
+    {{- end }}
+    {{- with .Values.tolerations }}
+      tolerations:
+{{ toYaml . | indent 8 }}
+    {{- end }}
+
+## mongodb
+---
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  name: {{ template "tiddles.mongodb" . }}
+  namespace: {{ .Release.Namespace }}
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: {{ template "tiddles.name" . }}
+      release: {{ .Release.Name }}
+      tier: mongodb
+      version: v1
+  template:
+    metadata:
+      labels:
+        app: {{ template "tiddles.name" . }}
+        release: {{ .Release.Name }}
+        tier: mongodb
+        version: v1
+    spec:
+      containers:
+      # [START app_container]
+      - name: mongodb
+        image: gcr.io/nmiu-play/mongodb:latest
+        imagePullPolicy: IfNotPresent
+        ports:
+          - name: mongo
+            protocol: TCP
+            containerPort: 27017
+        livenessProbe:
+          exec:
+            command:
+              - /bin/sh
+              - -c
+              - echo 'db.runCommand("ping").ok' | mongo localhost/test --quiet
+        readinessProbe:
+          exec:
+            command:
+              - /bin/sh
+              - -c
+              - echo 'db.runCommand("ping").ok' | mongo localhost/test --quiet
+      # [END app_container]

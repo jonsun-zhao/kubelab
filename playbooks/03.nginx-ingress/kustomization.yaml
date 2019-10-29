@@ -1,0 +1,4 @@
+bases:
+- ../tools/php-apache/k8s
+resources:
+- ingress.yaml

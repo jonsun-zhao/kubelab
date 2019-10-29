@@ -1,0 +1,20 @@
+{{- if and .Values.rbac.create .Values.podSecurityPolicy.enabled -}}
+apiVersion: rbac.authorization.k8s.io/v1beta1
+kind: RoleBinding
+metadata:
+  name: {{ template "fortio.fullname" . }}
+  namespace: {{ .Release.Namespace }}
+  labels:
+    app: {{ template "fortio.name" . }}
+    chart: {{ template "fortio.chart" . }}
+    heritage: {{ .Release.Service }}
+    release: {{ .Release.Name }}
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: {{ template "fortio.fullname" . }}
+subjects:
+  - kind: ServiceAccount
+    name: {{ template "fortio.serviceAccountName" . }}
+    namespace: {{ .Release.Namespace }}
+{{- end -}}

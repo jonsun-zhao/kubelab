@@ -1,0 +1,45 @@
+##
+## deployment configuration
+replicaCount: 1
+
+image:
+  repository: gcr.io/nmiu-play/fortio
+  tag: latest
+  pullPolicy: Always
+
+##
+## Service configuration
+service:
+  enabled: true
+
+##
+## Storage configuration
+persistence:
+  ##
+  ## Enable persistance storage
+  enabled: true
+  ##
+  ## Existing claim to use
+  # existingClaim: 
+  ##
+  ## Existing PV to use
+  # existingPD:
+  #   fsType: ext4
+  #   pdName: test-disk
+  ##
+  ## Existing claim's subPath to use, e.g. "data" (optional)
+  # subPath: ""
+  ##
+  ## Persistent Volume Storage Class
+  ## If defined, storageClassName: <storageClass>
+  ## If set to "-", storageClassName: "", which disables dynamic provisioning
+  ## If undefined (the default) or set to null, no storageClassName spec is
+  ##   set, choosing the default provisioner.
+  # storageClass: "-"
+  accessModes: 
+    - ReadWriteOnce
+  # readOnly: true
+  ##
+  ## Persistant storage size
+  requests: 1Gi
+  limits: 10Gi

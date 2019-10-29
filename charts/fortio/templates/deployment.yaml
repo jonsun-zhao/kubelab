@@ -1,0 +1,137 @@
+apiVersion: apps/v1beta2
+kind: Deployment
+metadata:
+  name: {{ template "fortio.fullname" . }}
+  namespace: {{ .Release.Namespace }}
+  labels:
+    app: {{ template "fortio.name" . }}
+    chart: {{ template "fortio.chart" . }}
+    release: {{ .Release.Name }}
+    heritage: {{ .Release.Service }}
+  annotations:
+    checksum/config: {{ include (print $.Template.BasePath "/service.yaml") . | sha256sum }}
+spec:
+  minReadySeconds: 30
+  replicas: {{ .Values.replicaCount }}
+  selector:
+    matchLabels:
+      app: {{ template "fortio.name" . }}
+      release: {{ .Release.Name }}
+  template:
+    metadata:
+      labels:
+        app: {{ template "fortio.name" . }}
+        release: {{ .Release.Name }}
+    spec:
+      terminationGracePeriodSeconds: 60
+      # [START init_container]
+      initContainers:
+      - name: init-data
+        image: busybox
+        command: 
+        - /bin/sh
+        - -c
+        - "[ -f /data/demo.json ] || date +'%F %T %Z' > /data/demo.json"
+        volumeMounts:
+        - name: data
+          mountPath: /data
+      # [END init_container]
+      # [START app_container]
+      containers:    
+        - name: {{ .Chart.Name }}
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          args:
+            - /usr/bin/fortio
+            - server
+            - -logtostderr
+            - -v=2
+            - -redirect-port=disabled
+            {{- if .Values.ingress.tls.enabled }}
+            - -cert=/tls/tls.crt
+            - -key=/tls/tls.key
+            {{- end }}
+            - -data-dir=/data
+          ports:
+            - name: grpc
+              containerPort: 8079
+              protocol: TCP
+            - name: http
+              containerPort: 8080
+              protocol: TCP
+            - name: https
+              containerPort: 8082
+              protocol: TCP
+          livenessProbe:
+            httpGet:
+              path: /
+              port: http
+          readinessProbe:
+            httpGet:
+              path: /
+              port: http
+          # [START resources]
+          resources:
+{{ toYaml .Values.resources | indent 12 -}}
+          # [END resources]
+          volumeMounts:
+            - name: data
+              mountPath: /data
+            {{- if .Values.ingress.tls.enabled }}
+            - name: tls
+              mountPath: /tls
+            {{- end }}
+      volumes:
+        {{- if .Values.ingress.tls.enabled }}
+        - name: tls
+          secret:
+            secretName: {{ .Values.ingress.tls.existingSecret | default (include "fortio.tlsSecretName" .) }}
+        {{- end }}
+        - name: data
+        # [START pvc]
+        {{- if .Values.persistence.enabled }}
+          persistentVolumeClaim:
+            claimName: {{ .Values.persistence.existingClaim | default (include "fortio.dataVolumeName" .) }}
+            {{- if .Values.persistence.readOnly }}
+            readOnly: true
+            {{- end }}
+        {{- else }}
+          emptyDir: {}
+        {{- end }}
+        # [END pvc]
+      # [START nodeSelector]
+        {{- with .Values.nodeSelector }}
+      nodeSelector:
+{{ toYaml . | indent 8 -}}
+        {{- end }}
+      # [END nodeSelector]
+      # [START serviceAccountName]
+      serviceAccountName: {{ template "fortio.serviceAccountName" . }}
+      # [END serviceAccountName]
+      # [START affinity]
+      affinity:
+        # [START nodeAffinity]
+        {{- if .Values.nodeAffinity }}
+        nodeAffinity:
+{{ toYaml .Values.nodeAffinity | indent 10 -}}
+        {{- end }}
+        # [END nodeAffinity]
+        # [START podAffinity]
+        {{- if .Values.podAffinity }}
+        podAffinity:
+{{ toYaml .Values.podAffinity | indent 10 -}}
+        {{- end }}
+        # [END podAffinity]
+        # [START podAntiAffinity]
+        {{- if .Values.podAntiAffinity }}
+        podAntiAffinity:
+{{ toYaml .Values.podAntiAffinity | indent 10 -}}
+        {{- end }}
+        # [END podAntiAffinity]
+      # [END affinity]
+      # [START tolerations]
+      tolerations:
+{{ toYaml .Values.tolerations | indent 8 -}}
+      # [END tolerations]
+    # [END app_container]
+      

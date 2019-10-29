@@ -1,0 +1,7 @@
+bases:
+- ../../tools/php-apache/k8s
+resources:
+- ../ingress.yaml
+- storage.yaml
+patches:
+- patch.yaml

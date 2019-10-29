@@ -1,4 +1,0 @@
-bases:
-- ../../../apps/sample-controller/k8s
-resources:
-- crd.yaml

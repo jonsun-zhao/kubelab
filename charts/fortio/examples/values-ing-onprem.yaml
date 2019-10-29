@@ -1,0 +1,56 @@
+##
+## deployment configuration
+replicaCount: 1
+
+image:
+  repository: gcr.io/nmiu-play/fortio
+  tag: latest
+  pullPolicy: Always
+
+##
+## Service configuration
+service:
+  ##
+  ## Enable service
+  enabled: true
+  ##
+  ## Service type (default to "NodePort")
+  type: ClusterIP
+  # type: LoadBalancer
+  # type: NodePort
+  ##
+  ## External traffic policy (default to "Cluster")
+  # externalTrafficPolicy: Cluster
+  # externalTrafficPolicy: Local
+  ##
+  ## Session affinity (default to "None")
+  sessionAffinity: None
+  # sessionAffinity: ClientIP
+
+  http2: 
+    enabled: false
+
+##
+## Ingress configuration
+ingress:
+  ##
+  ## Enable ingress
+  enabled: true
+
+  annotations: {}
+
+  tls:
+    enabled: false
+    # existingSecret: premium-cloud-support-com-tls
+    
+  ##
+  ## path (default to "/*")
+  ## note: when using nginx-ingress, the path need to set to "/"
+  # path: /*
+  # path: /
+  ##
+  ## servicePort (default to "http")
+  servicePort: 8080
+  # servicePort: https
+  # servicePort: grpc
+  host: app.gkeonprem.com

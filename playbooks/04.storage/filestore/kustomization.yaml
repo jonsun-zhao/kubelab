@@ -1,0 +1,6 @@
+bases:
+- ../../tools/hammer/k8s
+patches:
+- patch.yaml
+resources:
+- storage.yaml

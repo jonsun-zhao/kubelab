@@ -1,0 +1,6 @@
+bases:
+- ../tools/hammer/k8s
+resources:
+- dns.yaml
+patches:
+- patch.yaml

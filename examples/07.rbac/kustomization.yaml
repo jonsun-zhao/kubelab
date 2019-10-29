@@ -1,6 +1,0 @@
-bases:
-- ../../apps/hammer/k8s
-resources:
-- serviceaccount.yaml
-patches:
-- patch.yaml

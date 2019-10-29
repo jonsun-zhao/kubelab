@@ -1,0 +1,81 @@
+# Default values for tiddles.
+# This is a YAML-formatted file.
+# Declare variables to be passed into your templates.
+
+image:
+  repository: gcr.io/nmiu-play/tiddles
+  tag: latest
+  pullPolicy: Always
+
+frontend:
+  replicaCount: 1
+  tls:
+    enabled: false # istio breaks frontend->backend grpc connection when TLS is required on the app
+  service:
+    type: ClusterIP  
+
+backend:
+  replicaCount: 1
+  tls: 
+    enabled: false
+  service:
+    type: ClusterIP
+
+ingress:
+  enabled: false
+
+resources: {}
+  # We usually recommend not to specify default resources and to leave this as a conscious
+  # choice for the user. This also increases chances charts run on environments with little
+  # resources, such as Minikube. If you do want to specify resources, uncomment the following
+  # lines, adjust them as necessary, and remove the curly braces after 'resources:'.
+  # limits:
+  #  cpu: 100m
+  #  memory: 128Mi
+  # requests:
+  #  cpu: 100m
+  #  memory: 128Mi
+
+nodeSelector: {}
+
+tolerations: []
+
+affinity: {}
+
+istio:
+  enabled: true
+  
+  trafficPolicy:
+    # mode: DISABLE
+    mode: ISTIO_MUTUAL
+  
+  routing: 
+
+    trafficSplit:
+      v1: 10
+      v2: 90
+    
+    delayInjection: {}
+      # match:
+      #   - headers:
+      #       foo:
+      #         exact: bar
+      # fault:
+      #   delay:
+      #     percent: 100
+      #     fixedDelay: 7s
+    
+    faultInjection: {}
+      # match:
+      #   - headers:
+      #       foo:
+      #         exact: bar
+      # fault:
+      #   abort:
+      #     percent: 100
+      #     httpStatus: 500
+
+
+stackdriver:
+  trace:
+    enabled: true

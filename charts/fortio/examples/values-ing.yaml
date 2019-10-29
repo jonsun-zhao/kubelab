@@ -1,0 +1,65 @@
+##
+## deployment configuration
+replicaCount: 1
+
+image:
+  repository: gcr.io/nmiu-play/fortio
+  tag: latest
+  pullPolicy: Always
+
+##
+## Service configuration
+service:
+  ##
+  ## Enable service
+  enabled: true
+  ##
+  ## Service type (default to "NodePort")
+  # type: ClusterIP
+  # type: LoadBalancer
+  # type: NodePort
+  ##
+  ## External traffic policy (default to "Cluster")
+  # externalTrafficPolicy: Cluster
+  externalTrafficPolicy: Local
+  ##
+  ## Session affinity (default to "None")
+  sessionAffinity: None
+  # sessionAffinity: ClientIP
+
+  http2: 
+    enabled: true
+
+##
+## Ingress configuration
+ingress:
+  ##
+  ## Enable ingress
+  enabled: true
+
+  annotations:
+    kubernetes.io/ingress.class: gce
+    kubernetes.io/ingress.global-static-ip-name: asuka
+
+  neg:
+    enabled: false
+
+  tls:
+    enabled: true
+    # existingSecret: premium-cloud-support-com-tls
+
+  iap:
+    enabled: false
+    # existingSecret: oauth-client-id-iap
+    
+  ##
+  ## path (default to "/*")
+  ## note: when using nginx-ingress, the path need to set to "/"
+  # path: /*
+  # path: /
+  ##
+  ## servicePort (default to "http")
+  # servicePort: http
+  servicePort: https
+  # servicePort: grpc
+  host: asuka.premium-cloud-support.com

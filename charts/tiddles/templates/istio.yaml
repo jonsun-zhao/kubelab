@@ -1,0 +1,182 @@
+{{- if .Values.istio.enabled }}
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  labels:
+    istio-injection: enabled
+  name: {{ .Release.Namespace }}
+
+## dr frontend
+---
+apiVersion: networking.istio.io/v1alpha3
+kind: DestinationRule
+metadata:
+  name: {{ template "tiddles.frontend" . }}-dr
+  namespace: {{ .Release.Namespace }}
+spec:
+  host: {{ template "tiddles.frontend" . }}
+  trafficPolicy:
+    tls:
+      mode: {{ .Values.istio.trafficPolicy.mode }}
+  subsets:
+    - name: v1
+      labels:
+        version: v1
+
+## dr backend
+---
+apiVersion: networking.istio.io/v1alpha3
+kind: DestinationRule
+metadata:
+  name: {{ template "tiddles.backend" . }}-dr
+  namespace: {{ .Release.Namespace }}
+spec:
+  host: {{ template "tiddles.backend" . }}
+  trafficPolicy:
+    tls:
+      mode: {{ .Values.istio.trafficPolicy.mode }}
+  subsets:
+    - name: v1
+      labels:
+        version: v1
+    - name: v2
+      labels:
+        version: v2
+
+## dr mongodb
+---
+apiVersion: networking.istio.io/v1alpha3
+kind: DestinationRule
+metadata:
+  name: {{ template "tiddles.mongodb" . }}
+  namespace: {{ .Release.Namespace }}
+spec:
+  host: {{ template "tiddles.mongodb" . }}
+  trafficPolicy:
+    tls:
+      mode: {{ .Values.istio.trafficPolicy.mode }}
+  subsets:
+    - name: v1
+      labels:
+        version: v1
+
+## vs frontend
+---
+apiVersion: networking.istio.io/v1alpha3
+kind: VirtualService
+metadata:
+  name: {{ template "tiddles.frontend" . }}-vs
+  namespace: {{ .Release.Namespace }}
+spec:
+  hosts:
+    - {{ template "tiddles.frontend" . }}
+  http:
+    - route:
+      - destination:
+          host: {{ template "tiddles.frontend" . }}
+          subset: v1
+
+# vs backend
+---
+apiVersion: networking.istio.io/v1alpha3
+kind: VirtualService
+metadata:
+  name: {{ template "tiddles.backend" . }}-vs
+  namespace: {{ .Release.Namespace }}
+spec:
+  hosts:
+    - {{ template "tiddles.backend" . }}
+  http:
+    - route:
+      - destination:
+          host: {{ template "tiddles.backend" . }}
+          subset: v1
+        weight: {{ .Values.istio.routing.trafficSplit.v1 | default 50 }}
+      - destination:
+          host: {{ template "tiddles.backend" . }}
+          subset: v2
+        weight: {{ .Values.istio.routing.trafficSplit.v2 | default 50 }}
+        {{- with .Values.istio.routing }}
+          {{- if .faultInjection }}
+{{ toYaml .faultInjection | indent 8 -}}
+          {{- end }}
+          {{- if .delayInjection }}
+{{ toYaml .delayInjection | indent 8 -}}
+          {{- end }}
+        {{- end }}
+
+## vs mongodb
+---
+apiVersion: networking.istio.io/v1alpha3
+kind: VirtualService
+metadata:
+  name: {{ template "tiddles.mongodb" . }}-vs
+  namespace: {{ .Release.Namespace }}
+spec:
+  hosts:
+  - {{ template "tiddles.mongodb" . }}
+  http:
+  - route:
+    - destination:
+        host: {{ template "tiddles.mongodb" . }}
+        subset: v1
+
+## gateway
+---
+apiVersion: networking.istio.io/v1alpha3
+kind: Gateway
+metadata:
+  name: {{ .Values.istio.existingIstioGatewayName | default (include "tiddles.istioGatewayName" .) }}
+  namespace: {{ .Release.Namespace }}
+spec:
+  selector:
+    istio: ingressgateway # use istio default controller
+  servers:
+  - port:
+      number: 80
+      name: http
+      protocol: HTTP
+    hosts:
+    - "*"
+  - port:
+      number: 443
+      name: https
+      protocol: HTTPS
+    hosts:
+    - "*"
+    tls:
+      mode: SIMPLE # enables HTTPS on this port
+      serverCertificate: /etc/istio/ingressgateway-certs/tls.crt
+      privateKey: /etc/istio/ingressgateway-certs/tls.key
+
+---
+apiVersion: networking.istio.io/v1alpha3
+kind: VirtualService
+metadata:
+  name: {{ template "tiddles.fullname" . }}-gateway-vs
+  namespace: {{ .Release.Namespace }}
+spec:
+  hosts:
+  - "*"
+  gateways:
+  - {{ .Values.istio.existingIstioGatewayName | default (include "tiddles.istioGatewayName" .) }}
+  http:
+  - match:
+    - uri:
+        exact: /
+    - uri:
+        prefix: /ping-backend
+    - uri:
+        prefix: /ping-grpc-backend
+    - uri:
+        prefix: /db
+    - uri:
+        prefix: /stress
+    route:
+    - destination:
+        host: {{ template "tiddles.frontend" . }}
+        port:
+          number: 80
+
+{{- end }}

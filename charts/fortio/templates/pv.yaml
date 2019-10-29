@@ -1,0 +1,18 @@
+{{- if and .Values.persistence.enabled .Values.persistence.existingPD }}
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name : {{ template "fortio.dataVolumeName" . }}
+spec:
+  accessModes:
+  {{- range .Values.persistence.accessModes }}
+  - {{ . }}
+  {{- end }}
+  capacity:
+    storage: {{ .Values.persistence.requests | quote }}
+  persistentVolumeReclaimPolicy: Retain
+  gcePersistentDisk:
+    fsType: {{ .Values.persistence.existingPD.fsType }}
+    pdName: {{ .Values.persistence.existingPD.pdName }}
+  storageClassName: ""
+{{- end }}

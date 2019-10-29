@@ -1,0 +1,6 @@
+bases:
+- ../../tools/nginx/k8s
+resources:
+- storage.yaml
+patches:
+- patch.yaml

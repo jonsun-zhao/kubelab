@@ -10,11 +10,14 @@ Neil Miao <nmiu@google.com>
 
 ## Repo structure
 
-* [apps](apps)
-  > apps built to be used as workloads or clients
+* [tools](tools)
+  > tools and apps that are used in the playbooks
 
-* [examples](examples)
-  > examples to showcase k8s features and usecases
-  * `/\d+\.[\S-]+/` - GA examples
-    * [example list](examples.md)
+* [charts](charts)
+  > helm charts that are used in the playbooks
+
+* [playbooks](playbooks)
+  > playbooks to showcase k8s features and usecases
+  * `/\d+\.[\S-]+/` - GA playbooks
+    * [list](playbooks.md)
   * `staging` - work-in-progress

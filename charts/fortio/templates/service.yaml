@@ -1,0 +1,56 @@
+{{- if .Values.service.enabled -}}
+{{- $fullName := include "fortio.fullname" . -}}
+{{- $type := .Values.service.type | default "NodePort" }}
+{{- $sessionAffinity := .Values.service.sessionAffinity | default "None" }}
+{{- $externalTrafficPolicy := .Values.service.externalTrafficPolicy | default "Cluster" }}
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ $fullName }}
+  namespace: {{ .Release.Namespace }}
+  annotations:
+    {{- if and .Values.service.ilb.enabled (contains "LoadBalancer" $type) }}
+    cloud.google.com/load-balancer-type: internal
+    {{- end }}
+    {{- if .Values.service.http2.enabled }}
+    cloud.google.com/app-protocols: '{"http":"HTTP","https":"HTTP2","grpc":"HTTP2"}'
+    {{- end }}
+    {{- if .Values.ingress.neg.enabled }}
+    cloud.google.com/neg: '{"ingress": true}'
+    {{- end }}
+    {{- if .Values.ingress.iap.enabled }}
+    beta.cloud.google.com/backend-config: '{"ports": {"http":"{{ $fullName }}", "https":"{{ $fullName }}"}}'
+    {{- end }}
+  labels:
+    app: {{ template "fortio.name" . }}
+    chart: {{ template "fortio.chart" . }}
+    release: {{ .Release.Name }}
+    heritage: {{ .Release.Service }}
+spec:
+  {{- if .Values.service.headless.enabled }}
+  type: ClusterIP
+  clusterIP: None
+  {{- else }}
+  type: {{ $type }}
+  sessionAffinity: {{ $sessionAffinity }}
+    {{- if or (contains "LoadBalancer" $type) (contains "NodePort" $type ) }}
+  externalTrafficPolicy: {{ $externalTrafficPolicy }}
+    {{- end }}
+  {{- end }}
+  ports:
+    - port: 8079
+      targetPort: grpc
+      protocol: TCP
+      name: grpc
+    - port: 8080
+      targetPort: http
+      protocol: TCP
+      name: http
+    - port: 8082
+      targetPort: https
+      protocol: TCP
+      name: https
+  selector:
+    app: {{ template "fortio.name" . }}
+    release: {{ .Release.Name }}
+{{- end }}

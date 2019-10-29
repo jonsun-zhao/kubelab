@@ -33,10 +33,10 @@ def built_list(dir, parent=nil, level=0)
   end
 end
 
-# pp directory_hash("examples")
+# pp directory_hash("playbooks")
 
-built_list(directory_hash("examples"))
+built_list(directory_hash("playbooks"))
 # pp @md
 
-content = "# All Examples\n\n" + @md.join("\n")
-File.write("examples.md", content)
+content = "# All Playbooks\n\n" + @md.join("\n")
+File.write("playbooks.md", content)

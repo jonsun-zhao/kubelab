@@ -1,0 +1,258 @@
+# Default values for fortio.
+# This is a YAML-formatted file.
+# Declare variables to be passed into your templates.
+
+##
+## deployment configuration
+replicaCount: 1
+
+image:
+  repository: gcr.io/nmiu-play/fortio
+  tag: latest
+  pullPolicy: Always
+
+resources:
+  # We usually recommend not to specify default resources and to leave this as a conscious
+  # choice for the user. This also increases chances charts run on environments with little
+  # resources, such as Minikube. If you do want to specify resources, uncomment the following
+  # lines, adjust them as necessary, and remove the curly braces after 'resources:'.
+  limits:
+   cpu: 100m
+   memory: 128Mi
+  requests:
+   cpu: 100m
+   memory: 128Mi
+
+## Enable RBAC
+rbac:
+  create: true
+
+# If true, create & use Pod Security Policy resources
+# https://kubernetes.io/docs/concepts/policy/pod-security-policy/
+podSecurityPolicy:
+  enabled: false
+
+# template fortio.serviceAccountName handles SA name creation
+serviceAccount:
+  create: true
+  name:
+
+nodeSelector: {}
+
+tolerations: []
+  #  - operator: "Exists" # tolerate everything
+  #  - key: "key"
+  #    operator: "Equal|Exists"
+  #    value: "value"
+  #    effect: "NoSchedule|PreferNoSchedule|NoExecute(1.6 only)"
+
+nodeAffinity: {}
+  # requiredDuringSchedulingIgnoredDuringExecution:
+  #   nodeSelectorTerms:
+  #   - matchExpressions:
+  #     - key: failure-domain.beta.kubernetes.io/zone
+  #       operator: In
+  #       values:
+  #       - us-central1-a
+  # preferredDuringSchedulingIgnoredDuringExecution:
+  #   - weight: 100
+  #     preference:
+  #       matchExpressions:
+  #       - key: failure-domain.beta.kubernetes.io/zone
+  #         operator: In
+  #         values:
+  #         - us-central1-a
+
+podAffinity: {}
+  # preferredDuringSchedulingIgnoredDuringExecution:
+  # - weight: 100
+  #   podAffinityTerm:
+  #     labelSelector:
+  #       matchExpressions:
+  #       - key: app
+  #         operator: In
+  #         values:
+  #         - foo
+  #     topologyKey: "kubernetes.io/hostname"
+  # requiredDuringSchedulingIgnoredDuringExecution:
+  # - labelSelector:
+  #     matchExpressions:
+  #     - key: app
+  #       operator: In
+  #       values:
+  #       - foo
+  #   topologyKey: "kubernetes.io/hostname"
+
+podAntiAffinity: {}
+  # preferredDuringSchedulingIgnoredDuringExecution:
+  # - weight: 1
+  #   podAffinityTerm:
+  #     labelSelector:
+  #       matchExpressions:
+  #       - key: app
+  #         operator: In
+  #         values:
+  #         - fortio
+  #       - key: release
+  #         operator: In
+  #         values:
+  #         - RELEASE
+  #     topologyKey: "kubernetes.io/hostname"
+  # requiredDuringSchedulingIgnoredDuringExecution:
+  # - labelSelector:
+  #     matchExpressions:
+  #     - key: app
+  #       operator: In
+  #       values:
+  #       - fortio
+  #     - key: release
+  #       operator: In
+  #       values:
+  #       - RELEASE
+  #   topologyKey: "kubernetes.io/hostname"
+
+##
+## HPA configuration
+autoscaling:
+  enabled: false
+  minReplicas: 2
+  maxReplicas: 10
+  targetCPUUtilizationPercentage: 50
+  targetMemoryUtilizationPercentage: 50
+
+##
+## Storage configuration
+persistence:
+  ##
+  ## Enable persistance storage
+  enabled: false
+  ##
+  ## Existing claim to use
+  # existingClaim: 
+  ##
+  ## Existing PV to use
+  # existingPD:
+  #   fsType: ext4
+  #   pdName: test-disk
+  ##
+  ## Existing claim's subPath to use, e.g. "data" (optional)
+  # subPath: ""
+  ##
+  ## Persistent Volume Storage Class
+  ## If defined, storageClassName: <storageClass>
+  ## If set to "-", storageClassName: "", which disables dynamic provisioning
+  ## If undefined (the default) or set to null, no storageClassName spec is
+  ##   set, choosing the default provisioner.
+  # storageClass: "-"
+  accessModes: 
+    - ReadWriteOnce
+    - ReadOnlyMany
+  # readOnly: true
+  ##
+  ## Persistant storage size
+  requests: 1Gi
+  limits: 10Gi
+
+##
+## Service configuration
+service:
+  ##
+  ## Enable service
+  enabled: false
+  ##
+  ## Service type (default to "NodePort")
+  # type: ClusterIP
+  # type: LoadBalancer
+  type: NodePort
+  ##
+  ## External traffic policy (default to "Cluster")
+  # externalTrafficPolicy: Cluster
+  # externalTrafficPolicy: Local
+  ##
+  ## Session affinity (default to "None")
+  # sessionAffinity: None
+  # sessionAffinity: ClientIP
+
+  ilb: 
+    enabled: false
+  headless: 
+    enabled: false
+  http2: 
+    enabled: false
+
+##
+## Ingress configuration
+ingress:
+  ##
+  ## Enable ingress
+  enabled: false
+
+  class:
+    nginx: false
+
+  annotations: {}
+    # kubernetes.io/ingress.class: gce
+    # kubernetes.io/ingress.class: nginx
+    # kubernetes.io/ingress.global-static-ip-name: asuka
+    # nginx.ingress.kubernetes.io/rewrite-target: /
+    # kubernetes.io/tls-acme: "true"
+
+  neg:
+    enabled: false
+  tls:
+    enabled: false
+    # existingSecret: premium-cloud-support-com-tls
+
+  iap:
+    enabled: false
+    # existingSecret: oauth-client-id-iap
+    # genSecret:
+    #   clientId:
+    #   clientSecret:
+    
+  ##
+  ## path (default to "/*")
+  ## note: when using nginx-ingress, the path need to set to "/"
+  # path: /*
+  # path: /
+  ##
+  ## servicePort (default to "http")
+  # servicePort: http
+  # servicePort: https
+  # servicePort: grpc
+  host: www.example.com
+
+##
+## nginx-ingress configuration
+nginx-ingress:
+
+  controller:
+    replicaCount: 2
+
+    autoscaling:
+      enabled: false
+      minReplicas: 2
+      maxReplicas: 10
+    
+    affinity:
+      podAntiAffinity:
+        requiredDuringSchedulingIgnoredDuringExecution:
+        - labelSelector:
+            matchExpressions:
+            - key: app
+              operator: In
+              values:
+              - nginx-ingress
+            - key: release
+              operator: In
+              values:
+              - RELEASE
+          topologyKey: "kubernetes.io/hostname"
+  
+    service:
+      externalTrafficPolicy: Local
+      omitClusterIP: true
+  
+  defaultBackend:
+    service:
+      omitClusterIP: true

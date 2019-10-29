@@ -1,4 +1,0 @@
-bases:
-- ../../../apps/hammer/k8s
-patches:
-- patch.yaml

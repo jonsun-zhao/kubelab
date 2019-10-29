@@ -1,0 +1,17 @@
+{{- if and .Values.rbac.create .Values.podSecurityPolicy.enabled -}}
+apiVersion: rbac.authorization.k8s.io/v1beta1
+kind: Role
+metadata:
+  name: {{ template "fortio.fullname" . }}
+  namespace: {{ .Release.Namespace }}
+  labels:
+    app: {{ template "fortio.name" . }}
+    chart: {{ template "fortio.chart" . }}
+    heritage: {{ .Release.Service }}
+    release: {{ .Release.Name }}
+rules:
+  - apiGroups:      ['extensions']
+    resources:      ['podsecuritypolicies']
+    verbs:          ['use']
+    resourceNames:  [{{ template "fortio.fullname" . }}]
+{{- end -}}

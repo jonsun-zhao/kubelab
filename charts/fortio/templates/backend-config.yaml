@@ -1,0 +1,12 @@
+{{- if .Values.ingress.iap.enabled -}}
+{{- $fullName := include "fortio.fullname" . -}}
+apiVersion: cloud.google.com/v1beta1
+kind: BackendConfig
+metadata:
+  name: {{ $fullName }}
+spec:
+  iap:
+    enabled: true
+    oauthclientCredentials:
+      secretName: {{ .Values.ingress.iap.existingSecret | default (include "fortio.iapSecretName" .) }}
+{{- end }}

@@ -1,6 +1,0 @@
-bases:
-- ../../../apps/nginx/k8s
-resources:
-- storage.yaml
-patches:
-- patch.yaml

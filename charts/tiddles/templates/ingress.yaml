@@ -1,0 +1,35 @@
+{{- if .Values.ingress.enabled }}
+{{- $fullName := include "tiddles.fullname" . }}
+{{- $ingressPath := .Values.ingress.path }}
+{{- $servicePort := .Values.ingress.servicePort | default "http" }}
+---
+apiVersion: extensions/v1beta1
+kind: Ingress
+metadata:
+  name: {{ $fullName }}
+  namespace: {{ .Release.Namespace }}
+  labels:
+    app: {{ template "tiddles.name" . }}
+    chart: {{ template "tiddles.chart" . }}
+    release: {{ .Release.Name }}
+    heritage: {{ .Release.Service }}
+{{- with .Values.ingress.annotations }}
+  annotations:
+{{ toYaml . | indent 4 }}
+{{- end }}
+spec:
+{{- if .Values.ingress.tls.enabled }}
+  tls:
+    - hosts:
+        - {{ .Values.ingress.host }}
+      secretName: {{ .Values.ingress.tls.existingSecret | default (include "tiddles.ingressTLSSecretName" .) }}
+{{- end }}
+  rules:
+    - host: {{ .Values.ingress.host }}
+      http:
+        paths:
+          - path: {{ $ingressPath | default "/*" }}
+            backend:
+              serviceName: {{ template "tiddles.frontend" . }}
+              servicePort: {{ $servicePort }}
+{{- end }}

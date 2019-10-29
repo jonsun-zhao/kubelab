@@ -1,0 +1,90 @@
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ template "tiddles.frontend" . }}
+  namespace: {{ .Release.Namespace }}
+  annotations:
+    {{- if .Values.ingress.neg.enabled }}
+    cloud.google.com/neg: '{"ingress": true}'
+    {{- end }}
+  labels:
+    app: {{ template "tiddles.name" . }}
+    chart: {{ template "tiddles.chart" . }}
+    release: {{ .Release.Name }}
+    heritage: {{ .Release.Service }}
+    tier: frontend
+spec:
+  type: {{ .Values.frontend.service.type }}
+  ports:
+    - port: 80
+      targetPort: http
+      protocol: TCP
+      name: http
+    - port: 443
+      targetPort: https
+      protocol: TCP
+      name: https
+    - port: 50000
+      targetPort: grpc
+      protocol: TCP
+      name: grpc
+  selector:
+    app: {{ template "tiddles.name" . }}
+    tier: frontend
+    release: {{ .Release.Name }}
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ template "tiddles.backend" . }}
+  namespace: {{ .Release.Namespace }}
+  labels:
+    app: {{ template "tiddles.name" . }}
+    chart: {{ template "tiddles.chart" . }}
+    release: {{ .Release.Name }}
+    heritage: {{ .Release.Service }}
+    tier: backend
+spec:
+  type: {{ .Values.backend.service.type }}
+  ports:
+    - port: 80
+      targetPort: http
+      protocol: TCP
+      name: http
+    - port: 443
+      targetPort: https
+      protocol: TCP
+      name: https
+    - port: 50000
+      targetPort: grpc
+      protocol: TCP
+      name: grpc
+  selector:
+    app: {{ template "tiddles.name" . }}
+    tier: backend
+    release: {{ .Release.Name }}
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ template "tiddles.mongodb" . }}
+  namespace: {{ .Release.Namespace }}
+  labels:
+    app: {{ template "tiddles.name" . }}
+    chart: {{ template "tiddles.chart" . }}
+    release: {{ .Release.Name }}
+    heritage: {{ .Release.Service }}
+    tier: mongodb
+spec:
+  ports:
+    - name: mongo
+      protocol: TCP
+      port: 27017
+      targetPort: 27017
+  selector:
+    app: {{ template "tiddles.name" . }}
+    tier: mongodb
+    release: {{ .Release.Name }}

@@ -1,0 +1,64 @@
+##
+## deployment configuration
+replicaCount: 2
+
+image:
+  repository: gcr.io/nmiu-play/fortio
+  tag: latest
+  pullPolicy: Always
+
+podAntiAffinity:
+  requiredDuringSchedulingIgnoredDuringExecution:
+  - labelSelector:
+      matchExpressions:
+      - key: app
+        operator: In
+        values:
+        - fortio
+      - key: release
+        operator: In
+        values:
+        - RELEASE
+    topologyKey: "kubernetes.io/hostname"
+
+##
+## Service configuration
+service:
+  enabled: true
+  externalTrafficPolicy: Local
+  http2: 
+    enabled: true
+
+##
+## Ingress configuration
+ingress:
+  ##
+  ## Enable ingress
+  enabled: true
+
+  annotations:
+    kubernetes.io/ingress.class: gce
+    # kubernetes.io/ingress.global-static-ip-name: asuka
+
+  neg:
+    enabled: false
+
+  tls:
+    enabled: true
+    # existingSecret: premium-cloud-support-com-tls
+
+  iap:
+    enabled: true
+    existingSecret: CHANGEME
+    
+  ##
+  ## path (default to "/*")
+  ## note: when using nginx-ingress, the path need to set to "/"
+  # path: /*
+  # path: /
+  ##
+  ## servicePort (default to "http")
+  # servicePort: http
+  # servicePort: https
+  servicePort: grpc
+  host: CHANGEME
